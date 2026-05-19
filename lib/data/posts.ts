@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { ScheduledPost } from "@/types/database";
 
-export async function getPostsByProfile(profileId: string) {
+export async function getPostsByProfile(profileId: string): Promise<ScheduledPost[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("scheduled_posts")
     .select("*")
     .eq("profile_id", profileId)
     .order("scheduled_at", { ascending: false });
-  return data ?? [];
+  return (data as ScheduledPost[] | null) ?? [];
 }
 
 export async function getPostsToday() {

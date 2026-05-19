@@ -7,20 +7,22 @@ const MOCK_INFLUENCERS = [
   { id: "user-2", first_name: "Carlos", last_name: "Santos" },
 ];
 
+const MOCK_BRANDS = [{ id: "brand-1", name: "ScanPlates" }];
+
 describe("AdminScheduler", () => {
   it("renders heading", () => {
-    render(<AdminScheduler influencers={MOCK_INFLUENCERS} />);
+    render(<AdminScheduler influencers={MOCK_INFLUENCERS} brands={MOCK_BRANDS} />);
     expect(screen.getByText("Agendador")).toBeInTheDocument();
   });
 
   it("shows influencer checkboxes", () => {
-    render(<AdminScheduler influencers={MOCK_INFLUENCERS} />);
+    render(<AdminScheduler influencers={MOCK_INFLUENCERS} brands={MOCK_BRANDS} />);
     expect(screen.getByText("Ana Silva")).toBeInTheDocument();
     expect(screen.getByText("Carlos Santos")).toBeInTheDocument();
   });
 
   it("shows schedule button", () => {
-    render(<AdminScheduler influencers={MOCK_INFLUENCERS} />);
+    render(<AdminScheduler influencers={MOCK_INFLUENCERS} brands={MOCK_BRANDS} />);
     expect(screen.getByText("Agendar post")).toBeInTheDocument();
   });
 });

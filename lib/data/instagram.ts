@@ -2,7 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { InstagramConnection } from "@/types/database";
 
-export async function getInstagramConnection(profileId: string) {
+export async function getInstagramConnection(
+  profileId: string,
+): Promise<InstagramConnection | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("instagram_connections")
@@ -10,16 +12,16 @@ export async function getInstagramConnection(profileId: string) {
     .eq("profile_id", profileId)
     .eq("is_connected", true)
     .single();
-  return data;
+  return data as InstagramConnection | null;
 }
 
-export async function getAllInstagramConnections() {
+export async function getAllInstagramConnections(): Promise<InstagramConnection[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("instagram_connections")
     .select("*")
     .eq("is_connected", true);
-  return data ?? [];
+  return (data as InstagramConnection[] | null) ?? [];
 }
 
 export async function saveInstagramConnection(params: {

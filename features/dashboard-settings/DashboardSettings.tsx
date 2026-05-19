@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { AtSign, Trash2, Check, Wallet } from "lucide-react";
+import { saveSettings } from "@/lib/actions/settings";
 import type { Profile, Sector, PixKeyType } from "@/types/database";
 
 const COUNTRIES = [
@@ -106,27 +107,46 @@ export function DashboardSettings({
   const [country, setCountry] = useState(profile.address_country || "BR");
   const [dialCode, setDialCode] = useState("+55");
   const [pixKeyType, setPixKeyType] = useState<PixKeyType>(profile.pix_key_type || "cpf");
+  const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const countryInfo = COUNTRIES.find((c) => c.code === country) ?? COUNTRIES[0];
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    formData.set("dial_code", dialCode);
+
+    startTransition(async () => {
+      const result = await saveSettings(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    });
   };
 
   return (
-    <div className="max-w-2xl space-y-4 p-4 sm:p-6">
+    <form onSubmit={handleSave} className="max-w-2xl space-y-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Configurações</h1>
         <button
-          onClick={handleSave}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-2.5 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
+          type="submit"
+          disabled={isPending}
+          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-2.5 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25 disabled:opacity-50"
         >
           {saved && <Check size={16} />}
-          {saved ? "Salvo" : "Salvar alterações"}
+          {isPending ? "Salvando..." : saved ? "Salvo" : "Salvar alterações"}
         </button>
       </div>
+
+      {error && (
+        <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{error}</div>
+      )}
 
       <section className="rounded-xl border border-border p-4">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
@@ -136,6 +156,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Nome</label>
             <input
+              name="first_name"
               type="text"
               defaultValue={profile.first_name}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -144,6 +165,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Sobrenome</label>
             <input
+              name="last_name"
               type="text"
               defaultValue={profile.last_name}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -173,6 +195,7 @@ export function DashboardSettings({
                 ))}
               </select>
               <input
+                name="whatsapp"
                 type="tel"
                 defaultValue={profile.whatsapp ?? ""}
                 placeholder="11 99999-9999"
@@ -191,6 +214,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1 sm:col-span-2">
             <label className="text-sm font-medium">País</label>
             <select
+              name="address_country"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -205,6 +229,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1 sm:col-span-2">
             <label className="text-sm font-medium">Rua</label>
             <input
+              name="address_street"
               type="text"
               defaultValue={profile.address_street ?? ""}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -213,6 +238,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Cidade</label>
             <input
+              name="address_city"
               type="text"
               defaultValue={profile.address_city ?? ""}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -221,6 +247,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">{countryInfo.postalLabel}</label>
             <input
+              name="address_postal_code"
               type="text"
               defaultValue={profile.address_postal_code ?? ""}
               placeholder={countryInfo.postalPlaceholder}
@@ -245,6 +272,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Tipo de chave</label>
             <select
+              name="pix_key_type"
               value={pixKeyType}
               onChange={(e) => setPixKeyType(e.target.value as PixKeyType)}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -259,6 +287,7 @@ export function DashboardSettings({
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Chave PIX</label>
             <input
+              name="pix_key"
               type="text"
               defaultValue={profile.pix_key ?? ""}
               placeholder={
@@ -340,11 +369,14 @@ export function DashboardSettings({
             <h2 className="text-sm font-medium text-error">Excluir conta</h2>
             <p className="text-xs text-foreground-secondary">Permanente e irreversível</p>
           </div>
-          <button className="shrink-0 rounded-lg border border-error px-3 py-1.5 text-sm font-medium text-error hover:bg-error/10">
+          <button
+            type="button"
+            className="shrink-0 rounded-lg border border-error px-3 py-1.5 text-sm font-medium text-error hover:bg-error/10"
+          >
             Excluir
           </button>
         </div>
       </section>
-    </div>
+    </form>
   );
 }

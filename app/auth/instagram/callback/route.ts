@@ -28,26 +28,15 @@ export async function GET(request: Request) {
   const redirectUri = process.env.INSTAGRAM_REDIRECT_URI!;
 
   try {
-    console.log("Instagram callback: exchanging code for token", {
-      redirectUri,
-      codeLength: code.length,
-    });
-
     const { access_token: shortToken, user_id: igUserId } = await exchangeCodeForToken(
       code,
       redirectUri,
     );
 
-    console.log("Instagram callback: got short token, exchanging for long-lived");
-
     const { access_token: longToken, expires_in: expiresIn } =
       await exchangeForLongLivedToken(shortToken);
 
-    console.log("Instagram callback: got long-lived token, fetching profile");
-
     const profile = await getInstagramProfile(longToken);
-
-    console.log("Instagram callback: saving connection for", profile.username);
 
     await saveInstagramConnection({
       profileId: user.id,
@@ -55,13 +44,12 @@ export async function GET(request: Request) {
       igUsername: profile.username,
       accessToken: longToken,
       expiresIn,
-      followersCount: profile.media_count,
+      followersCount: profile.followers_count,
     });
 
     return NextResponse.redirect(`${origin}/onboarding?ig_connected=true`);
   } catch (err) {
     const message = err instanceof Error ? err.message : JSON.stringify(err);
-    console.error("Instagram OAuth failed:", message, err);
     return NextResponse.redirect(
       `${origin}/onboarding?ig_error=${encodeURIComponent(message)}`,
     );

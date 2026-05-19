@@ -1,23 +1,57 @@
 import { AdminOverview } from "@/features/admin-overview";
+import {
+  getAllProfiles,
+  getAllInstagramConnections,
+  getPostsToday,
+  getPostsThisWeek,
+  getSalesStats,
+  getExpiringConnections,
+} from "@/lib/data";
 
-const MOCK_STATS = {
-  totalInfluencers: 25,
-  connectedInfluencers: 18,
-  pendingInfluencers: 7,
-  postsToday: 3,
-  postsThisWeek: 14,
-  totalSales: 42,
-};
+export default async function AdminPage() {
+  const [profiles, connections, postsToday, postsThisWeek, salesStats, expiring] =
+    await Promise.all([
+      getAllProfiles(),
+      getAllInstagramConnections(),
+      getPostsToday(),
+      getPostsThisWeek(),
+      getSalesStats(),
+      getExpiringConnections(7),
+    ]);
 
-const MOCK_ALERTS = [
-  {
-    id: "1",
-    type: "warning" as const,
-    message: "3 influenciadores sem Instagram conectado",
-  },
-  { id: "2", type: "error" as const, message: "Token expirado: @maria_fit" },
-];
+  const connectedIds = new Set(connections.map((c) => c.profile_id));
+  const connectedCount = profiles.filter((p) => connectedIds.has(p.id)).length;
+  const pendingCount = profiles.length - connectedCount;
 
-export default function AdminPage() {
-  return <AdminOverview stats={MOCK_STATS} alerts={MOCK_ALERTS} />;
+  const alerts: { id: string; type: "warning" | "error"; message: string }[] = [];
+
+  if (pendingCount > 0) {
+    alerts.push({
+      id: "pending-ig",
+      type: "warning",
+      message: `${pendingCount} influenciador(es) sem Instagram conectado`,
+    });
+  }
+
+  for (const conn of expiring) {
+    alerts.push({
+      id: `expiring-${conn.id}`,
+      type: "error",
+      message: `Token expirando: @${conn.ig_username}`,
+    });
+  }
+
+  return (
+    <AdminOverview
+      stats={{
+        totalInfluencers: profiles.length,
+        connectedInfluencers: connectedCount,
+        pendingInfluencers: pendingCount,
+        postsToday,
+        postsThisWeek,
+        totalSales: salesStats.totalSales,
+      }}
+      alerts={alerts}
+    />
+  );
 }

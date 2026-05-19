@@ -1,5 +1,7 @@
 "use client";
 
+const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
 const testAccounts = [
   {
     role: "Admin",
@@ -34,6 +36,8 @@ export function TestCredentials() {
       passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
   }
+
+  if (IS_PRODUCTION) return null;
 
   return (
     <div className="rounded-xl border border-border p-4">

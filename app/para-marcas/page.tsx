@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { submitBrandInquiry } from "@/lib/actions/brand-inquiry";
 import { landingCopy } from "@/features/landing-page/copy";
 
 const IG_ICON = (
@@ -10,6 +12,25 @@ const IG_ICON = (
 );
 
 export default function ParaMarcasPage() {
+  const [isPending, startTransition] = useTransition();
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+
+    startTransition(async () => {
+      const result = await submitBrandInquiry(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-foreground">
       <nav className="border-b border-white/10">
@@ -85,65 +106,110 @@ export default function ParaMarcasPage() {
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-            <h2 className="text-xl font-bold text-white">Fale com nosso time</h2>
-            <p className="mt-2 text-sm text-white/50">
-              Preencha o formulário e entraremos em contato em até 24 horas.
-            </p>
+            {success ? (
+              <div className="space-y-4 text-center py-8">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+                  <svg
+                    className="h-8 w-8 text-green-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-white">Solicitação enviada!</h2>
+                <p className="text-sm text-white/50">
+                  Entraremos em contato em até 24 horas.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-white">Fale com nosso time</h2>
+                <p className="mt-2 text-sm text-white/50">
+                  Preencha o formulário e entraremos em contato em até 24 horas.
+                </p>
 
-            <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-white/70">Seu nome</label>
-                  <input
-                    type="text"
-                    placeholder="Maria Silva"
-                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-white/70">
-                    Email corporativo
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="maria@marca.com"
-                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-white/70">Nome da marca</label>
-                <input
-                  type="text"
-                  placeholder="Sua marca"
-                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-white/70">
-                  Instagram da marca
-                </label>
-                <input
-                  type="text"
-                  placeholder="@suamarca"
-                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-white/70">Mensagem</label>
-                <textarea
-                  rows={3}
-                  placeholder="Conte-nos sobre seus objetivos..."
-                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent resize-none"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30"
-              >
-                Enviar solicitação
-              </button>
-            </form>
+                {error && (
+                  <div className="mt-4 rounded-lg bg-red-500/20 px-4 py-3 text-sm text-red-300">
+                    {error}
+                  </div>
+                )}
+
+                <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-white/70">
+                        Seu nome
+                      </label>
+                      <input
+                        name="name"
+                        type="text"
+                        required
+                        placeholder="Maria Silva"
+                        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-white/70">
+                        Email corporativo
+                      </label>
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        placeholder="maria@marca.com"
+                        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-white/70">
+                      Nome da marca
+                    </label>
+                    <input
+                      name="brand_name"
+                      type="text"
+                      required
+                      placeholder="Sua marca"
+                      className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-white/70">
+                      Instagram da marca
+                    </label>
+                    <input
+                      name="instagram"
+                      type="text"
+                      placeholder="@suamarca"
+                      className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-white/70">Mensagem</label>
+                    <textarea
+                      name="message"
+                      rows={3}
+                      placeholder="Conte-nos sobre seus objetivos..."
+                      className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="w-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30 disabled:opacity-50"
+                  >
+                    {isPending ? "Enviando..." : "Enviar solicitação"}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </main>

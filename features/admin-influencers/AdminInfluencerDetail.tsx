@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   AtSign,
@@ -13,9 +15,12 @@ import {
   MessageSquare,
   Phone,
   ShoppingCart,
+  Trash2,
+  Unplug,
   User,
   Wallet,
 } from "lucide-react";
+import { deleteInfluencer, disconnectInfluencerInstagram } from "@/lib/actions/admin";
 import type {
   Profile,
   InstagramConnection,
@@ -56,12 +61,33 @@ export function AdminInfluencerDetail({
   posts,
   sectors,
 }: AdminInfluencerDetailProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+
   const totalCommission = sales
     .filter((s) => s.status === "confirmed")
     .reduce((sum, s) => sum + s.commission_amount, 0);
   const totalSalesCount = sales.filter((s) => s.status === "confirmed").length;
   const publishedPosts = posts.filter((p) => p.status === "published").length;
   const pendingPosts = posts.filter((p) => p.status === "pending").length;
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      await deleteInfluencer(profile.id);
+      router.push("/admin/influenciadores");
+    });
+  };
+
+  const handleDisconnect = () => {
+    if (!instagram) return;
+    startTransition(async () => {
+      await disconnectInfluencerInstagram(instagram.id);
+      setConfirmDisconnect(false);
+      router.refresh();
+    });
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -208,6 +234,33 @@ export function AdminInfluencerDetail({
                       : "-"}
                   </span>
                 </div>
+              </div>
+              <div className="pt-2">
+                {confirmDisconnect ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleDisconnect}
+                      disabled={isPending}
+                      className="rounded-lg bg-error px-3 py-1.5 text-sm font-medium text-white hover:bg-error/90 disabled:opacity-50"
+                    >
+                      {isPending ? "Desconectando..." : "Confirmar"}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDisconnect(false)}
+                      className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-background-secondary"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDisconnect(true)}
+                    className="flex items-center gap-1.5 rounded-lg border border-error/30 px-3 py-1.5 text-sm text-error hover:bg-error/10 transition-colors"
+                  >
+                    <Unplug size={14} />
+                    Desconectar Instagram
+                  </button>
+                )}
               </div>
             </div>
           ) : (
@@ -368,6 +421,44 @@ export function AdminInfluencerDetail({
           </div>
         </section>
       )}
+
+      <section className="rounded-xl border border-error/20 p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-error/10">
+            <Trash2 size={16} className="text-error" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-medium text-error">Excluir conta</h2>
+            <p className="text-xs text-foreground-secondary">
+              Remove o perfil, dados, posts e conexão Instagram permanentemente
+            </p>
+          </div>
+          {confirmDelete ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleDelete}
+                disabled={isPending}
+                className="rounded-lg bg-error px-4 py-2 text-sm font-medium text-white hover:bg-error/90 disabled:opacity-50"
+              >
+                {isPending ? "Excluindo..." : "Confirmar exclusão"}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-background-secondary"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="shrink-0 rounded-lg border border-error px-3 py-1.5 text-sm font-medium text-error hover:bg-error/10"
+            >
+              Excluir
+            </button>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,38 +1,26 @@
 import { AdminInfluencers } from "@/features/admin-influencers";
-import { MOCK_INFLUENCER } from "@/mocks/profiles.mock";
+import {
+  getAllProfiles,
+  getAllInstagramConnections,
+  getSalesByInfluencer,
+} from "@/lib/data";
 
-const MOCK_ROWS = [
-  {
-    profile: MOCK_INFLUENCER,
-    instagram: {
-      id: "ig-1",
-      profile_id: "user-1",
-      ig_user_id: "123",
-      ig_username: "anasilva",
-      access_token: "token",
-      token_expires_at: "2026-07-19T00:00:00Z",
-      token_refreshed_at: null,
-      is_connected: true,
-      followers_count: 15000,
-      created_at: "2026-05-01T00:00:00Z",
-    },
-    totalSales: 12,
-    commission: 359.4,
-  },
-  {
-    profile: {
-      ...MOCK_INFLUENCER,
-      id: "user-2",
-      first_name: "Carlos",
-      last_name: "Santos",
-      email: "carlos@example.com",
-    },
-    instagram: null,
-    totalSales: 0,
-    commission: 0,
-  },
-];
+export default async function InfluenciadoresPage() {
+  const [profiles, connections, salesByInfluencer] = await Promise.all([
+    getAllProfiles(),
+    getAllInstagramConnections(),
+    getSalesByInfluencer(),
+  ]);
 
-export default function InfluenciadoresPage() {
-  return <AdminInfluencers influencers={MOCK_ROWS} />;
+  const connectionMap = new Map(connections.map((c) => [c.profile_id, c]));
+  const salesMap = new Map(salesByInfluencer.map((s) => [s.profileId, s]));
+
+  const rows = profiles.map((profile) => ({
+    profile,
+    instagram: connectionMap.get(profile.id) ?? null,
+    totalSales: salesMap.get(profile.id)?.totalSales ?? 0,
+    commission: salesMap.get(profile.id)?.totalCommission ?? 0,
+  }));
+
+  return <AdminInfluencers influencers={rows} />;
 }

@@ -113,6 +113,7 @@ export async function checkContainerStatus(containerId: string, token: string) {
     `${INSTAGRAM_API}/${containerId}?fields=status_code&access_token=${token}`,
   );
   const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message ?? "Container status check failed");
   return data as {
     status_code: "EXPIRED" | "ERROR" | "FINISHED" | "IN_PROGRESS" | "PUBLISHED";
   };

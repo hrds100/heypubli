@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { Sector } from "@/types/database";
+import { saveOnboarding } from "@/lib/actions/onboarding";
 import { StepIndicator } from "./StepIndicator";
 import { SectorGrid } from "./SectorGrid";
 import { onboardingCopy } from "./copy";
@@ -30,6 +31,8 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
     address_postal_code: "",
     phone: "",
   });
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const canAdvance = () => {
     switch (step) {
@@ -48,6 +51,45 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
 
   const toggleSector = (id: string, list: string[], setList: (v: string[]) => void) => {
     setList(list.includes(id) ? list.filter((s) => s !== id) : [...list, id]);
+  };
+
+  const handleAdvance = () => {
+    if (!canAdvance()) return;
+    setError(null);
+
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("step", String(step));
+
+      if (step === 3) {
+        formData.set("sector_ids", preferredSectors.join(","));
+      } else if (step === 4) {
+        formData.set("sector_ids", contentTopics.join(","));
+      } else if (step === 5) {
+        formData.set("date_of_birth", profile.date_of_birth);
+        formData.set("gender", profile.gender);
+        formData.set("phone", profile.phone);
+        formData.set("address_street", profile.address_street);
+        formData.set("address_city", profile.address_city);
+        formData.set("address_postal_code", profile.address_postal_code);
+      }
+
+      const result = await saveOnboarding(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setStep(step + 1);
+      }
+    });
+  };
+
+  const handleSkipInstagram = () => {
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("step", "2");
+      await saveOnboarding(formData);
+      setStep(3);
+    });
   };
 
   return (
@@ -70,6 +112,12 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
 
         <div className="rounded-2xl border border-border bg-background p-8 shadow-sm">
           <StepIndicator currentStep={step - 1} totalSteps={5} />
+
+          {error && (
+            <div className="mt-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+              {error}
+            </div>
+          )}
 
           {step === 2 && (
             <div className="mt-8 space-y-6">
@@ -124,8 +172,9 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
 
               <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setStep(3)}
-                  className="text-sm text-foreground-secondary hover:text-foreground"
+                  onClick={handleSkipInstagram}
+                  disabled={isPending}
+                  className="text-sm text-foreground-secondary hover:text-foreground disabled:opacity-50"
                 >
                   {onboardingCopy.step2.skip}
                 </button>
@@ -301,11 +350,11 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
                 Voltar
               </button>
               <button
-                onClick={() => setStep(step + 1)}
-                disabled={!canAdvance()}
+                onClick={handleAdvance}
+                disabled={!canAdvance() || isPending}
                 className="rounded-xl bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-8 py-3 font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {step === 5 ? "Finalizar" : "Próximo"}
+                {isPending ? "Salvando..." : step === 5 ? "Finalizar" : "Próximo"}
               </button>
             </div>
           )}

@@ -1,11 +1,15 @@
 import { AdminBrands } from "@/features/admin-brands";
-import { BRANDS, FUTURE_BRANDS } from "@/mocks/brands.mock";
+import { getAllBrands, getBrandAssignmentCount } from "@/lib/data";
 
-const MOCK_BRAND_ROWS = [
-  { brand: BRANDS[0], influencerCount: 8 },
-  ...FUTURE_BRANDS.map((b) => ({ brand: b, influencerCount: 0 })),
-];
+export default async function MarcasPage() {
+  const brands = await getAllBrands();
 
-export default function MarcasPage() {
-  return <AdminBrands brands={MOCK_BRAND_ROWS} />;
+  const rows = await Promise.all(
+    brands.map(async (brand) => ({
+      brand,
+      influencerCount: await getBrandAssignmentCount(brand.id),
+    })),
+  );
+
+  return <AdminBrands brands={rows} />;
 }

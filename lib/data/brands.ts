@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Brand } from "@/types/database";
 
 export async function getActiveBrands() {
   const supabase = await createClient();
@@ -23,7 +24,7 @@ export async function getFutureBrands() {
 export async function getAllBrands() {
   const supabase = await createClient();
   const { data } = await supabase.from("brands").select("*").order("name");
-  return data ?? [];
+  return (data as Brand[] | null) ?? [];
 }
 
 export async function getBrandAssignmentCount(brandId: string) {

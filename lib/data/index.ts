@@ -11,7 +11,11 @@ export {
   getAllBrands,
   getBrandAssignmentCount,
 } from "./brands";
-export { getInstagramConnection, getAllInstagramConnections } from "./instagram";
+export {
+  getInstagramConnection,
+  getAllInstagramConnections,
+  getExpiringConnections,
+} from "./instagram";
 export { getPostsByProfile, getPostsToday, getPostsThisWeek } from "./posts";
 export {
   getSalesByProfile,

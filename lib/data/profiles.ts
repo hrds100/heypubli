@@ -13,20 +13,20 @@ export async function getCurrentProfile() {
   return data;
 }
 
-export async function getProfileById(id: string) {
+export async function getProfileById(id: string): Promise<Profile | null> {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("id", id).single();
-  return data;
+  return data as Profile | null;
 }
 
-export async function getAllProfiles() {
+export async function getAllProfiles(): Promise<Profile[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
     .select("*")
     .eq("is_admin", false)
     .order("created_at", { ascending: false });
-  return data ?? [];
+  return (data as Profile[] | null) ?? [];
 }
 
 export async function updateProfile(
