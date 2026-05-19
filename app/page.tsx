@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from "@/components/screen-placeholder";
+import { LandingPage } from "@/features/landing-page";
 
 export default function Home() {
-  return <ScreenPlaceholder name="Home" description="Página inicial do Hey Publi" />;
+  return <LandingPage />;
 }
