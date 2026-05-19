@@ -3,38 +3,38 @@ import type { Profile, Brand } from "@/types/database";
 
 const TIERS = [
   {
-    tier: "Tier 1",
+    name: "Iniciante",
     threshold: 0,
-    products: [{ name: "ScanPlates", logo: "/brands/scanplates.svg" }],
+    products: [{ alt: "ScanPlates", logo: "/brands/scanplates.svg" }],
   },
   {
-    tier: "Tier 2",
+    name: "Crescimento",
     threshold: 10,
     products: [
-      { name: "FitBoost", logo: "/brands/fitboost.svg" },
-      { name: "GlowSkin", logo: "/brands/glowskin.svg" },
-      { name: "NutriVida", logo: "/brands/nutrivida.svg" },
+      { alt: "FitBoost", logo: "/brands/fitboost.svg" },
+      { alt: "GlowSkin", logo: "/brands/glowskin.svg" },
+      { alt: "NutriVida", logo: "/brands/nutrivida.svg" },
     ],
   },
   {
-    tier: "Tier 3",
+    name: "Profissional",
     threshold: 50,
     products: [
-      { name: "TechWear", logo: "/brands/techwear.svg" },
-      { name: "PetLove", logo: "/brands/petlove.svg" },
-      { name: "EcoHome", logo: "/brands/ecohome.svg" },
-      { name: "BelaFlor", logo: "/brands/belaflor.svg" },
+      { alt: "TechWear", logo: "/brands/techwear.svg" },
+      { alt: "PetLove", logo: "/brands/petlove.svg" },
+      { alt: "EcoHome", logo: "/brands/ecohome.svg" },
+      { alt: "BelaFlor", logo: "/brands/belaflor.svg" },
     ],
   },
   {
-    tier: "VIP",
+    name: "VIP",
     threshold: 200,
     products: [
-      { name: "LuxBrand", logo: "/brands/luxbrand.svg" },
-      { name: "Premium+", logo: "/brands/premium.svg" },
-      { name: "Elite", logo: "/brands/elite.svg" },
-      { name: "Diamond", logo: "/brands/diamond.svg" },
-      { name: "Exclusive", logo: "/brands/exclusive.svg" },
+      { alt: "LuxBrand", logo: "/brands/luxbrand.svg" },
+      { alt: "Premium+", logo: "/brands/premium.svg" },
+      { alt: "Elite", logo: "/brands/elite.svg" },
+      { alt: "Diamond", logo: "/brands/diamond.svg" },
+      { alt: "Exclusive", logo: "/brands/exclusive.svg" },
     ],
   },
 ];
@@ -188,42 +188,35 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
   return (
     <div className="rounded-2xl border border-border p-5">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
-        Próximos passos
+        Comece a ganhar
       </h2>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 space-y-0">
         <div className="flex items-start gap-3">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
-            1
+          <div className="flex flex-col items-center">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+              1
+            </div>
+            <div className="mt-1 h-8 w-0.5 bg-border" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              Marca ativa: {firstBrand?.name ?? "Aguardando marca"}
-            </p>
+          <div className="flex-1 min-w-0 pb-4">
+            <p className="text-sm font-semibold text-foreground">Visite o Hotmart</p>
             <p className="mt-0.5 text-xs text-foreground-secondary">
-              Sua primeira marca já está atribuída
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
-            2
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              Pegue seu link de afiliado
+              Cadastre-se como afiliado de{" "}
+              <span className="font-medium text-foreground">
+                {firstBrand?.name ?? "sua marca"}
+              </span>
             </p>
             {firstBrand?.hotmart_product_url ? (
               <a
                 href={firstBrand.hotmart_product_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-0.5 inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
               >
-                Ir ao Hotmart
+                Abrir Hotmart
                 <svg
-                  className="h-3 w-3"
+                  className="h-3.5 w-3.5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -232,12 +225,12 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                    d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
                   />
                 </svg>
               </a>
             ) : (
-              <p className="mt-0.5 text-xs text-foreground-secondary">
+              <p className="mt-1 text-xs text-foreground-secondary/70">
                 Link disponível em breve
               </p>
             )}
@@ -245,19 +238,36 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+          <div className="flex flex-col items-center">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+              2
+            </div>
+            <div className="mt-1 h-8 w-0.5 bg-border" />
+          </div>
+          <div className="flex-1 min-w-0 pb-4">
+            <p className="text-sm font-semibold text-foreground">
+              Pegue seu link de afiliado
+            </p>
+            <p className="mt-0.5 text-xs text-foreground-secondary">
+              Copie o link que o Hotmart gerar para você
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
             3
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">Cole seu link aqui</p>
-            <div className="mt-1.5 flex gap-2">
+            <p className="text-sm font-semibold text-foreground">Cole seu link aqui</p>
+            <div className="mt-2 flex gap-2">
               <input
                 type="url"
                 placeholder="https://hotmart.com/affiliate/seu-link"
                 defaultValue={profile.hotmart_url ?? ""}
-                className="flex-1 rounded-lg border border-border px-3 py-1.5 text-xs focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                className="flex-1 rounded-lg border border-border bg-background-secondary/50 px-3 py-2 text-sm focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
-              <button className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90">
+              <button className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90">
                 Salvar
               </button>
             </div>
@@ -283,51 +293,45 @@ function TiersSection() {
         <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
           Seus produtos
         </h2>
-        <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
+        <span className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-3 py-1 text-xs font-bold text-white">
           {currentSales} vendas
         </span>
       </div>
 
       <div className="mt-3">
-        <div className="flex items-center justify-between text-[10px] text-foreground-secondary">
+        <div className="flex items-center justify-between text-xs text-foreground-secondary">
           <span>
-            {nextLocked ? `Próximo: ${nextLocked.tier}` : "Todos desbloqueados"}
+            {nextLocked ? `Próximo nível: ${nextLocked.name}` : "Todos desbloqueados!"}
           </span>
-          <span>
+          <span className="font-medium">
             {currentSales}/{nextThreshold}
           </span>
         </div>
-        <div className="mt-1 h-2 overflow-hidden rounded-full bg-background-secondary">
+        <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-background-secondary">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] transition-all duration-500"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
         {remaining > 0 && (
-          <p className="mt-1.5 text-[11px] text-foreground-secondary">
-            Faltam <span className="font-semibold text-accent">{remaining} vendas</span>{" "}
-            para desbloquear {nextLocked?.tier}
+          <p className="mt-2 text-xs text-foreground-secondary">
+            Faltam <span className="font-bold text-accent">{remaining} vendas</span> para
+            desbloquear {nextLocked?.name}
           </p>
         )}
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-5 space-y-5">
         {TIERS.map((tier) => {
           const isUnlocked = currentSales >= tier.threshold;
 
           return (
-            <div key={tier.tier}>
-              <div className="flex items-center gap-2">
-                <div
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded ${
-                    isUnlocked
-                      ? "bg-success text-white"
-                      : "bg-border text-foreground-secondary"
-                  }`}
-                >
-                  {isUnlocked ? (
+            <div key={tier.name}>
+              <div className="flex items-center gap-2.5">
+                {isUnlocked ? (
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success">
                     <svg
-                      className="h-3 w-3"
+                      className="h-3.5 w-3.5 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -339,9 +343,11 @@ function TiersSection() {
                         d="M4.5 12.75l6 6 9-13.5"
                       />
                     </svg>
-                  ) : (
+                  </div>
+                ) : (
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10">
                     <svg
-                      className="h-3 w-3"
+                      className="h-3 w-3 text-accent/40"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -353,49 +359,42 @@ function TiersSection() {
                         d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
                       />
                     </svg>
-                  )}
-                </div>
+                  </div>
+                )}
                 <span
-                  className={`text-xs font-semibold ${isUnlocked ? "text-foreground" : "text-foreground-secondary"}`}
+                  className={`text-sm font-semibold ${isUnlocked ? "text-foreground" : "text-foreground-secondary"}`}
                 >
-                  {tier.tier}
+                  {tier.name}
                 </span>
-                {tier.tier === "VIP" && (
-                  <span className="rounded bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-1.5 py-0.5 text-[9px] font-bold text-white">
+                {tier.name === "VIP" && (
+                  <span className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-2 py-0.5 text-[10px] font-bold text-white">
                     EXCLUSIVO
                   </span>
                 )}
                 <span
-                  className={`ml-auto text-[10px] ${isUnlocked ? "text-success font-medium" : "text-foreground-secondary"}`}
+                  className={`ml-auto text-xs ${isUnlocked ? "font-semibold text-success" : "text-foreground-secondary"}`}
                 >
-                  {isUnlocked ? "Ativo" : `${tier.threshold} vendas`}
+                  {isUnlocked ? "Desbloqueado" : `${tier.threshold} vendas`}
                 </span>
               </div>
 
-              <div className="ml-7 mt-1.5 flex flex-wrap gap-2">
+              <div className="ml-8 mt-2 flex flex-wrap gap-2.5">
                 {tier.products.map((product) => (
                   <div
-                    key={product.name}
-                    className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 ${
+                    key={product.alt}
+                    className={`overflow-hidden rounded-xl border transition-all ${
                       isUnlocked
-                        ? "border-border bg-white"
-                        : "border-border/50 bg-background-secondary/60"
+                        ? "border-border shadow-sm"
+                        : "border-border/40 opacity-40 grayscale"
                     }`}
                   >
                     <Image
                       src={product.logo}
-                      alt={product.name}
-                      width={32}
-                      height={32}
-                      className={`h-8 w-8 shrink-0 rounded ${isUnlocked ? "" : "opacity-25 grayscale"}`}
+                      alt={product.alt}
+                      width={56}
+                      height={56}
+                      className="h-14 w-14"
                     />
-                    <span
-                      className={`text-xs font-medium ${
-                        isUnlocked ? "text-foreground" : "text-foreground-secondary/50"
-                      }`}
-                    >
-                      {product.name}
-                    </span>
                   </div>
                 ))}
               </div>
