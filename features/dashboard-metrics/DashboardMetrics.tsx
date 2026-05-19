@@ -7,8 +7,6 @@ import {
   Eye,
   Heart,
   MessageCircle,
-  Share2,
-  Bookmark,
   UserPlus,
   Users,
   ChevronLeft,
@@ -183,75 +181,52 @@ export function DashboardMetrics({
 
       {metrics ? (
         <>
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-              icon={Eye}
-              label="Alcance"
-              value={metrics.reach.toLocaleString("pt-BR")}
-              change={metrics.reachChange}
-            />
-            <MetricCard
-              icon={Eye}
-              label="Visualizações"
-              value={metrics.views.toLocaleString("pt-BR")}
-              change={metrics.viewsChange}
-            />
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
             <MetricCard
               icon={Heart}
               label="Engajamento"
               value={`${metrics.engagement.toFixed(1)}%`}
-              change={metrics.engagementChange}
+              change={metrics.engagementChange || undefined}
             />
             <MetricCard
-              icon={UserPlus}
-              label="Novos seguidores"
-              value={`+${metrics.newFollowers}`}
-              change={metrics.followersChange}
+              icon={Heart}
+              label="Curtidas"
+              value={metrics.likes.toLocaleString("pt-BR")}
             />
+            <MetricCard
+              icon={MessageCircle}
+              label="Comentários"
+              value={metrics.comments.toLocaleString("pt-BR")}
+            />
+            {metrics.reach > 0 && (
+              <MetricCard
+                icon={Eye}
+                label="Interações totais"
+                value={metrics.reach.toLocaleString("pt-BR")}
+              />
+            )}
+            {metrics.newFollowers > 0 && (
+              <MetricCard
+                icon={UserPlus}
+                label="Novos seguidores"
+                value={`+${metrics.newFollowers}`}
+                change={metrics.followersChange || undefined}
+              />
+            )}
+            {metrics.profileVisits > 0 && (
+              <MetricCard
+                icon={Users}
+                label="Visitas ao perfil"
+                value={metrics.profileVisits.toLocaleString("pt-BR")}
+              />
+            )}
           </div>
 
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center gap-3 rounded-xl border border-border p-4">
-              <Heart size={18} className="text-error" />
-              <div>
-                <p className="text-lg font-bold">
-                  {metrics.likes.toLocaleString("pt-BR")}
-                </p>
-                <p className="text-xs text-foreground-secondary">Curtidas</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl border border-border p-4">
-              <MessageCircle size={18} className="text-accent" />
-              <div>
-                <p className="text-lg font-bold">
-                  {metrics.comments.toLocaleString("pt-BR")}
-                </p>
-                <p className="text-xs text-foreground-secondary">Comentários</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl border border-border p-4">
-              <Share2 size={18} className="text-blue-500" />
-              <div>
-                <p className="text-lg font-bold">
-                  {metrics.shares.toLocaleString("pt-BR")}
-                </p>
-                <p className="text-xs text-foreground-secondary">Compartilhamentos</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl border border-border p-4">
-              <Bookmark size={18} className="text-warning" />
-              <div>
-                <p className="text-lg font-bold">
-                  {metrics.saves.toLocaleString("pt-BR")}
-                </p>
-                <p className="text-xs text-foreground-secondary">Salvos</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+          {metrics.contentBreakdown.length > 0 && (
             <div className="rounded-xl border border-border p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-semibold">Alcance por tipo de conteúdo</h3>
+              <h3 className="mb-3 text-sm font-semibold">
+                Performance por tipo de conteúdo
+              </h3>
               {metrics.contentBreakdown.map((item) => (
                 <div
                   key={item.type}
@@ -259,47 +234,43 @@ export function DashboardMetrics({
                 >
                   <span className="font-medium">{item.type}</span>
                   <div className="flex gap-4 text-foreground-secondary">
-                    <span>{item.reach.toLocaleString("pt-BR")} alcance</span>
+                    <span>{item.reach.toLocaleString("pt-BR")} interações</span>
                     <span>{item.engagement.toFixed(1)}% eng.</span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="rounded-xl border border-border p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Users size={16} className="text-foreground-secondary" />
-                <h3 className="text-sm font-semibold">Visitas ao perfil</h3>
-              </div>
-              <p className="text-3xl font-bold">
-                {metrics.profileVisits.toLocaleString("pt-BR")}
-              </p>
-              <p className="mt-1 text-xs text-foreground-secondary">neste período</p>
-            </div>
-          </div>
+          )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-xl border border-border p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-semibold">Principais cidades</h3>
-              <HorizontalBar
-                data={metrics.topCities.map((c) => ({ label: c.name, value: c.count }))}
-                maxValue={Math.max(...metrics.topCities.map((c) => c.count), 1)}
-              />
+          {metrics.topCities.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-xl border border-border p-4 sm:p-5">
+                <h3 className="mb-3 text-sm font-semibold">Principais cidades</h3>
+                <HorizontalBar
+                  data={metrics.topCities.map((c) => ({ label: c.name, value: c.count }))}
+                  maxValue={Math.max(...metrics.topCities.map((c) => c.count), 1)}
+                />
+              </div>
+              {metrics.topCountries.length > 0 && (
+                <div className="rounded-xl border border-border p-4 sm:p-5">
+                  <h3 className="mb-3 text-sm font-semibold">Principais países</h3>
+                  <HorizontalBar
+                    data={metrics.topCountries.map((c) => ({
+                      label: c.name,
+                      value: c.count,
+                    }))}
+                    maxValue={Math.max(...metrics.topCountries.map((c) => c.count), 1)}
+                  />
+                </div>
+              )}
+              {metrics.ageGender.length > 0 && (
+                <div className="rounded-xl border border-border p-4 sm:p-5 sm:col-span-2 lg:col-span-1">
+                  <h3 className="mb-3 text-sm font-semibold">Idade e gênero</h3>
+                  <AgeGenderChart data={metrics.ageGender} />
+                </div>
+              )}
             </div>
-            <div className="rounded-xl border border-border p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-semibold">Principais países</h3>
-              <HorizontalBar
-                data={metrics.topCountries.map((c) => ({
-                  label: c.name,
-                  value: c.count,
-                }))}
-                maxValue={Math.max(...metrics.topCountries.map((c) => c.count), 1)}
-              />
-            </div>
-            <div className="rounded-xl border border-border p-4 sm:p-5 sm:col-span-2 lg:col-span-1">
-              <h3 className="mb-3 text-sm font-semibold">Idade e gênero</h3>
-              <AgeGenderChart data={metrics.ageGender} />
-            </div>
-          </div>
+          )}
         </>
       ) : isConnected ? (
         <div className="rounded-xl border border-border bg-background-secondary p-12 text-center">

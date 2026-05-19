@@ -75,6 +75,28 @@ export async function getInstagramProfile(token: string) {
   };
 }
 
+export interface InstagramMedia {
+  id: string;
+  caption?: string;
+  media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM" | "REELS";
+  media_url?: string;
+  timestamp: string;
+  like_count?: number;
+  comments_count?: number;
+}
+
+export async function getInstagramMedia(
+  token: string,
+  limit = 25,
+): Promise<InstagramMedia[]> {
+  const res = await fetch(
+    `${INSTAGRAM_API}/me/media?fields=id,caption,media_type,media_url,timestamp,like_count,comments_count&limit=${limit}&access_token=${token}`,
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message ?? "Media fetch failed");
+  return (data.data ?? []) as InstagramMedia[];
+}
+
 export type MediaType = "IMAGE" | "VIDEO" | "STORIES" | "REELS" | "CAROUSEL";
 
 interface CreateContainerParams {
