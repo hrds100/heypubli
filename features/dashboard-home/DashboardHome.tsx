@@ -198,7 +198,21 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground">
-              Cadastre-se como afiliado: {firstBrand?.name ?? "Aguardando marca"}
+              Marca ativa: {firstBrand?.name ?? "Aguardando marca"}
+            </p>
+            <p className="mt-0.5 text-xs text-foreground-secondary">
+              Sua primeira marca já está atribuída
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+            2
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              Pegue seu link de afiliado
             </p>
             {firstBrand?.hotmart_product_url ? (
               <a
@@ -232,12 +246,10 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
 
         <div className="flex items-start gap-3">
           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
-            2
+            3
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              Cole seu link de afiliado
-            </p>
+            <p className="text-sm font-medium text-foreground">Cole seu link aqui</p>
             <div className="mt-1.5 flex gap-2">
               <input
                 type="url"
@@ -360,11 +372,11 @@ function TiersSection() {
                 </span>
               </div>
 
-              <div className="ml-7 mt-1.5 flex flex-wrap gap-1.5">
+              <div className="ml-7 mt-1.5 flex flex-wrap gap-2">
                 {tier.products.map((product) => (
                   <div
                     key={product.name}
-                    className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${
+                    className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 ${
                       isUnlocked
                         ? "border-border bg-white"
                         : "border-border/50 bg-background-secondary/60"
@@ -373,12 +385,12 @@ function TiersSection() {
                     <Image
                       src={product.logo}
                       alt={product.name}
-                      width={24}
-                      height={24}
-                      className={`h-6 w-6 shrink-0 rounded ${isUnlocked ? "" : "opacity-25 grayscale"}`}
+                      width={32}
+                      height={32}
+                      className={`h-8 w-8 shrink-0 rounded ${isUnlocked ? "" : "opacity-25 grayscale"}`}
                     />
                     <span
-                      className={`text-[11px] font-medium ${
+                      className={`text-xs font-medium ${
                         isUnlocked ? "text-foreground" : "text-foreground-secondary/50"
                       }`}
                     >
@@ -402,7 +414,7 @@ export function DashboardHome({ profile, activeBrands, instagram }: DashboardHom
         Olá, {profile.first_name}! Bem-vindo à HeyPubli
       </h1>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Left column */}
         <div className="space-y-5">
           {instagram?.isConnected ? (
