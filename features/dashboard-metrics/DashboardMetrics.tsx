@@ -38,6 +38,8 @@ export interface ProfileMetrics {
 
 interface DashboardMetricsProps {
   profileMetrics: ProfileMetrics[];
+  isConnected?: boolean;
+  igUsername?: string;
 }
 
 function MetricCard({
@@ -137,7 +139,11 @@ function AgeGenderChart({ data }: { data: ProfileMetrics["ageGender"] }) {
   );
 }
 
-export function DashboardMetrics({ profileMetrics }: DashboardMetricsProps) {
+export function DashboardMetrics({
+  profileMetrics,
+  isConnected = false,
+  igUsername,
+}: DashboardMetricsProps) {
   const [periodIndex, setPeriodIndex] = useState(0);
   const metrics = profileMetrics[periodIndex];
 
@@ -295,6 +301,19 @@ export function DashboardMetrics({ profileMetrics }: DashboardMetricsProps) {
             </div>
           </div>
         </>
+      ) : isConnected ? (
+        <div className="rounded-xl border border-border bg-background-secondary p-12 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
+            <Eye size={28} className="text-success" />
+          </div>
+          <p className="mt-4 text-lg font-semibold">
+            Instagram conectado{igUsername ? ` — @${igUsername}` : ""}
+          </p>
+          <p className="mt-2 text-sm text-foreground-secondary">
+            As métricas detalhadas do seu perfil aparecerão aqui em breve. Estamos
+            coletando os dados da sua conta.
+          </p>
+        </div>
       ) : (
         <div className="rounded-xl border-2 border-dashed border-border p-12 text-center">
           <Eye size={32} className="mx-auto text-foreground-secondary/40" />
