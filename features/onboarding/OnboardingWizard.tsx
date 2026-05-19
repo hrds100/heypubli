@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Sector } from "@/types/database";
 import { StepIndicator } from "./StepIndicator";
 import { SectorGrid } from "./SectorGrid";
@@ -12,7 +13,11 @@ interface OnboardingWizardProps {
 }
 
 export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
-  const [step, setStep] = useState(2);
+  const searchParams = useSearchParams();
+  const igConnected = searchParams.get("ig_connected") === "true";
+  const igError = searchParams.get("ig_error");
+
+  const [step, setStep] = useState(igConnected ? 3 : 2);
   const [preferredSectors, setPreferredSectors] = useState<string[]>([]);
   const [contentTopics, setContentTopics] = useState<string[]>([]);
   const [profile, setProfile] = useState({
@@ -51,12 +56,17 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
         <div className="space-y-4 text-center">
           <h2 className="text-xl font-semibold">{onboardingCopy.step2.title}</h2>
           <p className="text-foreground-secondary">{onboardingCopy.step2.transparency}</p>
-          <button
-            onClick={() => setStep(3)}
-            className="rounded-full bg-accent px-8 py-3 font-medium text-white transition-colors hover:bg-accent/90"
+          {igError && (
+            <p className="text-sm text-error">
+              {onboardingCopy.step2.error} {igError !== "denied" ? igError : ""}
+            </p>
+          )}
+          <a
+            href="/api/instagram/connect"
+            className="inline-block rounded-full bg-accent px-8 py-3 font-medium text-white transition-colors hover:bg-accent/90"
           >
             {onboardingCopy.step2.connectButton}
-          </button>
+          </a>
           <button
             onClick={() => setStep(3)}
             className="block mx-auto text-sm text-foreground-secondary hover:underline"

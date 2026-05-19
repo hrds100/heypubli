@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function getPostsByProfile(profileId: string) {
   const supabase = await createClient();
@@ -34,4 +35,45 @@ export async function getPostsThisWeek() {
     .eq("status", "published")
     .gte("published_at", weekAgo.toISOString());
   return count ?? 0;
+}
+
+export async function getPendingPosts() {
+  const supabase = createAdminClient();
+  const now = new Date().toISOString();
+
+  const { data } = await supabase
+    .from("scheduled_posts")
+    .select("*, instagram_connections!inner(ig_user_id, access_token)")
+    .eq("status", "pending")
+    .lte("scheduled_at", now)
+    .order("scheduled_at", { ascending: true });
+
+  return data ?? [];
+}
+
+export async function markPostPublished(postId: string, igMediaId: string) {
+  const supabase = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from("scheduled_posts") as any)
+    .update({
+      status: "published",
+      ig_media_id: igMediaId,
+      published_at: new Date().toISOString(),
+    })
+    .eq("id", postId);
+
+  if (error) throw error;
+}
+
+export async function markPostFailed(postId: string, errorMessage: string) {
+  const supabase = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from("scheduled_posts") as any)
+    .update({
+      status: "failed",
+      error_message: errorMessage,
+    })
+    .eq("id", postId);
+
+  if (error) throw error;
 }

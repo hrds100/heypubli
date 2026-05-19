@@ -3,8 +3,10 @@ export const onboardingCopy = {
     title: "Adicione sua rede principal",
     transparency:
       "100% transparente: ao conectar, acessamos APENAS estatísticas e permissão de publicação. Sem acesso a senha.",
-    connectButton: "Continuar para conexão API",
+    connectButton: "Conectar meu Instagram",
     skip: "Pular esta etapa (pode conectar depois)",
+    error: "Falha ao conectar Instagram.",
+    connected: "Instagram conectado com sucesso!",
   },
   step3: {
     title: "Em quais setores você quer encontrar colaborações?",
