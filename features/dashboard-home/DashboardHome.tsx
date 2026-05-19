@@ -1,6 +1,8 @@
 import Image from "next/image";
 import type { Profile, Brand } from "@/types/database";
 
+const UPCOMING_BRANDS = ["Coca-Cola", "Natura", "Nestlé", "Nike", "Samsung", "L'Oréal"];
+
 export interface InstagramData {
   username: string;
   name?: string;
@@ -16,7 +18,6 @@ export interface InstagramData {
 interface DashboardHomeProps {
   profile: Profile;
   activeBrands: Brand[];
-  futureBrands: Brand[];
   instagram: InstagramData | null;
 }
 
@@ -103,18 +104,18 @@ function ConnectAccountCard({ hasExisting }: { hasExisting: boolean }) {
         </svg>
       </div>
       <h3 className="font-medium text-foreground">
-        {hasExisting ? "Conectar outra conta" : "Conectar Instagram"}
+        {hasExisting ? "Adicione mais perfis" : "Conectar Instagram"}
       </h3>
       <p className="mt-1 text-sm text-foreground-secondary">
         {hasExisting
-          ? "Adicione mais perfis para gerenciar"
+          ? "Quanto mais perfis você adicionar, mais você pode ganhar"
           : "Conecte para receber publicações de marcas"}
       </p>
       <a
         href="/api/instagram/connect"
         className="mt-4 rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-2 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
       >
-        {hasExisting ? "Adicionar conta" : "Conectar meu Instagram"}
+        {hasExisting ? "Adicionar perfil" : "Conectar meu Instagram"}
       </a>
     </div>
   );
@@ -144,7 +145,7 @@ function BrandCard({ brand }: { brand: Brand }) {
 function HotmartSection({ profile, brands }: { profile: Profile; brands: Brand[] }) {
   const firstBrand = brands[0];
   return (
-    <div className="rounded-2xl border border-border p-6">
+    <div className="max-w-xl rounded-2xl border border-border p-6">
       <h2 className="text-lg font-semibold">Seu link Hotmart</h2>
 
       <div className="mt-4 space-y-4">
@@ -224,12 +225,7 @@ function HotmartSection({ profile, brands }: { profile: Profile; brands: Brand[]
   );
 }
 
-export function DashboardHome({
-  profile,
-  activeBrands,
-  futureBrands,
-  instagram,
-}: DashboardHomeProps) {
+export function DashboardHome({ profile, activeBrands, instagram }: DashboardHomeProps) {
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">
@@ -251,31 +247,26 @@ export function DashboardHome({
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Marcas ativas</h2>
-        {activeBrands.length > 0 ? (
-          <div className="flex flex-wrap gap-3">
-            {activeBrands.map((brand) => (
-              <BrandCard key={brand.id} brand={brand} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-foreground-secondary">
-            Nenhuma marca ativa ainda. Em breve você receberá suas primeiras campanhas.
-          </p>
-        )}
-      </div>
-
-      {futureBrands.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground-secondary">
-            Marcas que podem te contatar no futuro
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {futureBrands.map((brand) => (
-              <BrandCard key={brand.id} brand={brand} />
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {activeBrands.length > 0 ? (
+            activeBrands.map((brand) => <BrandCard key={brand.id} brand={brand} />)
+          ) : (
+            <p className="text-sm text-foreground-secondary">
+              Nenhuma marca ativa ainda. Em breve você receberá suas primeiras campanhas.
+            </p>
+          )}
+          {UPCOMING_BRANDS.map((name) => (
+            <div
+              key={name}
+              className="flex h-[58px] items-center rounded-xl border border-dashed border-border bg-background-secondary/50 px-4 opacity-40"
+            >
+              <span className="text-sm font-medium text-foreground-secondary">
+                {name}
+              </span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       <HotmartSection profile={profile} brands={activeBrands} />
     </div>

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { DashboardHome } from "./DashboardHome";
 import type { InstagramData } from "./DashboardHome";
 import { MOCK_INFLUENCER } from "@/mocks/profiles.mock";
-import { BRANDS, FUTURE_BRANDS } from "@/mocks/brands.mock";
+import { BRANDS } from "@/mocks/brands.mock";
 
 const mockInstagram: InstagramData = {
   username: "hugo8re",
@@ -23,7 +23,6 @@ describe("DashboardHome", () => {
       <DashboardHome
         profile={MOCK_INFLUENCER}
         activeBrands={BRANDS}
-        futureBrands={FUTURE_BRANDS}
         instagram={mockInstagram}
       />,
     );
@@ -35,7 +34,6 @@ describe("DashboardHome", () => {
       <DashboardHome
         profile={MOCK_INFLUENCER}
         activeBrands={BRANDS}
-        futureBrands={FUTURE_BRANDS}
         instagram={mockInstagram}
       />,
     );
@@ -44,12 +42,7 @@ describe("DashboardHome", () => {
 
   it("shows connect button when not connected", () => {
     render(
-      <DashboardHome
-        profile={MOCK_INFLUENCER}
-        activeBrands={BRANDS}
-        futureBrands={FUTURE_BRANDS}
-        instagram={null}
-      />,
+      <DashboardHome profile={MOCK_INFLUENCER} activeBrands={BRANDS} instagram={null} />,
     );
     expect(screen.getByText("Conectar meu Instagram")).toBeInTheDocument();
   });

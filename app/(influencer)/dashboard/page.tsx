@@ -99,7 +99,6 @@ export default async function DashboardPage() {
     <DashboardHome
       profile={fallbackProfile}
       activeBrands={(brands as Brand[]) ?? []}
-      futureBrands={[]}
       instagram={instagram}
     />
   );
