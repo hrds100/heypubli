@@ -5,13 +5,19 @@ const testAccounts = [
     role: "Admin",
     email: "admin@heypubli.com",
     password: "admin123456",
-    color: "bg-purple-50 border-purple-200 text-purple-700",
+    bg: "bg-purple-50",
+    border: "border-purple-200 hover:border-purple-300",
+    text: "text-purple-700",
+    dot: "bg-purple-400",
   },
   {
     role: "Influenciador",
     email: "influencer@heypubli.com",
     password: "test123456",
-    color: "bg-pink-50 border-pink-200 text-pink-700",
+    bg: "bg-pink-50",
+    border: "border-pink-200 hover:border-pink-300",
+    text: "text-pink-700",
+    dot: "bg-pink-400",
   },
 ];
 
@@ -30,8 +36,8 @@ export function TestCredentials() {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-background-secondary p-4">
-      <p className="mb-3 text-center text-xs font-semibold tracking-wide text-foreground-secondary uppercase">
+    <div className="rounded-xl border border-border p-4">
+      <p className="mb-3 text-center text-xs font-medium tracking-wide text-foreground-secondary uppercase">
         Contas de teste
       </p>
       <div className="flex gap-2">
@@ -40,8 +46,9 @@ export function TestCredentials() {
             key={account.role}
             type="button"
             onClick={() => fillForm(account.email, account.password)}
-            className={`flex-1 rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors hover:opacity-80 ${account.color}`}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${account.bg} ${account.border} ${account.text}`}
           >
+            <span className={`h-2 w-2 rounded-full ${account.dot}`} />
             {account.role}
           </button>
         ))}
