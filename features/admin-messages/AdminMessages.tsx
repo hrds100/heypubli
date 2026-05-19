@@ -14,6 +14,8 @@ import {
   Settings,
   X,
   Smartphone,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import type { Conversation, InboxMessage, Channel } from "@/types/database";
 
@@ -62,13 +64,163 @@ function displayName(conv: Conversation): string {
     phone?: string;
   } | null;
   if (p) return `${p.first_name} ${p.last_name}`;
+  if (conv.subject) return conv.subject;
   return "Contato desconhecido";
 }
 
 function contactPhone(conv: Conversation): string | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const p = (conv as any).profile as { whatsapp?: string; phone?: string } | null;
-  return p?.whatsapp || p?.phone || null;
+  return p?.whatsapp || p?.phone || conv.subject || null;
+}
+
+function QRCodeModal({
+  onClose,
+  onConnected,
+}: {
+  onClose: () => void;
+  onConnected: () => void;
+}) {
+  const [state, setState] = useState<"loading" | "scanning" | "connected" | "error">(
+    "loading",
+  );
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [accountId, setAccountId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startConnection = async () => {
+    setState("loading");
+    setError(null);
+    try {
+      const res = await fetch("/api/unipile/connect", { method: "POST" });
+      const data = (await res.json()) as {
+        qrDataUrl?: string;
+        accountId?: string;
+        error?: string;
+      };
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Falha ao gerar QR code");
+      }
+      setQrDataUrl(data.qrDataUrl ?? null);
+      setAccountId(data.accountId ?? null);
+      setState("scanning");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      setState("error");
+    }
+  };
+
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    startConnection();
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (state !== "scanning" || !accountId) return;
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/unipile/status?accountId=${accountId}`);
+        const data = (await res.json()) as { connected?: boolean };
+        if (data.connected) {
+          setState("connected");
+          if (pollRef.current) clearInterval(pollRef.current);
+          setTimeout(() => onConnected(), 1500);
+        }
+      } catch {
+        // Keep polling
+      }
+    }, 3000);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [state, accountId, onConnected]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-background p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold">Conectar WhatsApp</h2>
+          <button onClick={onClose} className="rounded p-1 hover:bg-background-secondary">
+            <X size={20} />
+          </button>
+        </div>
+
+        {state === "loading" && (
+          <div className="flex flex-col items-center py-8 gap-3">
+            <Loader2 size={32} className="animate-spin text-accent" />
+            <p className="text-sm text-foreground-secondary">Gerando QR code...</p>
+          </div>
+        )}
+
+        {state === "scanning" && qrDataUrl && (
+          <div className="flex flex-col items-center gap-4">
+            <div className="rounded-xl border-2 border-border p-3 bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qrDataUrl}
+                alt="QR Code WhatsApp"
+                width={280}
+                height={280}
+                className="rounded-lg"
+              />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-sm font-medium">Escaneie com seu WhatsApp</p>
+              <ol className="text-xs text-foreground-secondary space-y-1 text-left">
+                <li>1. Abra o WhatsApp no celular</li>
+                <li>
+                  2. Toque em <strong>Configurações</strong> →{" "}
+                  <strong>Aparelhos conectados</strong>
+                </li>
+                <li>
+                  3. Toque em <strong>Conectar um aparelho</strong>
+                </li>
+                <li>4. Aponte a câmera para o QR code acima</li>
+              </ol>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-foreground-secondary">
+              <Loader2 size={12} className="animate-spin" />
+              Aguardando conexão...
+            </div>
+          </div>
+        )}
+
+        {state === "connected" && (
+          <div className="flex flex-col items-center py-8 gap-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+              <Wifi size={32} className="text-success" />
+            </div>
+            <p className="text-sm font-semibold text-success">WhatsApp conectado!</p>
+            <p className="text-xs text-foreground-secondary">Recarregando...</p>
+          </div>
+        )}
+
+        {state === "error" && (
+          <div className="flex flex-col items-center py-8 gap-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-error/10">
+              <WifiOff size={32} className="text-error" />
+            </div>
+            <p className="text-sm text-error">{error}</p>
+            <button
+              onClick={startConnection}
+              className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90"
+            >
+              <RefreshCw size={14} />
+              Tentar novamente
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function AdminMessages({
@@ -78,9 +230,10 @@ export function AdminMessages({
   const [conversations, setConversations] = useState(initialConversations);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const whatsappChannel = channels.find(
     (ch) => ch.type === "whatsapp" && ch.status === "connected",
@@ -101,6 +254,16 @@ export function AdminMessages({
     }
   };
 
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await fetch("/api/unipile/sync", { method: "POST" });
+      window.location.reload();
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const selected = conversations.find((c) => c.id === selectedId);
 
   const filtered = conversations.filter((c) => {
@@ -110,19 +273,6 @@ export function AdminMessages({
     const preview = c.last_message_preview?.toLowerCase() ?? "";
     return name.includes(q) || preview.includes(q);
   });
-
-  const handleConnect = async () => {
-    setConnecting(true);
-    try {
-      const res = await fetch("/api/unipile/connect", { method: "POST" });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (data.url) {
-        window.open(data.url, "_blank");
-      }
-    } finally {
-      setConnecting(false);
-    }
-  };
 
   const handleMessageSent = useCallback((conversationId: string, preview: string) => {
     setConversations((prev) =>
@@ -167,6 +317,17 @@ export function AdminMessages({
                   Conectado
                 </span>
                 <button
+                  onClick={handleSync}
+                  disabled={syncing}
+                  className="rounded-lg p-1.5 hover:bg-background-secondary transition-colors"
+                  title="Sincronizar mensagens"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={`text-foreground-secondary ${syncing ? "animate-spin" : ""}`}
+                  />
+                </button>
+                <button
                   onClick={() => setShowSettings(!showSettings)}
                   className="rounded-lg p-1.5 hover:bg-background-secondary transition-colors"
                   title="Configurações do WhatsApp"
@@ -176,15 +337,10 @@ export function AdminMessages({
               </>
             ) : (
               <button
-                onClick={handleConnect}
-                disabled={connecting}
-                className="flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-medium text-white hover:bg-success/90 disabled:opacity-50"
+                onClick={() => setShowQR(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-medium text-white hover:bg-success/90"
               >
-                {connecting ? (
-                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <Plus size={12} />
-                )}
+                <Plus size={12} />
                 Conectar WhatsApp
               </button>
             )}
@@ -227,13 +383,21 @@ export function AdminMessages({
                 <span className="text-success">Ativo</span>
               </p>
             </div>
-            <button
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              className="w-full rounded-lg border border-error/30 px-3 py-2 text-xs font-medium text-error hover:bg-error/5 disabled:opacity-50 transition-colors"
-            >
-              {disconnecting ? "Desconectando..." : "Desconectar WhatsApp"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowQR(true)}
+                className="flex-1 rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-background-secondary transition-colors"
+              >
+                Conectar outro
+              </button>
+              <button
+                onClick={handleDisconnect}
+                disabled={disconnecting}
+                className="flex-1 rounded-lg border border-error/30 px-3 py-2 text-xs font-medium text-error hover:bg-error/5 disabled:opacity-50 transition-colors"
+              >
+                {disconnecting ? "Desconectando..." : "Desconectar"}
+              </button>
+            </div>
           </div>
         )}
 
@@ -353,6 +517,16 @@ export function AdminMessages({
           </div>
         )}
       </div>
+
+      {showQR && (
+        <QRCodeModal
+          onClose={() => setShowQR(false)}
+          onConnected={() => {
+            setShowQR(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

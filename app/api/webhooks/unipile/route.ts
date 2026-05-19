@@ -40,7 +40,29 @@ export async function POST(req: Request) {
     const acct = await fetchAccount(accountId);
     const phone = toE164(acct?.phone ?? "");
 
-    // Find disconnected channel and update it
+    // Try to find channel by account_id first (native QR flow)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: byAccountId } = await (admin.from("channels") as any)
+      .select("id")
+      .eq("unipile_account_id", accountId)
+      .eq("type", "whatsapp")
+      .limit(1)
+      .maybeSingle();
+
+    if (byAccountId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (admin.from("channels") as any)
+        .update({
+          status: "connected",
+          connected_at: new Date().toISOString(),
+          label: phone || null,
+          config: { phone, type: acct?.type },
+        })
+        .eq("id", (byAccountId as { id: string }).id);
+      return ok("account_connected");
+    }
+
+    // Fallback: find disconnected channel without account_id (hosted flow)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: pending } = await (admin.from("channels") as any)
       .select("id")
@@ -49,7 +71,7 @@ export async function POST(req: Request) {
       .is("unipile_account_id", null)
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (pending) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,6 +80,7 @@ export async function POST(req: Request) {
           status: "connected",
           unipile_account_id: accountId,
           connected_at: new Date().toISOString(),
+          label: phone || null,
           config: { phone, type: acct?.type },
         })
         .eq("id", (pending as { id: string }).id);
