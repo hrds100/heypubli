@@ -8,11 +8,11 @@
 
 ### Auth Flow
 
-1. Influencer clicks "Conectar Instagram" → redirects to Meta OAuth
-2. Meta returns authorization code (1 hour)
+1. Influencer clicks "Conectar meu Instagram" → redirects to `/api/instagram/connect` → Meta OAuth
+2. Meta returns authorization code to `/auth/instagram/callback`
 3. Backend exchanges for short-lived token (1 hour)
 4. Backend exchanges for long-lived token (60 days)
-5. n8n auto-renews every 48h
+5. Vercel Cron runs daily at 6am UTC → `/api/instagram/refresh-tokens` refreshes tokens expiring within 7 days
 
 ### Publishing (2 steps)
 
@@ -34,6 +34,18 @@ POST /{ig_user_id}/media_publish?creation_id={container_id} → published!
 
 - **Limit:** 100 posts per account per 24h
 - **Requirement:** Professional account (Business or Creator). Media must be public URL.
+
+### Vercel Cron Jobs (replaces n8n)
+
+Configured in `vercel.json`. No external automation tool needed.
+
+| Job            | Route                           | Schedule         | What it does                              |
+| -------------- | ------------------------------- | ---------------- | ----------------------------------------- |
+| Token refresh  | `/api/instagram/refresh-tokens` | Daily at 6am UTC | Refreshes tokens expiring within 7 days   |
+| Post publisher | `/api/instagram/publish`        | Every 15 minutes | Publishes pending scheduled posts via API |
+
+- **Auth:** Both routes require `Authorization: Bearer {CRON_SECRET}` header (Vercel sends this automatically)
+- **Meta App:** HeyPubli (App ID: 494214389576737), Live, Business type
 
 ---
 

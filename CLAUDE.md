@@ -10,7 +10,7 @@ for partner brands. They earn 30% recurring commission per sale via their Hotmar
 link. Admin has full control: schedule posts, manage brands, message influencers, track
 sales.
 
-Domain: heypubli.com | Stack: Next.js 16 + Supabase + n8n + Meta Graph API
+Domain: heypubli.com | Stack: Next.js 16 + Supabase + Vercel Cron + Meta Graph API
 
 ## User context
 
@@ -38,7 +38,7 @@ URL first. Never guess at API shapes, auth flows, or request formats.
 | Hotmart API                | https://developers.hotmart.com/docs                                                        |
 | Unipile (WhatsApp)         | https://developer.unipile.com/docs/whatsapp                                                |
 | Resend (Email)             | https://resend.com/docs                                                                    |
-| n8n (Automation)           | https://docs.n8n.io                                                                        |
+| Vercel Cron Jobs           | https://vercel.com/docs/cron-jobs                                                          |
 | Next.js 16                 | https://nextjs.org/docs                                                                    |
 
 ## Stack
@@ -125,12 +125,13 @@ Full schema in `docs/DATABASE-SCHEMA.md`. Tables:
 
 ## Phase state
 
-- **Phase 1 (current):** Project scaffold + all MD files + config
+- **Phase 1:** Project scaffold + all MD files + config
 - **Phase 2:** Supabase database setup (10 tables + RLS + seeds)
 - **Phase 3:** Auth + 6-step onboarding
 - **Phase 4:** Influencer dashboard (Home, Calendar, Analytics, Settings)
 - **Phase 5:** Admin dashboard (Overview, Influencers, Scheduler, Messages, Brands, Hotmart, Impersonate)
-- **Phase 6:** Backend wiring (real APIs replace mocks)
+- **Phase 6:** Backend wiring (lib/data layer with Supabase queries)
+- **Phase 7 (current):** Instagram integration — OAuth, publishing, token refresh, Vercel Cron
 
 ## Credentials
 
