@@ -1,7 +1,43 @@
 import Image from "next/image";
 import type { Profile, Brand } from "@/types/database";
 
-const UPCOMING_BRANDS = ["Coca-Cola", "Natura", "Nestlé", "Nike", "Samsung", "L'Oréal"];
+const TIERS = [
+  {
+    tier: "Tier 1",
+    threshold: 0,
+    products: [{ name: "ScanPlates", color: "#E1306C" }],
+  },
+  {
+    tier: "Tier 2",
+    threshold: 10,
+    products: [
+      { name: "FitBoost", color: "#6366F1" },
+      { name: "GlowSkin", color: "#EC4899" },
+      { name: "NutriVida", color: "#10B981" },
+    ],
+  },
+  {
+    tier: "Tier 3",
+    threshold: 50,
+    products: [
+      { name: "TechWear", color: "#3B82F6" },
+      { name: "PetLove", color: "#F59E0B" },
+      { name: "EcoHome", color: "#14B8A6" },
+      { name: "BelaFlor", color: "#F43F5E" },
+    ],
+  },
+  {
+    tier: "VIP",
+    threshold: 200,
+    products: [
+      { name: "LuxBrand", color: "#8B5CF6" },
+      { name: "Premium+", color: "#D946EF" },
+      { name: "Elite", color: "#0EA5E9" },
+      { name: "Diamond", color: "#F97316" },
+      { name: "Exclusive", color: "#84CC16" },
+    ],
+  },
+];
 
 export interface InstagramData {
   username: string;
@@ -89,7 +125,37 @@ function InstagramCard({ ig }: { ig: InstagramData }) {
   );
 }
 
-function ConnectAccountCard({ hasExisting }: { hasExisting: boolean }) {
+function ConnectAccountCard() {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-border p-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-secondary">
+        <svg
+          className="h-5 w-5 text-foreground-secondary"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-medium text-foreground">Adicione mais perfis</h3>
+        <p className="text-xs text-foreground-secondary">
+          Quanto mais perfis, mais você ganha
+        </p>
+      </div>
+      <a
+        href="/api/instagram/connect"
+        className="shrink-0 rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-4 py-2 text-xs font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
+      >
+        Adicionar
+      </a>
+    </div>
+  );
+}
+
+function ConnectFirstCard() {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border p-8 text-center">
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-background-secondary">
@@ -103,84 +169,47 @@ function ConnectAccountCard({ hasExisting }: { hasExisting: boolean }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
       </div>
-      <h3 className="font-medium text-foreground">
-        {hasExisting ? "Adicione mais perfis" : "Conectar Instagram"}
-      </h3>
+      <h3 className="font-medium text-foreground">Conectar Instagram</h3>
       <p className="mt-1 text-sm text-foreground-secondary">
-        {hasExisting
-          ? "Quanto mais perfis você adicionar, mais você pode ganhar"
-          : "Conecte para receber publicações de marcas"}
+        Conecte para receber publicações de marcas
       </p>
       <a
         href="/api/instagram/connect"
         className="mt-4 rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-2 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
       >
-        {hasExisting ? "Adicionar perfil" : "Conectar meu Instagram"}
+        Conectar meu Instagram
       </a>
     </div>
   );
 }
 
-function BrandCard({ brand }: { brand: Brand }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-background p-4">
-      {brand.logo_url ? (
-        <Image
-          src={brand.logo_url}
-          alt={brand.name}
-          width={40}
-          height={40}
-          className="h-10 w-10 rounded-lg object-cover"
-        />
-      ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-sm font-bold text-accent">
-          {brand.name[0]}
-        </div>
-      )}
-      <span className="font-medium">{brand.name}</span>
-    </div>
-  );
-}
-
-function HotmartSection({ profile, brands }: { profile: Profile; brands: Brand[] }) {
+function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }) {
   const firstBrand = brands[0];
   return (
-    <div className="max-w-xl rounded-2xl border border-border p-6">
-      <h2 className="text-lg font-semibold">Seu link Hotmart</h2>
+    <div className="rounded-2xl border border-border p-5">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+        Próximos passos
+      </h2>
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-4 space-y-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
             1
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground">
-              Marca ativa: {firstBrand?.name ?? "Aguardando marca"}
-            </p>
-            <p className="text-xs text-foreground-secondary">
-              Cadastre-se como afiliado desta marca no Hotmart
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-            2
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
-              Pegue seu link de afiliado
+              Cadastre-se como afiliado: {firstBrand?.name ?? "Aguardando marca"}
             </p>
             {firstBrand?.hotmart_product_url ? (
               <a
                 href={firstBrand.hotmart_product_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-sm text-accent hover:underline"
+                className="mt-0.5 inline-flex items-center gap-1 text-xs text-accent hover:underline"
               >
-                Clique aqui para ir ao Hotmart
+                Ir ao Hotmart
                 <svg
-                  className="h-3.5 w-3.5"
+                  className="h-3 w-3"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -194,27 +223,29 @@ function HotmartSection({ profile, brands }: { profile: Profile; brands: Brand[]
                 </svg>
               </a>
             ) : (
-              <p className="mt-1 text-xs text-foreground-secondary">
-                Link do produto será disponibilizado em breve
+              <p className="mt-0.5 text-xs text-foreground-secondary">
+                Link disponível em breve
               </p>
             )}
           </div>
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-            3
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+            2
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">Cole seu link aqui</p>
-            <div className="mt-2 flex gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              Cole seu link de afiliado
+            </p>
+            <div className="mt-1.5 flex gap-2">
               <input
                 type="url"
                 placeholder="https://hotmart.com/affiliate/seu-link"
                 defaultValue={profile.hotmart_url ?? ""}
-                className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                className="flex-1 rounded-lg border border-border px-3 py-1.5 text-xs focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
-              <button className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90">
+              <button className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90">
                 Salvar
               </button>
             </div>
@@ -225,50 +256,173 @@ function HotmartSection({ profile, brands }: { profile: Profile; brands: Brand[]
   );
 }
 
+function TiersSection() {
+  const currentSales = 7;
+
+  const nextLocked = TIERS.find((t) => currentSales < t.threshold);
+  const nextThreshold = nextLocked?.threshold ?? 200;
+  const remaining = Math.max(nextThreshold - currentSales, 0);
+  const progressPercent =
+    nextThreshold > 0 ? Math.min((currentSales / nextThreshold) * 100, 100) : 100;
+
+  return (
+    <div className="rounded-2xl border border-border p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+          Seus produtos
+        </h2>
+        <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
+          {currentSales} vendas
+        </span>
+      </div>
+
+      <div className="mt-3">
+        <div className="flex items-center justify-between text-[10px] text-foreground-secondary">
+          <span>
+            {nextLocked ? `Próximo: ${nextLocked.tier}` : "Todos desbloqueados"}
+          </span>
+          <span>
+            {currentSales}/{nextThreshold}
+          </span>
+        </div>
+        <div className="mt-1 h-2 overflow-hidden rounded-full bg-background-secondary">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        {remaining > 0 && (
+          <p className="mt-1.5 text-[11px] text-foreground-secondary">
+            Faltam <span className="font-semibold text-accent">{remaining} vendas</span>{" "}
+            para desbloquear {nextLocked?.tier}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {TIERS.map((tier) => {
+          const isUnlocked = currentSales >= tier.threshold;
+
+          return (
+            <div key={tier.tier}>
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded ${
+                    isUnlocked
+                      ? "bg-success text-white"
+                      : "bg-border text-foreground-secondary"
+                  }`}
+                >
+                  {isUnlocked ? (
+                    <svg
+                      className="h-3 w-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4.5 12.75l6 6 9-13.5"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="h-3 w-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <span
+                  className={`text-xs font-semibold ${isUnlocked ? "text-foreground" : "text-foreground-secondary"}`}
+                >
+                  {tier.tier}
+                </span>
+                {tier.tier === "VIP" && (
+                  <span className="rounded bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-1.5 py-0.5 text-[9px] font-bold text-white">
+                    EXCLUSIVO
+                  </span>
+                )}
+                <span
+                  className={`ml-auto text-[10px] ${isUnlocked ? "text-success font-medium" : "text-foreground-secondary"}`}
+                >
+                  {isUnlocked ? "Ativo" : `${tier.threshold} vendas`}
+                </span>
+              </div>
+
+              <div className="ml-7 mt-1.5 flex flex-wrap gap-1.5">
+                {tier.products.map((product) => (
+                  <div
+                    key={product.name}
+                    className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${
+                      isUnlocked
+                        ? "border-border bg-white"
+                        : "border-border/50 bg-background-secondary/60"
+                    }`}
+                  >
+                    <div
+                      className={`h-5 w-5 shrink-0 rounded ${isUnlocked ? "" : "opacity-30 grayscale"}`}
+                      style={{ backgroundColor: product.color }}
+                    >
+                      <span className="flex h-full w-full items-center justify-center text-[8px] font-bold text-white">
+                        {product.name[0]}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium ${
+                        isUnlocked ? "text-foreground" : "text-foreground-secondary/50"
+                      }`}
+                    >
+                      {product.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardHome({ profile, activeBrands, instagram }: DashboardHomeProps) {
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 p-6">
       <h1 className="text-2xl font-bold">
         Olá, {profile.first_name}! Bem-vindo à HeyPubli
       </h1>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {instagram?.isConnected ? (
-          <>
-            <InstagramCard ig={instagram} />
-            <ConnectAccountCard hasExisting={true} />
-          </>
-        ) : (
-          <div className="lg:col-span-2">
-            <ConnectAccountCard hasExisting={false} />
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Marcas ativas</h2>
-        <div className="flex flex-wrap items-center gap-3">
-          {activeBrands.length > 0 ? (
-            activeBrands.map((brand) => <BrandCard key={brand.id} brand={brand} />)
+      <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+        {/* Left column */}
+        <div className="space-y-5">
+          {instagram?.isConnected ? (
+            <>
+              <InstagramCard ig={instagram} />
+              <ConnectAccountCard />
+            </>
           ) : (
-            <p className="text-sm text-foreground-secondary">
-              Nenhuma marca ativa ainda. Em breve você receberá suas primeiras campanhas.
-            </p>
+            <ConnectFirstCard />
           )}
-          {UPCOMING_BRANDS.map((name) => (
-            <div
-              key={name}
-              className="flex h-[58px] items-center rounded-xl border border-dashed border-border bg-background-secondary/50 px-4 opacity-40"
-            >
-              <span className="text-sm font-medium text-foreground-secondary">
-                {name}
-              </span>
-            </div>
-          ))}
+
+          <HotmartSteps profile={profile} brands={activeBrands} />
+        </div>
+
+        {/* Right column — Gamification */}
+        <div>
+          <TiersSection />
         </div>
       </div>
-
-      <HotmartSection profile={profile} brands={activeBrands} />
     </div>
   );
 }
