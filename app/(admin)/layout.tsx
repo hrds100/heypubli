@@ -1,8 +1,9 @@
-import { SidebarNav } from "@/features/sidebar-nav";
+import { SidebarNav, MobileNav } from "@/features/sidebar-nav";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col lg:flex-row">
+      <MobileNav variant="admin" />
       <aside className="hidden border-r border-border bg-background lg:flex">
         <SidebarNav variant="admin" />
       </aside>
