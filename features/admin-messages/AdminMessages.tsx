@@ -11,6 +11,9 @@ import {
   WifiOff,
   Plus,
   User,
+  Settings,
+  X,
+  Smartphone,
 } from "lucide-react";
 import type { Conversation, InboxMessage, Channel } from "@/types/database";
 
@@ -76,10 +79,27 @@ export function AdminMessages({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [connecting, setConnecting] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const whatsappChannel = channels.find(
     (ch) => ch.type === "whatsapp" && ch.status === "connected",
   );
+
+  const handleDisconnect = async () => {
+    if (!whatsappChannel) return;
+    setDisconnecting(true);
+    try {
+      await fetch("/api/unipile/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channelId: whatsappChannel.id }),
+      });
+      window.location.reload();
+    } finally {
+      setDisconnecting(false);
+    }
+  };
 
   const selected = conversations.find((c) => c.id === selectedId);
 
@@ -141,15 +161,24 @@ export function AdminMessages({
           <h1 className="text-lg font-bold">Mensagens</h1>
           <div className="flex items-center gap-2">
             {whatsappChannel ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
-                <Wifi size={12} />
-                WhatsApp conectado
-              </span>
+              <>
+                <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
+                  <Wifi size={12} />
+                  Conectado
+                </span>
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="rounded-lg p-1.5 hover:bg-background-secondary transition-colors"
+                  title="Configurações do WhatsApp"
+                >
+                  <Settings size={16} className="text-foreground-secondary" />
+                </button>
+              </>
             ) : (
               <button
                 onClick={handleConnect}
                 disabled={connecting}
-                className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-medium text-white hover:bg-success/90 disabled:opacity-50"
               >
                 {connecting ? (
                   <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -161,6 +190,52 @@ export function AdminMessages({
             )}
           </div>
         </div>
+
+        {whatsappChannel && showSettings && (
+          <div className="mx-4 mt-3 rounded-lg border border-border bg-background p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone size={16} className="text-success" />
+                <span className="text-sm font-medium">WhatsApp</span>
+              </div>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="rounded p-0.5 hover:bg-background-secondary"
+              >
+                <X size={14} className="text-foreground-secondary" />
+              </button>
+            </div>
+            <div className="space-y-1.5 text-xs text-foreground-secondary">
+              {whatsappChannel.label && (
+                <p>
+                  <span className="font-medium text-foreground">Número:</span>{" "}
+                  {whatsappChannel.label}
+                </p>
+              )}
+              {whatsappChannel.connected_at && (
+                <p>
+                  <span className="font-medium text-foreground">Conectado em:</span>{" "}
+                  {new Date(whatsappChannel.connected_at).toLocaleDateString("pt-BR", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              )}
+              <p>
+                <span className="font-medium text-foreground">Status:</span>{" "}
+                <span className="text-success">Ativo</span>
+              </p>
+            </div>
+            <button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="w-full rounded-lg border border-error/30 px-3 py-2 text-xs font-medium text-error hover:bg-error/5 disabled:opacity-50 transition-colors"
+            >
+              {disconnecting ? "Desconectando..." : "Desconectar WhatsApp"}
+            </button>
+          </div>
+        )}
 
         {!whatsappChannel && (
           <div className="mx-4 mt-3 flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
