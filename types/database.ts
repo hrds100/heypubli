@@ -65,6 +65,7 @@ export interface Brand {
   logo_url: string | null;
   description: string | null;
   hotmart_product_id: string | null;
+  hotmart_product_url: string | null;
   target_sectors: string[];
   is_active: boolean;
   created_at: string;
