@@ -1,12 +1,7 @@
+"use client";
+
 import Link from "next/link";
 import { landingCopy } from "@/features/landing-page/copy";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "HeyPubli | Para Marcas",
-  description:
-    "Alcance micro-influenciadores autênticos no Brasil. Publicação automática, comissão por performance.",
-};
 
 const IG_ICON = (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
