@@ -9,6 +9,8 @@ import {
   MessageCircle,
   UserPlus,
   Users,
+  Zap,
+  BarChart3,
 } from "lucide-react";
 
 export interface ProfileMetrics {
@@ -43,26 +45,40 @@ function MetricCard({
   label,
   value,
   change,
+  color = "accent",
 }: {
   icon: typeof Eye;
   label: string;
   value: string;
   change?: number;
+  color?: string;
 }) {
+  const colorMap: Record<string, { bg: string; icon: string }> = {
+    accent: { bg: "bg-accent/10", icon: "text-accent" },
+    purple: { bg: "bg-[#7C3AED]/10", icon: "text-[#7C3AED]" },
+    blue: { bg: "bg-[#3B82F6]/10", icon: "text-[#3B82F6]" },
+    green: { bg: "bg-success/10", icon: "text-success" },
+    orange: { bg: "bg-[#F97316]/10", icon: "text-[#F97316]" },
+    pink: { bg: "bg-[#EC4899]/10", icon: "text-[#EC4899]" },
+  };
+  const c = colorMap[color] ?? colorMap.accent;
+
   return (
-    <div className="rounded-xl border border-border p-4">
-      <div className="flex items-center gap-2 text-foreground-secondary">
-        <Icon size={16} />
-        <span className="text-xs font-medium">{label}</span>
+    <div className="rounded-xl border border-border p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-2.5">
+        <div className={`rounded-lg ${c.bg} p-2`}>
+          <Icon size={18} className={c.icon} />
+        </div>
+        <span className="text-xs font-medium text-foreground-secondary">{label}</span>
       </div>
-      <p className="mt-2 text-2xl font-bold">{value}</p>
+      <p className="mt-3 text-2xl font-bold">{value}</p>
       {change !== undefined && (
         <div
-          className={`mt-1 flex items-center gap-1 text-xs font-medium ${change >= 0 ? "text-success" : "text-error"}`}
+          className={`mt-1.5 flex items-center gap-1 text-xs font-medium ${change >= 0 ? "text-success" : "text-error"}`}
         >
           {change >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
           {change >= 0 ? "+" : ""}
-          {change}% vs mês anterior
+          {change}% vs período anterior
         </div>
       )}
     </div>
@@ -169,28 +185,65 @@ export function DashboardMetrics({
 
       {metrics ? (
         <>
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
-            <MetricCard
-              icon={Heart}
-              label="Engajamento"
-              value={`${metrics.engagement.toFixed(1)}%`}
-              change={metrics.engagementChange || undefined}
-            />
+          <div className="rounded-xl border border-accent/20 bg-gradient-to-r from-accent/5 via-[#C13584]/5 to-[#F56040]/5 p-4 sm:p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-accent/10 p-2.5">
+                <Zap size={22} className="text-accent" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Taxa de Engajamento</p>
+                <p className="text-3xl font-bold text-accent">
+                  {metrics.engagement.toFixed(1)}%
+                </p>
+              </div>
+              {metrics.engagementChange !== 0 && (
+                <div
+                  className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${
+                    metrics.engagementChange >= 0
+                      ? "bg-success/10 text-success"
+                      : "bg-error/10 text-error"
+                  }`}
+                >
+                  {metrics.engagementChange >= 0 ? (
+                    <TrendingUp size={14} />
+                  ) : (
+                    <TrendingDown size={14} />
+                  )}
+                  {metrics.engagementChange >= 0 ? "+" : ""}
+                  {metrics.engagementChange}%
+                </div>
+              )}
+            </div>
+            <div className="mt-3 h-2 rounded-full bg-white/60 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] transition-all"
+                style={{ width: `${Math.min(metrics.engagement * 10, 100)}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-foreground-secondary">
+              Média acima de 3% é considerada excelente para o Instagram
+            </p>
+          </div>
+
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <MetricCard
               icon={Heart}
               label="Curtidas"
               value={metrics.likes.toLocaleString("pt-BR")}
+              color="accent"
             />
             <MetricCard
               icon={MessageCircle}
               label="Comentários"
               value={metrics.comments.toLocaleString("pt-BR")}
+              color="purple"
             />
             {metrics.reach > 0 && (
               <MetricCard
                 icon={Eye}
                 label="Interações totais"
                 value={metrics.reach.toLocaleString("pt-BR")}
+                color="blue"
               />
             )}
             {metrics.newFollowers > 0 && (
@@ -199,6 +252,7 @@ export function DashboardMetrics({
                 label="Novos seguidores"
                 value={`+${metrics.newFollowers}`}
                 change={metrics.followersChange || undefined}
+                color="green"
               />
             )}
             {metrics.profileVisits > 0 && (
@@ -206,27 +260,54 @@ export function DashboardMetrics({
                 icon={Users}
                 label="Visitas ao perfil"
                 value={metrics.profileVisits.toLocaleString("pt-BR")}
+                color="orange"
               />
             )}
           </div>
 
           {metrics.contentBreakdown.length > 0 && (
             <div className="rounded-xl border border-border p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-semibold">
-                Performance por tipo de conteúdo
-              </h3>
-              {metrics.contentBreakdown.map((item) => (
-                <div
-                  key={item.type}
-                  className="flex items-center justify-between py-2 border-b border-border last:border-0 text-sm"
-                >
-                  <span className="font-medium">{item.type}</span>
-                  <div className="flex gap-4 text-foreground-secondary">
-                    <span>{item.reach.toLocaleString("pt-BR")} interações</span>
-                    <span>{item.engagement.toFixed(1)}% eng.</span>
-                  </div>
-                </div>
-              ))}
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 size={18} className="text-[#7C3AED]" />
+                <h3 className="text-sm font-semibold">
+                  Performance por tipo de conteúdo
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {metrics.contentBreakdown.map((item, i) => {
+                  const colors = [
+                    "from-[#F56040] to-[#E1306C]",
+                    "from-[#7C3AED] to-[#6366F1]",
+                    "from-[#3B82F6] to-[#0EA5E9]",
+                    "from-[#10B981] to-[#14B8A6]",
+                  ];
+                  const maxReach = Math.max(
+                    ...metrics.contentBreakdown.map((c) => c.reach),
+                    1,
+                  );
+                  return (
+                    <div key={item.type} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{item.type}</span>
+                        <div className="flex gap-3 text-xs text-foreground-secondary">
+                          <span>{item.reach.toLocaleString("pt-BR")} interações</span>
+                          <span className="font-semibold text-accent">
+                            {item.engagement.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2.5 rounded-full bg-background-secondary overflow-hidden">
+                        <div
+                          className={`h-full rounded-full bg-gradient-to-r ${colors[i % colors.length]} transition-all`}
+                          style={{
+                            width: `${(item.reach / maxReach) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 

@@ -1,8 +1,4 @@
 <svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="4" width="32" height="32" rx="7" fill="#14B8A6"/>
-  <path d="M8 22 L16 14 L24 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <rect x="11" y="22" width="10" height="7" rx="1" stroke="white" stroke-width="1.5" fill="none"/>
-  <rect x="14" y="24" width="4" height="5" rx="0.5" fill="white" opacity="0.6"/>
-  <text x="40" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" fill="#14B8A6">Eco</text><text x="64" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" fill="#1A1A1A">Home</text>
-  <text x="40" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" fill="#9CA3AF" letter-spacing="1">CASA</text>
+  <text x="0" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="300" fill="#14B8A6">eco</text><text x="36" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#0D9488">home</text>
+  <path d="M103 14 L108 10 L113 14 L113 22 L103 22 Z" fill="none" stroke="#14B8A6" stroke-width="1.5"/>
 </svg>

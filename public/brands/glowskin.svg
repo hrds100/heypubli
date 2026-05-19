@@ -1,7 +1,3 @@
 <svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="4" width="32" height="32" rx="7" fill="#EC4899"/>
-  <circle cx="16" cy="18" r="6" stroke="white" stroke-width="2" fill="none"/>
-  <circle cx="22" cy="12" r="2" fill="white" opacity="0.8"/>
-  <text x="40" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" fill="#EC4899">Glow</text><text x="74" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" fill="#1A1A1A">Skin</text>
-  <text x="40" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" fill="#9CA3AF" letter-spacing="1">BELEZA</text>
+  <text x="0" y="26" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" font-style="italic" fill="#EC4899">glow</text><text x="50" y="26" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="400" fill="#1A1A1A">skin</text>
 </svg>
