@@ -74,37 +74,23 @@ function contactPhone(conv: Conversation): string | null {
   return p?.whatsapp || p?.phone || conv.subject || null;
 }
 
-function QRCodeModal({
-  onClose,
-  onConnected,
-}: {
-  onClose: () => void;
-  onConnected: () => void;
-}) {
-  const [state, setState] = useState<"loading" | "scanning" | "connected" | "error">(
-    "loading",
-  );
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [accountId, setAccountId] = useState<string | null>(null);
+function ConnectWhatsAppModal({ onClose }: { onClose: () => void }) {
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [hostedUrl, setHostedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startConnection = async () => {
     setState("loading");
     setError(null);
     try {
       const res = await fetch("/api/unipile/connect", { method: "POST" });
-      const data = (await res.json()) as {
-        qrDataUrl?: string;
-        accountId?: string;
-        error?: string;
-      };
+      const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || data.error) {
-        throw new Error(data.error || "Falha ao gerar QR code");
+        throw new Error(data.error || "Falha ao conectar");
       }
-      setQrDataUrl(data.qrDataUrl ?? null);
-      setAccountId(data.accountId ?? null);
-      setState("scanning");
+      if (!data.url) throw new Error("Unipile não retornou URL");
+      setHostedUrl(data.url);
+      setState("ready");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
       setState("error");
@@ -116,37 +102,12 @@ function QRCodeModal({
     if (mountedRef.current) return;
     mountedRef.current = true;
     startConnection();
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
   }, []);
-
-  useEffect(() => {
-    if (state !== "scanning" || !accountId) return;
-
-    pollRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/unipile/status?accountId=${accountId}`);
-        const data = (await res.json()) as { connected?: boolean };
-        if (data.connected) {
-          setState("connected");
-          if (pollRef.current) clearInterval(pollRef.current);
-          setTimeout(() => onConnected(), 1500);
-        }
-      } catch {
-        // Keep polling
-      }
-    }, 3000);
-
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [state, accountId, onConnected]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-background p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
+      <div className="w-full max-w-lg rounded-xl border border-border bg-background shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="text-lg font-bold">Conectar WhatsApp</h2>
           <button onClick={onClose} className="rounded p-1 hover:bg-background-secondary">
             <X size={20} />
@@ -154,57 +115,32 @@ function QRCodeModal({
         </div>
 
         {state === "loading" && (
-          <div className="flex flex-col items-center py-8 gap-3">
+          <div className="flex flex-col items-center py-12 gap-3">
             <Loader2 size={32} className="animate-spin text-accent" />
-            <p className="text-sm text-foreground-secondary">Gerando QR code...</p>
+            <p className="text-sm text-foreground-secondary">Carregando Unipile...</p>
           </div>
         )}
 
-        {state === "scanning" && qrDataUrl && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="rounded-xl border-2 border-border p-3 bg-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={qrDataUrl}
-                alt="QR Code WhatsApp"
-                width={280}
-                height={280}
-                className="rounded-lg"
-              />
+        {state === "ready" && hostedUrl && (
+          <div className="flex flex-col">
+            <iframe
+              src={hostedUrl}
+              className="w-full border-0"
+              style={{ height: "520px" }}
+              allow="camera"
+              title="Unipile WhatsApp QR"
+            />
+            <div className="px-6 py-3 border-t border-border bg-background-secondary">
+              <p className="text-xs text-foreground-secondary">
+                Escaneie o QR code com seu WhatsApp. Após conectar, a página recarregará
+                automaticamente.
+              </p>
             </div>
-            <div className="text-center space-y-2">
-              <p className="text-sm font-medium">Escaneie com seu WhatsApp</p>
-              <ol className="text-xs text-foreground-secondary space-y-1 text-left">
-                <li>1. Abra o WhatsApp no celular</li>
-                <li>
-                  2. Toque em <strong>Configurações</strong> →{" "}
-                  <strong>Aparelhos conectados</strong>
-                </li>
-                <li>
-                  3. Toque em <strong>Conectar um aparelho</strong>
-                </li>
-                <li>4. Aponte a câmera para o QR code acima</li>
-              </ol>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-foreground-secondary">
-              <Loader2 size={12} className="animate-spin" />
-              Aguardando conexão...
-            </div>
-          </div>
-        )}
-
-        {state === "connected" && (
-          <div className="flex flex-col items-center py-8 gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-              <Wifi size={32} className="text-success" />
-            </div>
-            <p className="text-sm font-semibold text-success">WhatsApp conectado!</p>
-            <p className="text-xs text-foreground-secondary">Recarregando...</p>
           </div>
         )}
 
         {state === "error" && (
-          <div className="flex flex-col items-center py-8 gap-3">
+          <div className="flex flex-col items-center py-12 gap-3">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-error/10">
               <WifiOff size={32} className="text-error" />
             </div>
@@ -518,15 +454,7 @@ export function AdminMessages({
         )}
       </div>
 
-      {showQR && (
-        <QRCodeModal
-          onClose={() => setShowQR(false)}
-          onConnected={() => {
-            setShowQR(false);
-            window.location.reload();
-          }}
-        />
-      )}
+      {showQR && <ConnectWhatsAppModal onClose={() => setShowQR(false)} />}
     </div>
   );
 }
