@@ -12,7 +12,18 @@ import {
   getDay,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Image, Film, Play, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Image,
+  Film,
+  Play,
+  X,
+  Eye,
+  Heart,
+  MessageCircle,
+  Share2,
+} from "lucide-react";
 import type { ScheduledPost } from "@/types/database";
 
 interface DashboardCalendarProps {
@@ -198,6 +209,36 @@ export function DashboardCalendar({ posts }: DashboardCalendarProps) {
                   <p className="mt-1.5 text-sm text-foreground line-clamp-2">
                     {post.caption}
                   </p>
+                  {post.status === "published" &&
+                    (post.reach ?? post.likes ?? post.comments ?? post.shares) !==
+                      null && (
+                      <div className="mt-2 flex flex-wrap gap-3">
+                        {post.reach != null && (
+                          <span className="flex items-center gap-1 text-xs text-foreground-secondary">
+                            <Eye size={13} />
+                            {post.reach.toLocaleString("pt-BR")}
+                          </span>
+                        )}
+                        {post.likes != null && (
+                          <span className="flex items-center gap-1 text-xs text-foreground-secondary">
+                            <Heart size={13} />
+                            {post.likes.toLocaleString("pt-BR")}
+                          </span>
+                        )}
+                        {post.comments != null && (
+                          <span className="flex items-center gap-1 text-xs text-foreground-secondary">
+                            <MessageCircle size={13} />
+                            {post.comments.toLocaleString("pt-BR")}
+                          </span>
+                        )}
+                        {post.shares != null && (
+                          <span className="flex items-center gap-1 text-xs text-foreground-secondary">
+                            <Share2 size={13} />
+                            {post.shares.toLocaleString("pt-BR")}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   {post.error_message && (
                     <p className="mt-1 text-xs text-error">{post.error_message}</p>
                   )}

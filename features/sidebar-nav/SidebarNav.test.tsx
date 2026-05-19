@@ -6,8 +6,9 @@ describe("SidebarNav", () => {
   it("renders all influencer menu items", () => {
     render(<SidebarNav variant="influencer" />);
     expect(screen.getByText("Início")).toBeInTheDocument();
+    expect(screen.getByText("Métricas")).toBeInTheDocument();
     expect(screen.getByText("Calendário")).toBeInTheDocument();
-    expect(screen.getByText("Analytics")).toBeInTheDocument();
+    expect(screen.getByText("Vendas")).toBeInTheDocument();
     expect(screen.getByText("Configurações")).toBeInTheDocument();
   });
 

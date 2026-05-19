@@ -7,6 +7,7 @@ import {
   Home,
   Calendar,
   BarChart3,
+  DollarSign,
   Settings,
   Users,
   Clock,
@@ -21,8 +22,9 @@ import {
 
 const influencerMain = [
   { label: "Início", href: "/dashboard", icon: Home },
+  { label: "Métricas", href: "/metricas", icon: BarChart3 },
   { label: "Calendário", href: "/calendario", icon: Calendar },
-  { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Vendas", href: "/analytics", icon: DollarSign },
 ];
 
 const influencerBottom = [
@@ -54,7 +56,7 @@ export function SidebarNav({ variant }: SidebarNavProps) {
 
   return (
     <nav
-      className={`flex h-full flex-col ${collapsed ? "w-16" : "w-64"} transition-all duration-200`}
+      className={`flex h-full flex-col overflow-y-auto ${collapsed ? "w-16" : "w-64"} transition-all duration-200`}
     >
       <div className="flex items-center justify-between p-4">
         {!collapsed && (

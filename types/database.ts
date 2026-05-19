@@ -90,6 +90,10 @@ export interface ScheduledPost {
   ig_media_id: string | null;
   published_at: string | null;
   error_message: string | null;
+  reach: number | null;
+  likes: number | null;
+  comments: number | null;
+  shares: number | null;
   created_at: string;
 }
 
