@@ -14,7 +14,7 @@ export default function CadastroPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Hey Publi
+            HeyPubli
           </span>
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Crie sua conta</h1>

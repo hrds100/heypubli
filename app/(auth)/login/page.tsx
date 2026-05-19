@@ -14,11 +14,11 @@ export default function LoginPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Hey Publi
+            HeyPubli
           </span>
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Bem-vindo de volta</h1>
-        <p className="mt-2 text-foreground-secondary">Entre na sua conta Hey Publi</p>
+        <p className="mt-2 text-foreground-secondary">Entre na sua conta HeyPubli</p>
       </div>
 
       <LoginForm />

@@ -28,7 +28,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               WebkitTextFillColor: "transparent",
             }}
           >
-            Hey Publi
+            HeyPubli
           </span>
         </Link>
 
@@ -55,8 +55,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="rounded-xl border border-border bg-background p-5">
             <p className="text-sm font-medium text-foreground">Seus dados de acesso</p>
             <p className="mt-1 text-xs text-foreground-secondary">
-              Na nossa plataforma, você é único. Ganhe 30% de comissão recorrente por cada
-              venda gerada pelo seu link de afiliado.
+              Na nossa plataforma, você é único. Ganhe até 50% de comissão recorrente por
+              cada venda gerada pelo seu link de afiliado.
             </p>
           </div>
 

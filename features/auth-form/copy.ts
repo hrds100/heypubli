@@ -1,7 +1,7 @@
 export const authCopy = {
   login: {
     title: "Bem-vindo de volta",
-    subtitle: "Entre na sua conta Hey Publi",
+    subtitle: "Entre na sua conta HeyPubli",
     noAccount: "Não tem conta?",
     createAccount: "Cadastre-se",
   },

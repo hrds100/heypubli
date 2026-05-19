@@ -9,7 +9,7 @@ export const landingCopy = {
     title: "Monetize seu talento e ganhe com",
     titleHighlight: "grandes marcas",
     subtitle:
-      "Conecte seu Instagram, receba conteúdo pronto de marcas parceiras e ganhe 30% de comissão em cada venda — tudo automático, sem criar nada.",
+      "Conecte seu Instagram, receba conteúdo pronto de marcas parceiras e ganhe até 50% de comissão em cada venda — tudo automático, sem criar nada.",
     cta: "Começar agora",
   },
   stats: {
@@ -30,7 +30,7 @@ export const landingCopy = {
     ],
   },
   valueProps: {
-    title: "Por que entrar na Hey Publi?",
+    title: "Por que entrar na HeyPubli?",
     items: [
       {
         title: "Variedade de marcas parceiras",
@@ -47,7 +47,7 @@ export const landingCopy = {
       {
         title: "Pagamentos garantidos",
         description:
-          "Ganhe 30% de comissão em cada venda. Pagamento direto via Hotmart, sem burocracia.",
+          "Ganhe até 50% de comissão em cada venda. Pagamento direto via Hotmart, sem burocracia.",
         icon: "payment" as const,
       },
       {
@@ -59,14 +59,14 @@ export const landingCopy = {
     ],
   },
   collabTypes: {
-    title: "Como você ganha com a Hey Publi",
+    title: "Como você ganha com a HeyPubli",
     items: [
       {
         text: "Receba publicações automáticas de marcas parceiras no seu feed e stories do Instagram",
         icon: "instagram" as const,
       },
       {
-        text: "Ganhe 30% de comissão recorrente em cada venda feita pelo seu link de afiliado",
+        text: "Ganhe até 50% de comissão recorrente em cada venda feita pelo seu link de afiliado",
         icon: "money" as const,
       },
       {
@@ -106,33 +106,33 @@ export const landingCopy = {
     {
       name: "Camila Rodrigues",
       handle: "@camilarodrigues",
-      joinDate: "Entrou na Hey Publi — Março 2024",
+      joinDate: "Entrou na HeyPubli — Março 2024",
       partnerships: "89+ parcerias com marcas",
-      earned: "R$ 34.637 ganhos via Hey Publi",
+      earned: "R$ 34.637 ganhos via HeyPubli",
       quote:
-        "A Hey Publi transformou meu Instagram em uma fonte de renda real. Eu não preciso criar conteúdo — as marcas publicam direto no meu perfil e eu ganho comissão em cada venda. É incrível!",
+        "A HeyPubli transformou meu Instagram em uma fonte de renda real. Eu não preciso criar conteúdo — as marcas publicam direto no meu perfil e eu ganho comissão em cada venda. É incrível!",
       badge: "Top Criadora",
       badgeDetail: "50+ campanhas entregues",
     },
     {
       name: "Lucas Mendes",
       handle: "@lucasmendesfit",
-      joinDate: "Entrou na Hey Publi — Julho 2024",
+      joinDate: "Entrou na HeyPubli — Julho 2024",
       partnerships: "42+ parcerias com marcas",
-      earned: "R$ 15.941 ganhos via Hey Publi",
+      earned: "R$ 15.941 ganhos via HeyPubli",
       quote:
-        "Sou personal trainer e uso meu Instagram para compartilhar treinos. Com a Hey Publi, marcas de fitness publicam no meu perfil e eu ganho sem fazer nada a mais. Sensacional!",
+        "Sou personal trainer e uso meu Instagram para compartilhar treinos. Com a HeyPubli, marcas de fitness publicam no meu perfil e eu ganho sem fazer nada a mais. Sensacional!",
       badge: "Especialista Fitness",
       badgeDetail: "30+ campanhas de fitness",
     },
     {
       name: "Ana Beatriz Silva",
       handle: "@anabeatrizsilva",
-      joinDate: "Entrou na Hey Publi — Janeiro 2025",
+      joinDate: "Entrou na HeyPubli — Janeiro 2025",
       partnerships: "125+ parcerias com marcas",
-      earned: "R$ 51.217 ganhos via Hey Publi",
+      earned: "R$ 51.217 ganhos via HeyPubli",
       quote:
-        "A Hey Publi foi essencial para monetizar meu perfil de beleza. Trabalho com marcas incríveis e ganho comissão em todas as vendas. Recomendo para qualquer influenciador!",
+        "A HeyPubli foi essencial para monetizar meu perfil de beleza. Trabalho com marcas incríveis e ganho comissão em todas as vendas. Recomendo para qualquer influenciador!",
       badge: "Top Rated",
       badgeDetail: "100+ campanhas 5 estrelas",
     },
@@ -162,7 +162,7 @@ export const landingCopy = {
         number: "04",
         title: "Ganhe comissão em cada venda",
         description:
-          "Cada venda pelo seu link de afiliado gera 30% de comissão. Acompanhe tudo em tempo real.",
+          "Cada venda pelo seu link de afiliado gera até 50% de comissão. Acompanhe tudo em tempo real.",
       },
     ],
   },
@@ -170,12 +170,12 @@ export const landingCopy = {
     title: "Perguntas Frequentes",
     items: [
       {
-        question: "Quais são os requisitos para entrar na Hey Publi?",
+        question: "Quais são os requisitos para entrar na HeyPubli?",
         answer:
           "Você precisa ter uma conta profissional ou de criador no Instagram com pelo menos 1.000 seguidores e taxa de engajamento acima de 1%. Seu conteúdo deve ser autêntico e alinhado com as marcas parceiras. Não aceitamos contas com seguidores comprados ou engajamento artificial.",
       },
       {
-        question: "Em quais países a Hey Publi está disponível?",
+        question: "Em quais países a HeyPubli está disponível?",
         answer:
           "Atualmente operamos no Brasil, Portugal, Angola e Moçambique. Estamos expandindo para novos mercados lusófonos em breve. Se você está em outro país, cadastre-se na lista de espera.",
       },
@@ -187,7 +187,7 @@ export const landingCopy = {
       {
         question: "Como recebo meus pagamentos?",
         answer:
-          "Você ganha 30% de comissão em cada venda feita pelo seu link de afiliado Hotmart. Os pagamentos são processados automaticamente pelo Hotmart direto na sua conta bancária, conforme os prazos da plataforma.",
+          "Você ganha até 50% de comissão em cada venda feita pelo seu link de afiliado Hotmart. Os pagamentos são processados automaticamente pelo Hotmart direto na sua conta bancária, conforme os prazos da plataforma.",
       },
       {
         question: "Que tipo de conteúdo é publicado no meu perfil?",
@@ -202,15 +202,15 @@ export const landingCopy = {
     ],
   },
   finalCta: {
-    title: "Comece a ganhar com a Hey Publi hoje!",
+    title: "Comece a ganhar com a HeyPubli hoje!",
     subtitle:
       "Monetize seu Instagram e construa parcerias com grandes marcas. Cadastro grátis, sem taxa, sem complicação.",
     cta: "Começar agora",
   },
   footer: {
     description:
-      "Hey Publi é a plataforma que conecta micro-influenciadores a grandes marcas brasileiras. Publicação automática, comissão garantida e suporte dedicado.",
-    address: "Hey Publi Ltda. — Rua Augusta, 1234, Sala 56, São Paulo, SP, 01304-001",
+      "HeyPubli é a plataforma que conecta micro-influenciadores a grandes marcas brasileiras. Publicação automática, comissão garantida e suporte dedicado.",
+    address: "HeyPubli Ltda. — Rua Augusta, 1234, Sala 56, São Paulo, SP, 01304-001",
     columns: {
       platform: {
         title: "Plataforma",
@@ -229,6 +229,6 @@ export const landingCopy = {
       terms: "Termos de Uso",
       privacy: "Política de Privacidade",
     },
-    copyright: "© 2026 Hey Publi. Todos os direitos reservados.",
+    copyright: "© 2026 HeyPubli. Todos os direitos reservados.",
   },
 } as const;

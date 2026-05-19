@@ -229,7 +229,7 @@ export function DashboardHome({ profile, activeBrands, instagram }: DashboardHom
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">
-        Olá, {profile.first_name}! Bem-vindo à Hey Publi
+        Olá, {profile.first_name}! Bem-vindo à HeyPubli
       </h1>
 
       <div className="grid gap-6 lg:grid-cols-2">

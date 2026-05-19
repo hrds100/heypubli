@@ -1,5 +1,5 @@
 export const globalCopy = {
-  brand: "Hey Publi",
+  brand: "HeyPubli",
   tagline: "Plataforma profissional de micro-influenciadores",
   nav: {
     home: "Início",
@@ -46,6 +46,6 @@ export const globalCopy = {
     failed: "Falhou",
   },
   footer: {
-    copyright: "© 2026 Hey Publi. Todos os direitos reservados.",
+    copyright: "© 2026 HeyPubli. Todos os direitos reservados.",
   },
 } as const;

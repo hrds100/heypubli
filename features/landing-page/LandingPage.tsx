@@ -23,6 +23,12 @@ const HERO_IMAGES_COL2 = [
   "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=400&h=500&fit=crop",
 ];
 
+const IG_ICON = (
+  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+  </svg>
+);
+
 /* ─── Navbar ─── */
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,16 +38,16 @@ function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold tracking-tight">
           <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
-            Hey Publi
+            HeyPubli
           </span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <span className="text-sm font-medium text-accent">
+          <a href="#influencers" className="text-sm font-medium text-accent">
             {landingCopy.nav.forInfluencers}
-          </span>
+          </a>
           <a
-            href="#"
+            href="#brands"
             className="text-sm text-foreground-secondary transition-colors hover:text-foreground"
           >
             {landingCopy.nav.forBrands}
@@ -95,10 +101,10 @@ function Navbar() {
       {mobileOpen && (
         <div className="border-t border-border bg-white px-6 py-4 md:hidden">
           <div className="flex flex-col gap-4">
-            <span className="text-sm font-medium text-accent">
+            <a href="#influencers" className="text-sm font-medium text-accent">
               {landingCopy.nav.forInfluencers}
-            </span>
-            <a href="#" className="text-sm text-foreground-secondary">
+            </a>
+            <a href="#brands" className="text-sm text-foreground-secondary">
               {landingCopy.nav.forBrands}
             </a>
             <Link href="/login" className="text-sm text-foreground-secondary">
@@ -120,7 +126,10 @@ function Navbar() {
 /* ─── Hero with scrolling images ─── */
 function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
+    <section
+      id="influencers"
+      className="relative overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24"
+    >
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
@@ -189,9 +198,7 @@ function Hero() {
               <div className="relative overflow-hidden">
                 <div
                   className="flex flex-col gap-3"
-                  style={{
-                    animation: "scroll-up 25s linear infinite",
-                  }}
+                  style={{ animation: "scroll-up 25s linear infinite" }}
                 >
                   {[...HERO_IMAGES_COL1, ...HERO_IMAGES_COL1].map((src, i) => (
                     <div
@@ -212,9 +219,7 @@ function Hero() {
               <div className="relative mt-12 overflow-hidden">
                 <div
                   className="flex flex-col gap-3"
-                  style={{
-                    animation: "scroll-down 25s linear infinite",
-                  }}
+                  style={{ animation: "scroll-down 25s linear infinite" }}
                 >
                   {[...HERO_IMAGES_COL2, ...HERO_IMAGES_COL2].map((src, i) => (
                     <div
@@ -257,6 +262,38 @@ function Stats() {
             </p>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── How It Works (4 steps) ─── */
+function HowItWorks() {
+  return (
+    <section id="how-it-works" className="bg-background-secondary py-20 md:py-28">
+      <div className="mx-auto max-w-7xl px-6">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {landingCopy.howItWorks.title}
+        </h2>
+
+        <div className="relative mt-16 grid gap-0 md:grid-cols-4">
+          <div className="absolute top-12 right-0 left-0 hidden h-0.5 bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] md:block" />
+
+          {landingCopy.howItWorks.steps.map((step) => (
+            <div
+              key={step.number}
+              className="relative flex flex-col items-center px-4 text-center"
+            >
+              <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-lg font-bold text-white shadow-lg shadow-accent/25">
+                {step.number}
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-foreground">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-foreground-secondary">
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -354,147 +391,99 @@ function ValueProps() {
   );
 }
 
-/* ─── Collaboration Types ─── */
-const collabIcons: Record<string, React.ReactNode> = {
-  instagram: (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-    </svg>
-  ),
-  money: (
-    <svg
-      className="h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  ),
-  growth: (
-    <svg
-      className="h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
-      />
-    </svg>
-  ),
-  handshake: (
-    <svg
-      className="h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-      />
-    </svg>
-  ),
-};
-
-function CollabTypes() {
+/* ─── Requirements — IG-style profile layout ─── */
+function Requirements() {
   return (
     <section className="bg-background-secondary py-20 md:py-28">
       <div className="mx-auto max-w-4xl px-6">
         <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          {landingCopy.collabTypes.title}
-        </h2>
-        <div className="mt-14 space-y-6">
-          {landingCopy.collabTypes.items.map((item) => (
-            <div
-              key={item.text}
-              className="flex items-start gap-5 rounded-2xl border border-border bg-white p-6 transition-shadow hover:shadow-md"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-white">
-                {collabIcons[item.icon]}
-              </div>
-              <p className="text-base leading-relaxed text-foreground">{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Requirements & Categories ─── */
-function Requirements() {
-  return (
-    <section className="py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
           {landingCopy.requirements.title}
         </h2>
 
-        <div className="mt-14 grid gap-8 md:grid-cols-3">
-          <div className="rounded-2xl border border-border p-7">
-            <h3 className="mb-5 text-lg font-bold text-foreground">
-              {landingCopy.requirements.skills.title}
-            </h3>
-            <ul className="space-y-3">
-              {landingCopy.requirements.skills.items.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-sm text-foreground-secondary"
-                >
-                  <svg
-                    className="mt-0.5 h-5 w-5 shrink-0 text-success"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12.75l6 6 9-13.5"
-                    />
-                  </svg>
-                  {item}
-                </li>
-              ))}
-            </ul>
+        <div className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-2xl border border-border bg-white">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+            <div className="text-accent">{IG_ICON}</div>
+            <span className="text-sm font-semibold">heypubli</span>
+            <svg
+              className="h-4 w-4 text-[#3B82F6]"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
 
-          <div className="rounded-2xl border border-border p-7">
-            <h3 className="mb-5 text-lg font-bold text-foreground">Requisitos mínimos</h3>
-            <div className="space-y-5">
-              {landingCopy.requirements.audience.map((req) => (
-                <div key={req.label}>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
-                    {req.value}
+          <div className="p-6">
+            <div className="flex items-center gap-5">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584]">
+                <svg
+                  className="h-8 w-8 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                  />
+                </svg>
+              </div>
+              <div className="grid flex-1 grid-cols-3 gap-4 text-center">
+                {landingCopy.requirements.audience.map((req) => (
+                  <div key={req.label}>
+                    <div className="text-xl font-bold text-foreground">{req.value}</div>
+                    <div className="text-xs text-foreground-secondary">{req.label}</div>
                   </div>
-                  <div className="text-sm text-foreground-secondary">{req.label}</div>
+                ))}
+                <div>
+                  <div className="text-xl font-bold text-foreground">Pro</div>
+                  <div className="text-xs text-foreground-secondary">
+                    conta profissional
+                  </div>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-background-secondary p-4">
+              <h3 className="mb-3 text-sm font-bold text-foreground">
+                {landingCopy.requirements.skills.title}
+              </h3>
+              <ul className="space-y-2">
+                {landingCopy.requirements.skills.items.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-sm text-foreground-secondary"
+                  >
+                    <svg
+                      className="mt-0.5 h-4 w-4 shrink-0 text-success"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4.5 12.75l6 6 9-13.5"
+                      />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border p-7">
-            <h3 className="mb-5 text-lg font-bold text-foreground">Categorias</h3>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="border-t border-border px-6 py-4">
+            <div className="flex flex-wrap gap-2">
               {landingCopy.requirements.categories.map((cat) => (
                 <div
                   key={cat.name}
-                  className="flex items-center gap-2 rounded-xl bg-background-secondary px-3 py-2.5 text-sm"
+                  className="flex items-center gap-1.5 rounded-full border border-border bg-background-secondary px-3 py-1.5 text-xs font-medium"
                 >
-                  <span className="text-base">{cat.emoji}</span>
+                  <span>{cat.emoji}</span>
                   <span className="text-foreground-secondary">{cat.name}</span>
                 </div>
               ))}
@@ -506,104 +495,274 @@ function Requirements() {
   );
 }
 
-/* ─── Testimonials ─── */
+/* ─── Testimonials — IG post cards ─── */
+const TESTIMONIAL_IMAGES = [
+  "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=600&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=600&fit=crop",
+];
+
 function Testimonials() {
-  const [active, setActive] = useState(0);
   const testimonials = landingCopy.testimonials;
 
   return (
-    <section className="bg-background-secondary py-20 md:py-28">
+    <section className="py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          Histórias de quem já ganha com a Hey Publi
+          Quem já ganha com a HeyPubli
         </h2>
 
-        <div className="relative mt-14">
-          <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((t, i) => (
-              <div
-                key={t.name}
-                className={`rounded-2xl border bg-white p-7 transition-all ${
-                  active === i ? "border-accent shadow-lg" : "border-border"
-                }`}
-                onClick={() => setActive(i)}
-              >
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-sm font-bold text-white">
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {testimonials.map((t, i) => (
+            <div
+              key={t.name}
+              className="overflow-hidden rounded-2xl border border-border bg-white transition-shadow hover:shadow-lg"
+            >
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] p-[2px]">
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-xs font-bold text-foreground">
                     {t.name
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </div>
-                  <div>
-                    <div className="font-semibold text-foreground">{t.name}</div>
-                    <div className="text-xs text-foreground-secondary">{t.handle}</div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-foreground truncate">
+                    {t.handle}
+                  </div>
+                  <div className="text-[11px] text-foreground-secondary">
+                    {t.joinDate}
                   </div>
                 </div>
+                <svg
+                  className="h-5 w-5 shrink-0 text-foreground-secondary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                  />
+                </svg>
+              </div>
 
-                <div className="mb-3 text-xs text-foreground-secondary">{t.joinDate}</div>
-
-                <div className="mb-4 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-                    {t.partnerships}
-                  </span>
-                  <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                    {t.earned}
-                  </span>
-                </div>
-
-                <blockquote className="mb-5 text-sm leading-relaxed text-foreground-secondary italic">
-                  &ldquo;{t.quote}&rdquo;
-                </blockquote>
-
-                <div className="flex items-center gap-2 rounded-xl bg-background-secondary px-3 py-2">
-                  <svg
-                    className="h-4 w-4 text-warning"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span className="text-xs font-medium text-foreground">{t.badge}</span>
-                  <span className="text-xs text-foreground-secondary">
-                    · {t.badgeDetail}
-                  </span>
+              <div className="relative aspect-square bg-background-secondary">
+                <Image
+                  src={TESTIMONIAL_IMAGES[i]}
+                  alt={t.name}
+                  fill
+                  className="object-cover"
+                  sizes="400px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-accent/90 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                      {t.partnerships}
+                    </span>
+                    <span className="rounded-full bg-success/90 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                      {t.earned}
+                    </span>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+
+              <div className="px-4 pt-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <svg
+                      className="h-6 w-6 text-foreground transition-colors hover:text-error cursor-pointer"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                      />
+                    </svg>
+                    <svg
+                      className="h-6 w-6 text-foreground"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z"
+                      />
+                    </svg>
+                    <svg
+                      className="h-6 w-6 text-foreground"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                      />
+                    </svg>
+                  </div>
+                  <svg
+                    className="h-6 w-6 text-foreground"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                    />
+                  </svg>
+                </div>
+
+                <p className="mt-2 text-sm font-semibold text-foreground">
+                  {t.badge} · {t.badgeDetail}
+                </p>
+              </div>
+
+              <div className="px-4 pb-4 pt-1">
+                <p className="text-sm leading-relaxed text-foreground">
+                  <span className="font-semibold">{t.handle}</span>{" "}
+                  <span className="text-foreground-secondary">
+                    &ldquo;{t.quote}&rdquo;
+                  </span>
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-/* ─── How It Works (4 steps) ─── */
-function HowItWorks() {
+/* ─── For Brands — hero clone + contact form ─── */
+function ForBrands() {
   return (
-    <section id="how-it-works" className="py-20 md:py-28">
+    <section id="brands" className="bg-foreground py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
-        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          {landingCopy.howItWorks.title}
-        </h2>
-
-        <div className="relative mt-16 grid gap-0 md:grid-cols-4">
-          <div className="absolute top-12 right-0 left-0 hidden h-0.5 bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] md:block" />
-
-          {landingCopy.howItWorks.steps.map((step) => (
-            <div
-              key={step.number}
-              className="relative flex flex-col items-center px-4 text-center"
-            >
-              <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-lg font-bold text-white shadow-lg shadow-accent/25">
-                {step.number}
-              </div>
-              <h3 className="mb-2 text-lg font-bold text-foreground">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-foreground-secondary">
-                {step.description}
-              </p>
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm">
+              {IG_ICON}
+              Para Marcas
             </div>
-          ))}
+
+            <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+              Alcance{" "}
+              <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
+                micro-influenciadores
+              </span>{" "}
+              autênticos
+            </h2>
+
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/60">
+              Publique conteúdo diretamente no feed e stories de milhares de
+              influenciadores. Pague apenas por resultado — comissão sobre vendas reais.
+            </p>
+
+            <ul className="mt-8 space-y-4">
+              {[
+                "Acesso a 2.500+ influenciadores verificados no Brasil",
+                "Publicação automática via API — sem depender do criador",
+                "Pagamento por performance: até 50% de comissão por venda",
+                "Dashboard completo com métricas em tempo real",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 text-white/70">
+                  <svg
+                    className="mt-0.5 h-5 w-5 shrink-0 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
+                  </svg>
+                  <span className="text-sm">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+            <h3 className="text-xl font-bold text-white">Fale com nosso time</h3>
+            <p className="mt-2 text-sm text-white/50">
+              Preencha o formulário e entraremos em contato em até 24 horas.
+            </p>
+
+            <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-white/70">Seu nome</label>
+                  <input
+                    type="text"
+                    placeholder="Maria Silva"
+                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-white/70">
+                    Email corporativo
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="maria@marca.com"
+                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-white/70">Nome da marca</label>
+                <input
+                  type="text"
+                  placeholder="Sua marca"
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-white/70">
+                  Instagram da marca
+                </label>
+                <input
+                  type="text"
+                  placeholder="@suamarca"
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-white/70">Mensagem</label>
+                <textarea
+                  rows={3}
+                  placeholder="Conte-nos sobre seus objetivos..."
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30"
+              >
+                Enviar solicitação
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -671,9 +830,7 @@ function FAQ() {
                     {item.question}
                   </span>
                   <svg
-                    className={`h-5 w-5 shrink-0 text-foreground-secondary transition-transform duration-200 ${
-                      isOpen ? "rotate-45" : ""
-                    }`}
+                    className={`h-5 w-5 shrink-0 text-foreground-secondary transition-transform duration-200 ${isOpen ? "rotate-45" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -687,9 +844,7 @@ function FAQ() {
                   </svg>
                 </button>
                 <div
-                  className={`grid transition-all duration-200 ${
-                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                  }`}
+                  className={`grid transition-all duration-200 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
                 >
                   <div className="overflow-hidden">
                     <p className="px-6 pb-5 text-sm leading-relaxed text-foreground-secondary">
@@ -765,7 +920,7 @@ function Footer() {
           <div className="md:col-span-2">
             <span className="text-xl font-bold">
               <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
-                Hey Publi
+                HeyPubli
               </span>
             </span>
 
@@ -888,11 +1043,11 @@ export function LandingPage() {
       <Navbar />
       <Hero />
       <Stats />
+      <HowItWorks />
       <ValueProps />
-      <CollabTypes />
       <Requirements />
       <Testimonials />
-      <HowItWorks />
+      <ForBrands />
       <VideoSection />
       <FAQ />
       <FinalCta />

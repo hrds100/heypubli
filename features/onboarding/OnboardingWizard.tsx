@@ -63,7 +63,7 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Hey Publi
+              HeyPubli
             </span>
           </Link>
         </div>
