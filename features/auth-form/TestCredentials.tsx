@@ -1,6 +1,7 @@
 "use client";
 
-const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+import { useRef, useState } from "react";
+import { signIn } from "@/lib/actions/auth";
 
 const testAccounts = [
   {
@@ -24,39 +25,53 @@ const testAccounts = [
 ];
 
 export function TestCredentials() {
-  function fillForm(email: string, password: string) {
-    const emailInput = document.getElementById("email") as HTMLInputElement | null;
-    const passwordInput = document.getElementById("password") as HTMLInputElement | null;
-    if (emailInput) {
-      emailInput.value = email;
-      emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    if (passwordInput) {
-      passwordInput.value = password;
-      passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
+  const formRef = useRef<HTMLFormElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  function quickLogin(email: string, password: string, role: string) {
+    if (emailRef.current && passwordRef.current && formRef.current) {
+      setLoading(role);
+      emailRef.current.value = email;
+      passwordRef.current.value = password;
+      formRef.current.requestSubmit();
     }
   }
-
-  if (IS_PRODUCTION) return null;
 
   return (
     <div className="rounded-xl border border-border p-4">
       <p className="mb-3 text-center text-xs font-medium tracking-wide text-foreground-secondary uppercase">
-        Contas de teste
+        Acesso rápido
       </p>
       <div className="flex gap-2">
         {testAccounts.map((account) => (
           <button
             key={account.role}
             type="button"
-            onClick={() => fillForm(account.email, account.password)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${account.bg} ${account.border} ${account.text}`}
+            disabled={loading !== null}
+            onClick={() => quickLogin(account.email, account.password, account.role)}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${account.bg} ${account.border} ${account.text}`}
           >
-            <span className={`h-2 w-2 rounded-full ${account.dot}`} />
+            {loading === account.role ? (
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <span className={`h-2 w-2 rounded-full ${account.dot}`} />
+            )}
             {account.role}
           </button>
         ))}
       </div>
+      <form
+        ref={formRef}
+        action={(fd) => {
+          signIn(fd);
+        }}
+        className="hidden"
+      >
+        <input ref={emailRef} name="email" type="hidden" />
+        <input ref={passwordRef} name="password" type="hidden" />
+      </form>
     </div>
   );
 }
