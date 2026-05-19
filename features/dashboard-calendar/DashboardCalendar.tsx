@@ -163,7 +163,7 @@ export function DashboardCalendar({ posts }: DashboardCalendarProps) {
         <div className="rounded-2xl border border-border bg-background p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">
-              {format(selectedDay, "d 'de' MMMM", { locale: ptBR })} —{" "}
+              {format(selectedDay, "d 'de' MMMM", { locale: ptBR })} ·{" "}
               {selectedPosts.length}{" "}
               {selectedPosts.length === 1 ? "publicação" : "publicações"}
             </h2>

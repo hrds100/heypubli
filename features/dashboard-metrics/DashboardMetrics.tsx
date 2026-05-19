@@ -162,7 +162,7 @@ export function DashboardMetrics({ profileMetrics }: DashboardMetricsProps) {
               <ChevronLeft size={16} />
             </button>
             <span className="min-w-[120px] text-center text-sm font-medium">
-              {metrics?.period ?? "—"}
+              {metrics?.period ?? "-"}
             </span>
             <button
               onClick={() => setPeriodIndex(Math.max(periodIndex - 1, 0))}

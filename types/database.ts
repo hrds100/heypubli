@@ -6,6 +6,7 @@ export type MessageChannel = "whatsapp" | "email";
 export type MessageDirection = "outbound" | "inbound";
 export type MessageStatus = "sent" | "delivered" | "read" | "failed";
 export type SaleStatus = "confirmed" | "refunded" | "cancelled";
+export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 
 export interface Profile {
   id: string;
@@ -21,6 +22,8 @@ export interface Profile {
   address_country: string;
   phone: string | null;
   timezone: string;
+  pix_key_type: PixKeyType | null;
+  pix_key: string | null;
   hotmart_url: string | null;
   hotmart_affiliate_code: string | null;
   onboarding_step: number;

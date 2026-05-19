@@ -24,7 +24,7 @@ const influencerItems = [
   { label: "Início", href: "/dashboard", icon: Home },
   { label: "Métricas", href: "/metricas", icon: BarChart3 },
   { label: "Calendário", href: "/calendario", icon: Calendar },
-  { label: "Vendas", href: "/analytics", icon: DollarSign },
+  { label: "Vendas", href: "/vendas", icon: DollarSign },
   { label: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 

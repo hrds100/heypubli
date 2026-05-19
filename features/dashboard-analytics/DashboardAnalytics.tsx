@@ -73,6 +73,26 @@ export function DashboardAnalytics({
         <StatCard icon={Clock} label="Último post" value={lastPublishedAt ?? "Nenhum"} />
       </div>
 
+      <div className="flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3">
+        <svg
+          className="h-5 w-5 shrink-0 text-warning"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p className="text-sm text-foreground-secondary">
+          <span className="font-medium text-foreground">Prazo de pagamento: 21 dias</span>{" "}
+          após a venda confirmada. Período de garantia contra reembolsos.
+        </p>
+      </div>
+
       <div className="rounded-xl border border-border p-4 sm:p-5">
         <h2 className="mb-4 text-base font-semibold">Vendas por mês</h2>
         {monthlySales.length === 0 ? (
@@ -86,7 +106,7 @@ export function DashboardAnalytics({
               <div key={m.month} className="flex items-center justify-between text-sm">
                 <span>{m.month}</span>
                 <span className="font-medium">
-                  {m.sales} vendas — R$ {m.commission.toFixed(2).replace(".", ",")}
+                  {m.sales} vendas · R$ {m.commission.toFixed(2).replace(".", ",")}
                 </span>
               </div>
             ))}

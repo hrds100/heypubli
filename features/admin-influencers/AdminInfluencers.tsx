@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Search, ExternalLink, Mail, MessageSquare } from "lucide-react";
 import type { Profile, InstagramConnection } from "@/types/database";
 
@@ -85,7 +86,7 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                   {row.instagram ? (
                     <span className="text-accent">@{row.instagram.ig_username}</span>
                   ) : (
-                    <span className="text-foreground-secondary">—</span>
+                    <span className="text-foreground-secondary">-</span>
                   )}
                 </td>
                 <td className="px-4 py-3">{row.totalSales}</td>
@@ -106,12 +107,13 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                     >
                       <Mail size={16} />
                     </button>
-                    <button
-                      className="rounded p-1 hover:bg-background-secondary"
+                    <Link
+                      href={`/admin/influenciadores/${row.profile.id}`}
+                      className="rounded p-1 hover:bg-background-secondary inline-flex"
                       title="Ver perfil"
                     >
                       <ExternalLink size={16} />
-                    </button>
+                    </Link>
                   </div>
                 </td>
               </tr>

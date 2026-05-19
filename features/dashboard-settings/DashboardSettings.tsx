@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AtSign, Trash2, Check } from "lucide-react";
-import type { Profile, Sector } from "@/types/database";
+import { AtSign, Trash2, Check, Wallet } from "lucide-react";
+import type { Profile, Sector, PixKeyType } from "@/types/database";
 
 const COUNTRIES = [
   {
@@ -105,6 +105,7 @@ export function DashboardSettings({
 }: DashboardSettingsProps) {
   const [country, setCountry] = useState(profile.address_country || "BR");
   const [dialCode, setDialCode] = useState("+55");
+  const [pixKeyType, setPixKeyType] = useState<PixKeyType>(profile.pix_key_type || "cpf");
   const [saved, setSaved] = useState(false);
 
   const countryInfo = COUNTRIES.find((c) => c.code === country) ?? COUNTRIES[0];
@@ -226,6 +227,72 @@ export function DashboardSettings({
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Wallet size={16} className="text-accent" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+            Pagamento PIX
+          </h2>
+        </div>
+        <p className="mb-3 text-xs text-foreground-secondary">
+          Informe sua chave PIX para receber comissões. O pagamento é liberado 21 dias
+          após a venda confirmada (período de garantia contra reembolsos).
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Tipo de chave</label>
+            <select
+              value={pixKeyType}
+              onChange={(e) => setPixKeyType(e.target.value as PixKeyType)}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              <option value="cpf">CPF</option>
+              <option value="cnpj">CNPJ</option>
+              <option value="email">Email</option>
+              <option value="phone">Telefone</option>
+              <option value="random">Chave aleatória</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Chave PIX</label>
+            <input
+              type="text"
+              defaultValue={profile.pix_key ?? ""}
+              placeholder={
+                pixKeyType === "cpf"
+                  ? "000.000.000-00"
+                  : pixKeyType === "cnpj"
+                    ? "00.000.000/0000-00"
+                    : pixKeyType === "email"
+                      ? "seu@email.com"
+                      : pixKeyType === "phone"
+                        ? "+55 11 99999-9999"
+                        : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              }
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex items-center gap-2 rounded-lg bg-accent/5 px-3 py-2">
+          <svg
+            className="h-4 w-4 shrink-0 text-accent"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span className="text-xs text-foreground-secondary">
+            Prazo de pagamento: 21 dias após a venda confirmada
+          </span>
         </div>
       </section>
 

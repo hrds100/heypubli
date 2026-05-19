@@ -9,7 +9,7 @@ export const landingCopy = {
     title: "Monetize seu talento e ganhe com",
     titleHighlight: "grandes marcas",
     subtitle:
-      "Conecte seu Instagram, receba conteúdo pronto de marcas parceiras e ganhe até 50% de comissão em cada venda — tudo automático, sem criar nada.",
+      "Conecte seu Instagram, receba conteúdo pronto de marcas parceiras e ganhe até 50% de comissão em cada venda. Tudo automático, sem criar nada.",
     cta: "Começar agora",
   },
   stats: {
@@ -35,7 +35,7 @@ export const landingCopy = {
       {
         title: "Variedade de marcas parceiras",
         description:
-          "Trabalhe com grandes marcas brasileiras de diversos setores — moda, beleza, food, tech e mais.",
+          "Trabalhe com grandes marcas brasileiras de diversos setores: moda, beleza, food, tech e mais.",
         icon: "brands" as const,
       },
       {
@@ -106,18 +106,18 @@ export const landingCopy = {
     {
       name: "Camila Rodrigues",
       handle: "@camilarodrigues",
-      joinDate: "Entrou na HeyPubli — Março 2024",
+      joinDate: "Março 2024",
       partnerships: "89+ parcerias com marcas",
       earned: "R$ 34.637 ganhos via HeyPubli",
       quote:
-        "A HeyPubli transformou meu Instagram em uma fonte de renda real. Eu não preciso criar conteúdo — as marcas publicam direto no meu perfil e eu ganho comissão em cada venda. É incrível!",
+        "A HeyPubli transformou meu Instagram em uma fonte de renda real. Eu não preciso criar conteúdo. As marcas publicam direto no meu perfil e eu ganho comissão em cada venda. É incrível!",
       badge: "Top Criadora",
       badgeDetail: "50+ campanhas entregues",
     },
     {
       name: "Lucas Mendes",
       handle: "@lucasmendesfit",
-      joinDate: "Entrou na HeyPubli — Julho 2024",
+      joinDate: "Julho 2024",
       partnerships: "42+ parcerias com marcas",
       earned: "R$ 15.941 ganhos via HeyPubli",
       quote:
@@ -128,7 +128,7 @@ export const landingCopy = {
     {
       name: "Ana Beatriz Silva",
       handle: "@anabeatrizsilva",
-      joinDate: "Entrou na HeyPubli — Janeiro 2025",
+      joinDate: "Janeiro 2025",
       partnerships: "125+ parcerias com marcas",
       earned: "R$ 51.217 ganhos via HeyPubli",
       quote:
@@ -150,7 +150,7 @@ export const landingCopy = {
         number: "02",
         title: "Conecte seu Instagram",
         description:
-          "Conecte sua conta profissional do Instagram em menos de 2 minutos — seguro e simples.",
+          "Conecte sua conta profissional do Instagram em menos de 2 minutos. Seguro e simples.",
       },
       {
         number: "03",
@@ -192,7 +192,7 @@ export const landingCopy = {
       {
         question: "Que tipo de conteúdo é publicado no meu perfil?",
         answer:
-          "As marcas parceiras criam conteúdo profissional — fotos, vídeos e stories — alinhado com seu nicho. Você pode revisar o conteúdo antes da publicação. Nós publicamos automaticamente nos horários de melhor engajamento do seu público.",
+          "As marcas parceiras criam conteúdo profissional (fotos, vídeos e stories) alinhado com seu nicho. Você pode revisar o conteúdo antes da publicação. Nós publicamos automaticamente nos horários de melhor engajamento do seu público.",
       },
       {
         question: "Posso escolher com quais marcas trabalho?",
@@ -210,7 +210,7 @@ export const landingCopy = {
   footer: {
     description:
       "HeyPubli é a plataforma que conecta micro-influenciadores a grandes marcas brasileiras. Publicação automática, comissão garantida e suporte dedicado.",
-    address: "HeyPubli Ltda. — Rua Augusta, 1234, Sala 56, São Paulo, SP, 01304-001",
+    address: "HeyPubli Ltda. | Rua Augusta, 1234, Sala 56, São Paulo, SP, 01304-001",
     columns: {
       platform: {
         title: "Plataforma",
