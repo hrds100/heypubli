@@ -130,52 +130,68 @@ export interface Database {
         Row: Profile;
         Insert: Omit<Profile, "created_at">;
         Update: Partial<Omit<Profile, "id" | "created_at">>;
+        Relationships: [];
       };
       sectors: {
         Row: Sector;
         Insert: Omit<Sector, "id">;
         Update: Partial<Omit<Sector, "id">>;
+        Relationships: [];
       };
       influencer_sectors: {
         Row: InfluencerSector;
         Insert: Omit<InfluencerSector, "id" | "created_at">;
         Update: Partial<Omit<InfluencerSector, "id" | "created_at">>;
+        Relationships: [];
       };
       instagram_connections: {
         Row: InstagramConnection;
         Insert: Omit<InstagramConnection, "id" | "created_at">;
         Update: Partial<Omit<InstagramConnection, "id" | "created_at">>;
+        Relationships: [];
       };
       brands: {
         Row: Brand;
         Insert: Omit<Brand, "id" | "created_at">;
         Update: Partial<Omit<Brand, "id" | "created_at">>;
+        Relationships: [];
       };
       brand_assignments: {
         Row: BrandAssignment;
         Insert: Omit<BrandAssignment, "id" | "assigned_at">;
         Update: Partial<Omit<BrandAssignment, "id" | "assigned_at">>;
+        Relationships: [];
       };
       scheduled_posts: {
         Row: ScheduledPost;
         Insert: Omit<ScheduledPost, "id" | "created_at">;
         Update: Partial<Omit<ScheduledPost, "id" | "created_at">>;
+        Relationships: [];
       };
       messages_log: {
         Row: MessageLog;
         Insert: Omit<MessageLog, "id">;
         Update: Partial<Omit<MessageLog, "id">>;
+        Relationships: [];
       };
       hotmart_sales: {
         Row: HotmartSale;
         Insert: Omit<HotmartSale, "id">;
         Update: Partial<Omit<HotmartSale, "id">>;
+        Relationships: [];
       };
       admin_sessions: {
         Row: AdminSession;
         Insert: Omit<AdminSession, "id">;
         Update: Partial<Omit<AdminSession, "id">>;
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
     };
   };
 }
