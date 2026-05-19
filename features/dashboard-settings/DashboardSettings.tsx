@@ -115,7 +115,7 @@ export function DashboardSettings({
   };
 
   return (
-    <div className="max-w-2xl space-y-6 p-4 sm:p-6">
+    <div className="max-w-2xl space-y-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Configurações</h1>
         <button
@@ -252,6 +252,14 @@ export function DashboardSettings({
             {instagramConnected ? "Reconectar" : "Conectar"}
           </a>
         </div>
+        {instagramConnected && (
+          <button
+            type="button"
+            className="mt-3 text-xs text-foreground-secondary/60 hover:text-error transition-colors"
+          >
+            Desconectar conta
+          </button>
+        )}
       </section>
 
       <section className="rounded-xl border border-error/20 p-5">

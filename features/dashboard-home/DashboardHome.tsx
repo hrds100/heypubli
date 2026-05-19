@@ -84,15 +84,6 @@ function InstagramCard({ ig }: { ig: InstagramData }) {
             <div className="text-xs text-foreground-secondary">Posts</div>
           </div>
         </div>
-
-        <div className="mt-3 border-t border-border pt-3 text-center">
-          <button
-            type="button"
-            className="text-xs font-medium text-foreground-secondary hover:text-error transition-colors"
-          >
-            Desconectar conta
-          </button>
-        </div>
       </div>
     </div>
   );

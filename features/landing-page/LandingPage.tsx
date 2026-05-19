@@ -1,40 +1,57 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { landingCopy } from "./copy";
 
+const HERO_IMAGES_COL1 = [
+  "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=500&fit=crop",
+];
+
+const HERO_IMAGES_COL2 = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=400&h=500&fit=crop",
+];
+
+/* ─── Navbar ─── */
 function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-white/80 backdrop-blur-lg">
+    <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-white/90 backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold tracking-tight">
           <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
             Hey Publi
           </span>
         </Link>
+
         <div className="hidden items-center gap-8 md:flex">
+          <span className="text-sm font-medium text-accent">
+            {landingCopy.nav.forInfluencers}
+          </span>
           <a
-            href="#features"
+            href="#"
             className="text-sm text-foreground-secondary transition-colors hover:text-foreground"
           >
-            {landingCopy.nav.features}
-          </a>
-          <a
-            href="#how-it-works"
-            className="text-sm text-foreground-secondary transition-colors hover:text-foreground"
-          >
-            {landingCopy.nav.howItWorks}
-          </a>
-          <a
-            href="#brands"
-            className="text-sm text-foreground-secondary transition-colors hover:text-foreground"
-          >
-            {landingCopy.nav.brands}
+            {landingCopy.nav.forBrands}
           </a>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="hidden items-center gap-3 md:flex">
           <Link
             href="/login"
-            className="hidden text-sm font-medium text-foreground-secondary transition-colors hover:text-foreground sm:inline-block"
+            className="text-sm font-medium text-foreground-secondary transition-colors hover:text-foreground"
           >
             {landingCopy.nav.login}
           </Link>
@@ -42,108 +59,202 @@ function Navbar() {
             href="/cadastro"
             className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30"
           >
-            {landingCopy.nav.signup}
+            {landingCopy.nav.cta}
           </Link>
         </div>
+
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg md:hidden"
+          aria-label="Menu"
+        >
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            {mobileOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
+          </svg>
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div className="border-t border-border bg-white px-6 py-4 md:hidden">
+          <div className="flex flex-col gap-4">
+            <span className="text-sm font-medium text-accent">
+              {landingCopy.nav.forInfluencers}
+            </span>
+            <a href="#" className="text-sm text-foreground-secondary">
+              {landingCopy.nav.forBrands}
+            </a>
+            <Link href="/login" className="text-sm text-foreground-secondary">
+              {landingCopy.nav.login}
+            </Link>
+            <Link
+              href="/cadastro"
+              className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-3 text-center text-sm font-medium text-white"
+            >
+              {landingCopy.nav.cta}
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
 
+/* ─── Hero with scrolling images ─── */
 function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-32">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-to-br from-[#F56040]/8 via-[#E1306C]/8 to-[#C13584]/8 blur-3xl" />
-      </div>
+    <section className="relative overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-4 py-1.5 text-sm font-medium text-accent">
-            <span className="inline-block h-2 w-2 rounded-full bg-accent animate-pulse" />
-            {landingCopy.hero.badge}
-          </div>
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            {landingCopy.hero.title}{" "}
-            <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
-              {landingCopy.hero.titleHighlight}
-            </span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground-secondary md:text-xl">
-            {landingCopy.hero.subtitle}
-          </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link
-              href="/cadastro"
-              className="w-full rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-8 py-4 text-base font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30 sm:w-auto"
-            >
-              {landingCopy.hero.cta}
-            </Link>
-            <a
-              href="#how-it-works"
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-border px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background-secondary sm:w-auto"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {landingCopy.hero.secondaryCta}
-            </a>
-          </div>
-          <p className="mt-6 text-sm text-foreground-secondary">
-            {landingCopy.hero.socialProof}
-          </p>
-        </div>
-
-        <div className="relative mx-auto mt-16 max-w-5xl">
-          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-black/5">
-            <div className="flex items-center gap-2 border-b border-border bg-background-secondary px-4 py-3">
-              <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
-              <span className="h-3 w-3 rounded-full bg-[#FEBC2E]" />
-              <span className="h-3 w-3 rounded-full bg-[#28C840]" />
-              <span className="ml-4 text-xs text-foreground-secondary">
-                heypubli.com/dashboard
-              </span>
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <div className="mb-6 inline-flex items-center gap-3">
+              <div className="flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-medium text-foreground-secondary shadow-sm">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#0081FB">
+                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
+                </svg>
+                Meta Business Partner
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-medium text-foreground-secondary shadow-sm">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z" />
+                </svg>
+                TikTok Partners — Em breve
+              </div>
             </div>
-            <Image
-              src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&h=600&fit=crop&crop=top"
-              alt="Dashboard Hey Publi — painel do influenciador"
-              width={1200}
-              height={600}
-              className="w-full"
-              priority
-            />
+
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem]">
+              {landingCopy.hero.title}{" "}
+              <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
+                {landingCopy.hero.titleHighlight}
+              </span>
+            </h1>
+
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-foreground-secondary">
+              {landingCopy.hero.subtitle}
+            </p>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/cadastro"
+                className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-8 py-4 text-center text-base font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30"
+              >
+                {landingCopy.hero.cta}
+              </Link>
+              <a
+                href="#how-it-works"
+                className="flex items-center justify-center gap-2 rounded-full border border-border px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background-secondary"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Ver como funciona
+              </a>
+            </div>
           </div>
-          <div className="absolute -bottom-6 -left-6 -z-10 h-full w-full rounded-2xl bg-gradient-to-br from-[#F56040]/10 via-[#E1306C]/10 to-[#C13584]/10" />
+
+          <div className="relative hidden h-[520px] overflow-hidden rounded-3xl lg:block">
+            <div className="absolute inset-0 grid grid-cols-2 gap-3">
+              <div className="relative overflow-hidden">
+                <div
+                  className="flex flex-col gap-3"
+                  style={{
+                    animation: "scroll-up 25s linear infinite",
+                  }}
+                >
+                  {[...HERO_IMAGES_COL1, ...HERO_IMAGES_COL1].map((src, i) => (
+                    <div
+                      key={`col1-${i}`}
+                      className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-2xl"
+                    >
+                      <Image
+                        src={src}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="200px"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="relative mt-12 overflow-hidden">
+                <div
+                  className="flex flex-col gap-3"
+                  style={{
+                    animation: "scroll-down 25s linear infinite",
+                  }}
+                >
+                  {[...HERO_IMAGES_COL2, ...HERO_IMAGES_COL2].map((src, i) => (
+                    <div
+                      key={`col2-${i}`}
+                      className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-2xl"
+                    >
+                      <Image
+                        src={src}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="200px"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-white to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white to-transparent" />
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+/* ─── Stats (black background) ─── */
 function Stats() {
   return (
-    <section className="border-y border-border bg-background-secondary py-16">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
+    <section className="bg-foreground py-16">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-10 px-6 sm:grid-cols-3">
         {landingCopy.stats.items.map((stat) => (
-          <div key={stat.label} className="text-center">
-            <div className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          <div key={stat.value} className="text-center">
+            <div className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
               {stat.value}
             </div>
-            <div className="mt-1 text-sm text-foreground-secondary">{stat.label}</div>
+            <p className="mt-2 text-sm leading-relaxed text-white/60">
+              {stat.description}
+            </p>
           </div>
         ))}
       </div>
@@ -151,134 +262,11 @@ function Stats() {
   );
 }
 
-const brandLogos = [
-  { name: "Natura", width: 120 },
-  { name: "Boticário", width: 120 },
-  { name: "Havaianas", width: 120 },
-  { name: "Farm", width: 80 },
-  { name: "Amaro", width: 100 },
-  { name: "Nubank", width: 110 },
-  { name: "iFood", width: 90 },
-  { name: "Magazine Luiza", width: 130 },
-];
-
-function Brands() {
-  return (
-    <section id="brands" className="py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            {landingCopy.brands.title}
-          </h2>
-          <p className="mt-4 text-lg text-foreground-secondary">
-            {landingCopy.brands.subtitle}
-          </p>
-        </div>
-        <div className="mt-16 grid grid-cols-2 items-center gap-x-12 gap-y-10 sm:grid-cols-4 md:gap-x-16">
-          {brandLogos.map((brand) => (
-            <div
-              key={brand.name}
-              className="flex items-center justify-center grayscale opacity-40 transition-all hover:grayscale-0 hover:opacity-100"
-            >
-              <div className="flex h-12 items-center justify-center rounded-lg text-xl font-bold tracking-tight text-foreground-secondary">
-                {brand.name}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const stepIcons = [
-  <svg
-    key="connect"
-    className="h-8 w-8"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={1.5}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.915-3.656a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.5 8.25"
-    />
-  </svg>,
-  <svg
-    key="content"
-    className="h-8 w-8"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={1.5}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
-    />
-  </svg>,
-  <svg
-    key="money"
-    className="h-8 w-8"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={1.5}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>,
-];
-
-function HowItWorks() {
-  return (
-    <section id="how-it-works" className="bg-background-secondary py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            {landingCopy.howItWorks.title}
-          </h2>
-          <p className="mt-4 text-lg text-foreground-secondary">
-            {landingCopy.howItWorks.subtitle}
-          </p>
-        </div>
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
-          {landingCopy.howItWorks.steps.map((step, i) => (
-            <div
-              key={step.number}
-              className="relative rounded-2xl border border-border bg-white p-8 transition-shadow hover:shadow-lg"
-            >
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-white">
-                {stepIcons[i]}
-              </div>
-              <span className="text-sm font-bold text-accent">{step.number}</span>
-              <h3 className="mt-2 text-xl font-bold text-foreground">{step.title}</h3>
-              <p className="mt-2 leading-relaxed text-foreground-secondary">
-                {step.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const featureIcons: Record<string, React.ReactNode> = {
-  calendar: (
+/* ─── Value Props (4 cards) ─── */
+const valuePropIcons: Record<string, React.ReactNode> = {
+  brands: (
     <svg
-      className="h-6 w-6"
+      className="h-7 w-7"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -287,13 +275,13 @@ const featureIcons: Record<string, React.ReactNode> = {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+        d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0a2.999 2.999 0 00.68-1.317L5.046 3.09A1.5 1.5 0 016.536 2h10.928a1.5 1.5 0 011.49 1.09l1.367 4.943A3 3 0 0021 9.35"
       />
     </svg>
   ),
-  chart: (
+  auto: (
     <svg
-      className="h-6 w-6"
+      className="h-7 w-7"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -302,13 +290,13 @@ const featureIcons: Record<string, React.ReactNode> = {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
       />
     </svg>
   ),
-  shield: (
+  payment: (
     <svg
-      className="h-6 w-6"
+      className="h-7 w-7"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -321,9 +309,9 @@ const featureIcons: Record<string, React.ReactNode> = {
       />
     </svg>
   ),
-  message: (
+  support: (
     <svg
-      className="h-6 w-6"
+      className="h-7 w-7"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -338,30 +326,25 @@ const featureIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-function Features() {
+function ValueProps() {
   return (
-    <section id="features" className="py-20 md:py-28">
+    <section className="py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            {landingCopy.features.title}
-          </h2>
-          <p className="mt-4 text-lg text-foreground-secondary">
-            {landingCopy.features.subtitle}
-          </p>
-        </div>
-        <div className="mt-16 grid gap-6 sm:grid-cols-2">
-          {landingCopy.features.items.map((feature) => (
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {landingCopy.valueProps.title}
+        </h2>
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {landingCopy.valueProps.items.map((item) => (
             <div
-              key={feature.title}
-              className="group rounded-2xl border border-border bg-white p-8 transition-all hover:border-accent/30 hover:shadow-lg"
+              key={item.title}
+              className="group rounded-2xl border border-border bg-white p-7 transition-all hover:border-accent/30 hover:shadow-lg"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-gradient-to-br group-hover:from-[#F56040] group-hover:via-[#E1306C] group-hover:to-[#C13584] group-hover:text-white">
-                {featureIcons[feature.icon]}
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent transition-colors group-hover:bg-gradient-to-br group-hover:from-[#F56040] group-hover:via-[#E1306C] group-hover:to-[#C13584] group-hover:text-white">
+                {valuePropIcons[item.icon]}
               </div>
-              <h3 className="text-lg font-bold text-foreground">{feature.title}</h3>
-              <p className="mt-2 leading-relaxed text-foreground-secondary">
-                {feature.description}
+              <h3 className="text-lg font-bold text-foreground">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground-secondary">
+                {item.description}
               </p>
             </div>
           ))}
@@ -371,29 +354,151 @@ function Features() {
   );
 }
 
-function CtaSection() {
+/* ─── Collaboration Types ─── */
+const collabIcons: Record<string, React.ReactNode> = {
+  instagram: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+    </svg>
+  ),
+  money: (
+    <svg
+      className="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  ),
+  growth: (
+    <svg
+      className="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+      />
+    </svg>
+  ),
+  handshake: (
+    <svg
+      className="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+      />
+    </svg>
+  ),
+};
+
+function CollabTypes() {
+  return (
+    <section className="bg-background-secondary py-20 md:py-28">
+      <div className="mx-auto max-w-4xl px-6">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {landingCopy.collabTypes.title}
+        </h2>
+        <div className="mt-14 space-y-6">
+          {landingCopy.collabTypes.items.map((item) => (
+            <div
+              key={item.text}
+              className="flex items-start gap-5 rounded-2xl border border-border bg-white p-6 transition-shadow hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-white">
+                {collabIcons[item.icon]}
+              </div>
+              <p className="text-base leading-relaxed text-foreground">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Requirements & Categories ─── */
+function Requirements() {
   return (
     <section className="py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] px-8 py-16 text-center md:px-16 md:py-24">
-          <div className="absolute inset-0 -z-0">
-            <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {landingCopy.requirements.title}
+        </h2>
+
+        <div className="mt-14 grid gap-8 md:grid-cols-3">
+          <div className="rounded-2xl border border-border p-7">
+            <h3 className="mb-5 text-lg font-bold text-foreground">
+              {landingCopy.requirements.skills.title}
+            </h3>
+            <ul className="space-y-3">
+              {landingCopy.requirements.skills.items.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-sm text-foreground-secondary"
+                >
+                  <svg
+                    className="mt-0.5 h-5 w-5 shrink-0 text-success"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="relative z-10">
-            <h2 className="text-3xl font-bold text-white md:text-4xl">
-              {landingCopy.cta.title}
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-white/80">
-              {landingCopy.cta.subtitle}
-            </p>
-            <Link
-              href="/cadastro"
-              className="mt-8 inline-block rounded-full bg-white px-10 py-4 text-base font-semibold text-accent shadow-lg transition-all hover:shadow-xl"
-            >
-              {landingCopy.cta.button}
-            </Link>
-            <p className="mt-4 text-sm text-white/60">{landingCopy.cta.note}</p>
+
+          <div className="rounded-2xl border border-border p-7">
+            <h3 className="mb-5 text-lg font-bold text-foreground">Requisitos mínimos</h3>
+            <div className="space-y-5">
+              {landingCopy.requirements.audience.map((req) => (
+                <div key={req.label}>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
+                    {req.value}
+                  </div>
+                  <div className="text-sm text-foreground-secondary">{req.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border p-7">
+            <h3 className="mb-5 text-lg font-bold text-foreground">Categorias</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {landingCopy.requirements.categories.map((cat) => (
+                <div
+                  key={cat.name}
+                  className="flex items-center gap-2 rounded-xl bg-background-secondary px-3 py-2.5 text-sm"
+                >
+                  <span className="text-base">{cat.emoji}</span>
+                  <span className="text-foreground-secondary">{cat.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -401,39 +506,396 @@ function CtaSection() {
   );
 }
 
+/* ─── Testimonials ─── */
+function Testimonials() {
+  const [active, setActive] = useState(0);
+  const testimonials = landingCopy.testimonials;
+
+  return (
+    <section className="bg-background-secondary py-20 md:py-28">
+      <div className="mx-auto max-w-7xl px-6">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          Histórias de quem já ganha com a Hey Publi
+        </h2>
+
+        <div className="relative mt-14">
+          <div className="grid gap-6 md:grid-cols-3">
+            {testimonials.map((t, i) => (
+              <div
+                key={t.name}
+                className={`rounded-2xl border bg-white p-7 transition-all ${
+                  active === i ? "border-accent shadow-lg" : "border-border"
+                }`}
+                onClick={() => setActive(i)}
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-sm font-bold text-white">
+                    {t.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-foreground">{t.name}</div>
+                    <div className="text-xs text-foreground-secondary">{t.handle}</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 text-xs text-foreground-secondary">{t.joinDate}</div>
+
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
+                    {t.partnerships}
+                  </span>
+                  <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                    {t.earned}
+                  </span>
+                </div>
+
+                <blockquote className="mb-5 text-sm leading-relaxed text-foreground-secondary italic">
+                  &ldquo;{t.quote}&rdquo;
+                </blockquote>
+
+                <div className="flex items-center gap-2 rounded-xl bg-background-secondary px-3 py-2">
+                  <svg
+                    className="h-4 w-4 text-warning"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span className="text-xs font-medium text-foreground">{t.badge}</span>
+                  <span className="text-xs text-foreground-secondary">
+                    · {t.badgeDetail}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── How It Works (4 steps) ─── */
+function HowItWorks() {
+  return (
+    <section id="how-it-works" className="py-20 md:py-28">
+      <div className="mx-auto max-w-7xl px-6">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {landingCopy.howItWorks.title}
+        </h2>
+
+        <div className="relative mt-16 grid gap-0 md:grid-cols-4">
+          <div className="absolute top-12 right-0 left-0 hidden h-0.5 bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] md:block" />
+
+          {landingCopy.howItWorks.steps.map((step) => (
+            <div
+              key={step.number}
+              className="relative flex flex-col items-center px-4 text-center"
+            >
+              <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-lg font-bold text-white shadow-lg shadow-accent/25">
+                {step.number}
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-foreground">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-foreground-secondary">
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Video Section ─── */
+function VideoSection() {
+  return (
+    <section className="bg-background-secondary py-20 md:py-28">
+      <div className="mx-auto max-w-4xl px-6 text-center">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          Veja como é fácil começar
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-lg text-foreground-secondary">
+          Em menos de 2 minutos você conecta seu Instagram e começa a receber publicações
+          de marcas parceiras.
+        </p>
+        <div className="relative mx-auto mt-12 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-border bg-foreground shadow-2xl">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-transform hover:scale-110">
+              <svg
+                className="h-10 w-10 text-white ml-1"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur-sm">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-error" />
+            <span className="text-xs font-medium text-white">2:14</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── FAQ Accordion ─── */
+function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section id="faq" className="py-20 md:py-28">
+      <div className="mx-auto max-w-3xl px-6">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          {landingCopy.faq.title}
+        </h2>
+
+        <div className="mt-14 space-y-3">
+          {landingCopy.faq.items.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div
+                key={item.question}
+                className="overflow-hidden rounded-2xl border border-border bg-white transition-shadow hover:shadow-sm"
+              >
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between px-6 py-5 text-left"
+                >
+                  <span className="pr-4 text-base font-semibold text-foreground">
+                    {item.question}
+                  </span>
+                  <svg
+                    className={`h-5 w-5 shrink-0 text-foreground-secondary transition-transform duration-200 ${
+                      isOpen ? "rotate-45" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4.5v15m7.5-7.5h-15"
+                    />
+                  </svg>
+                </button>
+                <div
+                  className={`grid transition-all duration-200 ${
+                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="px-6 pb-5 text-sm leading-relaxed text-foreground-secondary">
+                      {item.answer}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Final CTA ─── */
+function FinalCta() {
+  return (
+    <section className="py-20 md:py-28">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] px-8 py-16 text-center md:px-16 md:py-24">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          </div>
+
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold text-white md:text-4xl">
+              {landingCopy.finalCta.title}
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-white/80">
+              {landingCopy.finalCta.subtitle}
+            </p>
+
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
+                </svg>
+                Meta Business Partner
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z" />
+                </svg>
+                TikTok Partners — Em breve
+              </div>
+            </div>
+
+            <Link
+              href="/cadastro"
+              className="mt-8 inline-block rounded-full bg-white px-10 py-4 text-base font-semibold text-accent shadow-lg transition-all hover:shadow-xl"
+            >
+              {landingCopy.finalCta.cta}
+            </Link>
+            <p className="mt-4 text-sm text-white/60">
+              Grátis para sempre. Sem cartão de crédito.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Footer ─── */
 function Footer() {
   return (
-    <footer className="border-t border-border py-12">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-        <div className="text-sm text-foreground-secondary">
-          {landingCopy.footer.copyright}
+    <footer className="bg-foreground py-16 text-white">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="grid gap-12 md:grid-cols-4">
+          <div className="md:col-span-2">
+            <span className="text-xl font-bold">
+              <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
+                Hey Publi
+              </span>
+            </span>
+
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs text-white/70">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
+                </svg>
+                Meta Partner
+              </div>
+              <div className="flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs text-white/70">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z" />
+                </svg>
+                TikTok Partner
+              </div>
+            </div>
+
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-white/50">
+              {landingCopy.footer.description}
+            </p>
+            <p className="mt-3 text-xs text-white/30">{landingCopy.footer.address}</p>
+          </div>
+
+          <div>
+            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/70">
+              {landingCopy.footer.columns.platform.title}
+            </h4>
+            <ul className="space-y-2.5">
+              {landingCopy.footer.columns.platform.links.map((link) => (
+                <li key={link}>
+                  <a
+                    href="#"
+                    className="text-sm text-white/50 transition-colors hover:text-white"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/70">
+              {landingCopy.footer.columns.resources.title}
+            </h4>
+            <ul className="space-y-2.5">
+              {landingCopy.footer.columns.resources.links.map((link) => (
+                <li key={link}>
+                  <a
+                    href="#"
+                    className="text-sm text-white/50 transition-colors hover:text-white"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <h4 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wider text-white/70">
+              Contato
+            </h4>
+            <div className="space-y-1 text-sm text-white/50">
+              <p>Marcas: {landingCopy.footer.emails.brands}</p>
+              <p>Criadores: {landingCopy.footer.emails.creators}</p>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-6 text-sm text-foreground-secondary">
-          <a href="#" className="transition-colors hover:text-foreground">
-            {landingCopy.footer.links.terms}
-          </a>
-          <a href="#" className="transition-colors hover:text-foreground">
-            {landingCopy.footer.links.privacy}
-          </a>
-          <a href="#" className="transition-colors hover:text-foreground">
-            {landingCopy.footer.links.contact}
-          </a>
+
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+          <p className="text-xs text-white/30">{landingCopy.footer.copyright}</p>
+
+          <div className="flex items-center gap-6">
+            <a
+              href="#"
+              className="text-xs text-white/30 transition-colors hover:text-white/60"
+            >
+              {landingCopy.footer.legal.terms}
+            </a>
+            <a
+              href="#"
+              className="text-xs text-white/30 transition-colors hover:text-white/60"
+            >
+              {landingCopy.footer.legal.privacy}
+            </a>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="https://instagram.com/heypubli"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/40 transition-colors hover:text-white"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+              </svg>
+            </a>
+            <a
+              href="https://tiktok.com/@heypubli"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/40 transition-colors hover:text-white"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
+/* ─── Main Page ─── */
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       <Hero />
       <Stats />
-      <Brands />
+      <ValueProps />
+      <CollabTypes />
+      <Requirements />
+      <Testimonials />
       <HowItWorks />
-      <Features />
-      <CtaSection />
+      <VideoSection />
+      <FAQ />
+      <FinalCta />
       <Footer />
     </div>
   );
