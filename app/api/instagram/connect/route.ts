@@ -12,8 +12,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { origin } = new URL(request.url);
-  const redirectUri = `${origin}/auth/instagram/callback`;
+  const redirectUri = process.env.INSTAGRAM_REDIRECT_URI!;
   const authUrl = getInstagramAuthUrl(redirectUri);
 
   return NextResponse.redirect(authUrl);

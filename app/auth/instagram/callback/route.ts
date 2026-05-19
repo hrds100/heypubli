@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  const redirectUri = `${origin}/auth/instagram/callback`;
+  const redirectUri = process.env.INSTAGRAM_REDIRECT_URI!;
 
   try {
     const { access_token: shortToken, user_id: igUserId } = await exchangeCodeForToken(
