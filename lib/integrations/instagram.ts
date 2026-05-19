@@ -25,7 +25,11 @@ export async function exchangeCodeForToken(code: string, redirectUri: string) {
     }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error_message ?? "Token exchange failed");
+  if (!res.ok) {
+    throw new Error(
+      data.error_message ?? data.error?.message ?? data.message ?? JSON.stringify(data),
+    );
+  }
   return data as { access_token: string; user_id: string };
 }
 
