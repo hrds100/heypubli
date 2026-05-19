@@ -213,3 +213,71 @@ export async function deletePost(postId: string) {
 
   revalidatePath("/admin/agendador");
 }
+
+export async function updateInfluencerProfile(profileId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  const firstName = formData.get("first_name") as string;
+  const lastName = formData.get("last_name") as string;
+  const whatsapp = (formData.get("whatsapp") as string) || null;
+  const phone = (formData.get("phone") as string) || null;
+  const dateOfBirth = (formData.get("date_of_birth") as string) || null;
+  const addressStreet = (formData.get("address_street") as string) || null;
+  const addressCity = (formData.get("address_city") as string) || null;
+  const addressPostalCode = (formData.get("address_postal_code") as string) || null;
+  const pixKeyType = (formData.get("pix_key_type") as string) || null;
+  const pixKey = (formData.get("pix_key") as string) || null;
+  const hotmartUrl = (formData.get("hotmart_url") as string) || null;
+  const hotmartAffiliateCode = (formData.get("hotmart_affiliate_code") as string) || null;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from("profiles") as any)
+    .update({
+      first_name: firstName,
+      last_name: lastName,
+      whatsapp,
+      phone,
+      date_of_birth: dateOfBirth,
+      address_street: addressStreet,
+      address_city: addressCity,
+      address_postal_code: addressPostalCode,
+      pix_key_type: pixKeyType,
+      pix_key: pixKey,
+      hotmart_url: hotmartUrl,
+      hotmart_affiliate_code: hotmartAffiliateCode,
+    })
+    .eq("id", profileId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/influenciadores/${profileId}`);
+  revalidatePath("/admin/influenciadores");
+  return { success: true };
+}
+
+export async function updateInfluencerAuth(profileId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  const email = (formData.get("email") as string) || null;
+  const password = (formData.get("password") as string) || null;
+
+  const updates: { email?: string; password?: string } = {};
+  if (email) updates.email = email;
+  if (password) updates.password = password;
+
+  if (Object.keys(updates).length === 0) return { error: "Nenhuma alteração" };
+
+  const { error } = await admin.auth.admin.updateUserById(profileId, updates);
+  if (error) return { error: error.message };
+
+  if (email) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (admin.from("profiles") as any).update({ email }).eq("id", profileId);
+  }
+
+  revalidatePath(`/admin/influenciadores/${profileId}`);
+  revalidatePath("/admin/influenciadores");
+  return { success: true };
+}

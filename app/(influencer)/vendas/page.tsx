@@ -1,16 +1,64 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { DashboardAnalytics } from "@/features/dashboard-analytics";
+import { getSalesByProfile, getPostsByProfile } from "@/lib/data";
+import type { HotmartSale } from "@/types/database";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-export default function AnalyticsPage() {
+export const dynamic = "force-dynamic";
+
+function groupSalesByMonth(sales: HotmartSale[]) {
+  const byMonth = new Map<string, { sales: number; commission: number }>();
+
+  for (const sale of sales) {
+    const date = new Date(sale.sold_at);
+    const key = format(date, "MMMM yyyy", { locale: ptBR });
+    const label = key.charAt(0).toUpperCase() + key.slice(1);
+    const existing = byMonth.get(label) ?? { sales: 0, commission: 0 };
+    existing.sales += 1;
+    existing.commission += sale.commission_amount;
+    byMonth.set(label, existing);
+  }
+
+  return Array.from(byMonth.entries()).map(([month, data]) => ({
+    month,
+    sales: data.sales,
+    commission: data.commission,
+  }));
+}
+
+export default async function VendasPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const [sales, posts] = await Promise.all([
+    getSalesByProfile(user.id),
+    getPostsByProfile(user.id),
+  ]);
+
+  const totalSales = sales.length;
+  const totalCommission = sales.reduce((sum, s) => sum + s.commission_amount, 0);
+  const affiliateClicks = 0;
+
+  const lastPublished = posts.find((p) => p.status === "published" && p.published_at);
+  const lastPublishedAt = lastPublished
+    ? format(new Date(lastPublished.published_at!), "dd/MM/yyyy")
+    : null;
+
+  const monthlySales = groupSalesByMonth(sales);
+
   return (
     <DashboardAnalytics
-      totalSales={12}
-      totalCommission={359.4}
-      affiliateClicks={234}
-      lastPublishedAt="18/05/2026"
-      monthlySales={[
-        { month: "Maio 2026", sales: 8, commission: 239.6 },
-        { month: "Abril 2026", sales: 4, commission: 119.8 },
-      ]}
+      totalSales={totalSales}
+      totalCommission={totalCommission}
+      affiliateClicks={affiliateClicks}
+      lastPublishedAt={lastPublishedAt}
+      monthlySales={monthlySales}
     />
   );
 }

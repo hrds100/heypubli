@@ -4,18 +4,17 @@ import { AdminMessages } from "./AdminMessages";
 
 describe("AdminMessages", () => {
   it("renders heading", () => {
-    render(<AdminMessages messages={[]} />);
+    render(<AdminMessages conversations={[]} channels={[]} />);
     expect(screen.getByText("Mensagens")).toBeInTheDocument();
   });
 
-  it("shows WhatsApp and Email tabs", () => {
-    render(<AdminMessages messages={[]} />);
-    expect(screen.getByText("WhatsApp")).toBeInTheDocument();
-    expect(screen.getByText("Email")).toBeInTheDocument();
+  it("shows connect button when no WhatsApp channel", () => {
+    render(<AdminMessages conversations={[]} channels={[]} />);
+    expect(screen.getByText("Conectar WhatsApp")).toBeInTheDocument();
   });
 
-  it("shows empty state", () => {
-    render(<AdminMessages messages={[]} />);
-    expect(screen.getByText("Nenhuma mensagem de WhatsApp ainda.")).toBeInTheDocument();
+  it("shows empty state when no conversations", () => {
+    render(<AdminMessages conversations={[]} channels={[]} />);
+    expect(screen.getByText("Nenhuma conversa ainda")).toBeInTheDocument();
   });
 });

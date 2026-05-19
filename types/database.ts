@@ -5,6 +5,11 @@ export type PostStatus = "pending" | "published" | "failed";
 export type MessageChannel = "whatsapp" | "email";
 export type MessageDirection = "outbound" | "inbound";
 export type MessageStatus = "sent" | "delivered" | "read" | "failed";
+export type ChannelType = "whatsapp" | "email";
+export type ChannelStatus = "connected" | "disconnected";
+export type ConversationStatus = "open" | "closed";
+export type InboxContentType = "text" | "image" | "audio" | "video" | "file";
+export type InboxSender = "contact" | "admin";
 export type SaleStatus = "confirmed" | "refunded" | "cancelled";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 
@@ -122,6 +127,45 @@ export interface HotmartSale {
   sold_at: string;
 }
 
+export interface Channel {
+  id: string;
+  type: ChannelType;
+  label: string | null;
+  status: ChannelStatus;
+  unipile_account_id: string | null;
+  config: Record<string, unknown>;
+  connected_at: string | null;
+  disconnected_at: string | null;
+  created_at: string;
+}
+
+export interface Conversation {
+  id: string;
+  profile_id: string | null;
+  channel: ChannelType;
+  status: ConversationStatus;
+  unipile_chat_id: string | null;
+  subject: string | null;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  unread_count: number;
+  created_at: string;
+  profile?: Profile | null;
+}
+
+export interface InboxMessage {
+  id: string;
+  conversation_id: string;
+  direction: MessageDirection;
+  sender: InboxSender;
+  body: string | null;
+  media_url: string | null;
+  content_type: InboxContentType;
+  status: MessageStatus;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface AdminSession {
   id: string;
   admin_id: string;
@@ -192,6 +236,24 @@ export interface Database {
         Row: AdminSession;
         Insert: Omit<AdminSession, "id">;
         Update: Partial<Omit<AdminSession, "id">>;
+        Relationships: [];
+      };
+      channels: {
+        Row: Channel;
+        Insert: Omit<Channel, "id" | "created_at">;
+        Update: Partial<Omit<Channel, "id" | "created_at">>;
+        Relationships: [];
+      };
+      conversations: {
+        Row: Conversation;
+        Insert: Omit<Conversation, "id" | "created_at">;
+        Update: Partial<Omit<Conversation, "id" | "created_at">>;
+        Relationships: [];
+      };
+      inbox_messages: {
+        Row: InboxMessage;
+        Insert: Omit<InboxMessage, "id" | "created_at">;
+        Update: Partial<Omit<InboxMessage, "id" | "created_at">>;
         Relationships: [];
       };
     };

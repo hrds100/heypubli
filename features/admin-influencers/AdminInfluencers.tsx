@@ -95,18 +95,28 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <button
-                      className="rounded p-1 hover:bg-background-secondary"
-                      title="WhatsApp"
-                    >
-                      <MessageSquare size={16} />
-                    </button>
-                    <button
-                      className="rounded p-1 hover:bg-background-secondary"
+                    {row.profile.whatsapp ? (
+                      <a
+                        href={`https://wa.me/${row.profile.whatsapp.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded p-1 hover:bg-background-secondary inline-flex text-success"
+                        title="WhatsApp"
+                      >
+                        <MessageSquare size={16} />
+                      </a>
+                    ) : (
+                      <span className="rounded p-1 text-foreground-secondary/30">
+                        <MessageSquare size={16} />
+                      </span>
+                    )}
+                    <a
+                      href={`mailto:${row.profile.email}`}
+                      className="rounded p-1 hover:bg-background-secondary inline-flex"
                       title="Email"
                     >
                       <Mail size={16} />
-                    </button>
+                    </a>
                     <Link
                       href={`/admin/influenciadores/${row.profile.id}`}
                       className="rounded p-1 hover:bg-background-secondary inline-flex"

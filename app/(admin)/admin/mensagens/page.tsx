@@ -1,7 +1,10 @@
 import { AdminMessages } from "@/features/admin-messages";
-import { getAllMessages } from "@/lib/data";
+import { getConversations, getChannels } from "@/lib/data/inbox";
 
 export default async function MensagensPage() {
-  const messages = await getAllMessages();
-  return <AdminMessages messages={messages} />;
+  const [conversations, channels] = await Promise.all([
+    getConversations(),
+    getChannels(),
+  ]);
+  return <AdminMessages conversations={conversations} channels={channels} />;
 }

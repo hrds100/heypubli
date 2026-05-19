@@ -10,17 +10,25 @@ import {
   DollarSign,
   Eye,
   Globe,
+  Lock,
   Mail,
   MapPin,
   MessageSquare,
+  Pencil,
   Phone,
   ShoppingCart,
   Trash2,
   Unplug,
   User,
   Wallet,
+  X,
 } from "lucide-react";
-import { deleteInfluencer, disconnectInfluencerInstagram } from "@/lib/actions/admin";
+import {
+  deleteInfluencer,
+  disconnectInfluencerInstagram,
+  updateInfluencerProfile,
+  updateInfluencerAuth,
+} from "@/lib/actions/admin";
 import type {
   Profile,
   InstagramConnection,
@@ -54,6 +62,33 @@ function InfoRow({
   );
 }
 
+function EditField({
+  label,
+  name,
+  defaultValue,
+  type = "text",
+  placeholder,
+}: {
+  label: string;
+  name: string;
+  defaultValue: string;
+  type?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-foreground-secondary">{label}</label>
+      <input
+        name={name}
+        type={type}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+      />
+    </div>
+  );
+}
+
 export function AdminInfluencerDetail({
   profile,
   instagram,
@@ -65,6 +100,12 @@ export function AdminInfluencerDetail({
   const [isPending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editAuth, setEditAuth] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
 
   const totalCommission = sales
     .filter((s) => s.status === "confirmed")
@@ -86,6 +127,40 @@ export function AdminInfluencerDetail({
       await disconnectInfluencerInstagram(instagram.id);
       setConfirmDisconnect(false);
       router.refresh();
+    });
+  };
+
+  const handleSaveProfile = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setFeedback(null);
+
+    startTransition(async () => {
+      const result = await updateInfluencerProfile(profile.id, formData);
+      if (result.error) {
+        setFeedback({ type: "error", msg: result.error });
+      } else {
+        setFeedback({ type: "success", msg: "Perfil atualizado" });
+        setEditMode(false);
+        router.refresh();
+      }
+    });
+  };
+
+  const handleSaveAuth = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setFeedback(null);
+
+    startTransition(async () => {
+      const result = await updateInfluencerAuth(profile.id, formData);
+      if (result.error) {
+        setFeedback({ type: "error", msg: result.error });
+      } else {
+        setFeedback({ type: "success", msg: "Email/senha atualizados" });
+        setEditAuth(false);
+        router.refresh();
+      }
     });
   };
 
@@ -112,7 +187,7 @@ export function AdminInfluencerDetail({
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-background-secondary transition-colors"
             >
-              <MessageSquare size={16} />
+              <MessageSquare size={16} className="text-success" />
               WhatsApp
             </a>
           )}
@@ -125,6 +200,14 @@ export function AdminInfluencerDetail({
           </a>
         </div>
       </div>
+
+      {feedback && (
+        <div
+          className={`rounded-lg px-4 py-3 text-sm ${feedback.type === "success" ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
+        >
+          {feedback.msg}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border p-4">
@@ -175,120 +258,333 @@ export function AdminInfluencerDetail({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-border p-5">
-          <h2 className="mb-4 text-base font-semibold">Dados pessoais</h2>
-          <div className="divide-y divide-border">
-            <InfoRow
-              icon={User}
-              label="Nome"
-              value={`${profile.first_name} ${profile.last_name}`}
+      {editAuth ? (
+        <form
+          onSubmit={handleSaveAuth}
+          className="rounded-xl border border-accent/30 bg-accent/5 p-5 space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold flex items-center gap-2">
+              <Lock size={16} />
+              Alterar email / senha
+            </h2>
+            <button
+              type="button"
+              onClick={() => setEditAuth(false)}
+              className="rounded-lg p-1.5 hover:bg-background-secondary"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <EditField
+              label="Novo email"
+              name="email"
+              defaultValue={profile.email}
+              type="email"
             />
-            <InfoRow icon={Mail} label="Email" value={profile.email} />
-            <InfoRow icon={Phone} label="WhatsApp" value={profile.whatsapp} />
-            <InfoRow icon={Calendar} label="Nascimento" value={profile.date_of_birth} />
-            <InfoRow icon={Globe} label="Fuso horário" value={profile.timezone} />
+            <EditField
+              label="Nova senha (deixe vazio para manter)"
+              name="password"
+              defaultValue=""
+              type="password"
+              placeholder="••••••••"
+            />
           </div>
-        </section>
-
-        <section className="rounded-xl border border-border p-5">
-          <h2 className="mb-4 text-base font-semibold">Endereço</h2>
-          <div className="divide-y divide-border">
-            <InfoRow icon={MapPin} label="Rua" value={profile.address_street} />
-            <InfoRow icon={MapPin} label="Cidade" value={profile.address_city} />
-            <InfoRow icon={MapPin} label="CEP" value={profile.address_postal_code} />
-            <InfoRow icon={Globe} label="País" value={profile.address_country} />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditAuth(false)}
+              className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-background-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+            >
+              {isPending ? "Salvando..." : "Salvar credenciais"}
+            </button>
           </div>
-        </section>
+        </form>
+      ) : (
+        <button
+          onClick={() => setEditAuth(true)}
+          className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-background-secondary transition-colors"
+        >
+          <Lock size={14} />
+          Alterar email / senha
+        </button>
+      )}
 
-        <section className="rounded-xl border border-border p-5">
-          <h2 className="mb-4 text-base font-semibold">Instagram</h2>
-          {instagram ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584]">
-                  <AtSign size={18} className="text-white" />
-                </div>
-                <div>
-                  <p className="font-medium">@{instagram.ig_username}</p>
-                  <p className="text-xs text-foreground-secondary">
-                    {instagram.followers_count?.toLocaleString("pt-BR") ?? "?"} seguidores
-                  </p>
-                </div>
-                <span className="ml-auto rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                  Conectado
-                </span>
+      {editMode ? (
+        <form onSubmit={handleSaveProfile} className="space-y-6">
+          <section className="rounded-xl border border-accent/30 bg-accent/5 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold flex items-center gap-2">
+                <Pencil size={16} />
+                Editar perfil
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditMode(false)}
+                className="rounded-lg p-1.5 hover:bg-background-secondary"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <EditField
+                label="Nome"
+                name="first_name"
+                defaultValue={profile.first_name}
+              />
+              <EditField
+                label="Sobrenome"
+                name="last_name"
+                defaultValue={profile.last_name}
+              />
+              <EditField
+                label="WhatsApp"
+                name="whatsapp"
+                defaultValue={profile.whatsapp ?? ""}
+                placeholder="+55 11 99999-9999"
+              />
+              <EditField
+                label="Celular"
+                name="phone"
+                defaultValue={profile.phone ?? ""}
+                placeholder="+55 11 99999-9999"
+              />
+              <EditField
+                label="Data de nascimento"
+                name="date_of_birth"
+                defaultValue={profile.date_of_birth ?? ""}
+                type="date"
+              />
+              <EditField
+                label="Rua"
+                name="address_street"
+                defaultValue={profile.address_street ?? ""}
+              />
+              <EditField
+                label="Cidade"
+                name="address_city"
+                defaultValue={profile.address_city ?? ""}
+              />
+              <EditField
+                label="CEP"
+                name="address_postal_code"
+                defaultValue={profile.address_postal_code ?? ""}
+              />
+            </div>
+
+            <h3 className="text-sm font-semibold pt-2">Pagamento</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-foreground-secondary">
+                  Tipo PIX
+                </label>
+                <select
+                  name="pix_key_type"
+                  defaultValue={profile.pix_key_type ?? ""}
+                  className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                >
+                  <option value="">Nenhum</option>
+                  <option value="cpf">CPF</option>
+                  <option value="cnpj">CNPJ</option>
+                  <option value="email">Email</option>
+                  <option value="phone">Telefone</option>
+                  <option value="random">Aleatória</option>
+                </select>
               </div>
-              <div className="divide-y divide-border text-sm">
-                <div className="flex justify-between py-2">
-                  <span className="text-foreground-secondary">Token expira</span>
-                  <span>
-                    {new Date(instagram.token_expires_at).toLocaleDateString("pt-BR")}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-foreground-secondary">Último refresh</span>
-                  <span>
-                    {instagram.token_refreshed_at
-                      ? new Date(instagram.token_refreshed_at).toLocaleDateString("pt-BR")
-                      : "-"}
-                  </span>
-                </div>
-              </div>
-              <div className="pt-2">
-                {confirmDisconnect ? (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleDisconnect}
-                      disabled={isPending}
-                      className="rounded-lg bg-error px-3 py-1.5 text-sm font-medium text-white hover:bg-error/90 disabled:opacity-50"
-                    >
-                      {isPending ? "Desconectando..." : "Confirmar"}
-                    </button>
-                    <button
-                      onClick={() => setConfirmDisconnect(false)}
-                      className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-background-secondary"
-                    >
-                      Cancelar
-                    </button>
+              <EditField
+                label="Chave PIX"
+                name="pix_key"
+                defaultValue={profile.pix_key ?? ""}
+              />
+              <EditField
+                label="Hotmart URL"
+                name="hotmart_url"
+                defaultValue={profile.hotmart_url ?? ""}
+              />
+              <EditField
+                label="Código afiliado"
+                name="hotmart_affiliate_code"
+                defaultValue={profile.hotmart_affiliate_code ?? ""}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEditMode(false)}
+                className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-background-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+              >
+                {isPending ? "Salvando..." : "Salvar alterações"}
+              </button>
+            </div>
+          </section>
+        </form>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="rounded-xl border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold">Dados pessoais</h2>
+              <button
+                onClick={() => setEditMode(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-background-secondary transition-colors"
+              >
+                <Pencil size={12} />
+                Editar
+              </button>
+            </div>
+            <div className="divide-y divide-border">
+              <InfoRow
+                icon={User}
+                label="Nome"
+                value={`${profile.first_name} ${profile.last_name}`}
+              />
+              <InfoRow icon={Mail} label="Email" value={profile.email} />
+              <InfoRow icon={Phone} label="WhatsApp" value={profile.whatsapp} />
+              <InfoRow icon={Calendar} label="Nascimento" value={profile.date_of_birth} />
+              <InfoRow icon={Globe} label="Fuso horário" value={profile.timezone} />
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold">Endereço</h2>
+              <button
+                onClick={() => setEditMode(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-background-secondary transition-colors"
+              >
+                <Pencil size={12} />
+                Editar
+              </button>
+            </div>
+            <div className="divide-y divide-border">
+              <InfoRow icon={MapPin} label="Rua" value={profile.address_street} />
+              <InfoRow icon={MapPin} label="Cidade" value={profile.address_city} />
+              <InfoRow icon={MapPin} label="CEP" value={profile.address_postal_code} />
+              <InfoRow icon={Globe} label="País" value={profile.address_country} />
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-border p-5">
+            <h2 className="mb-4 text-base font-semibold">Instagram</h2>
+            {instagram ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584]">
+                    <AtSign size={18} className="text-white" />
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDisconnect(true)}
-                    className="flex items-center gap-1.5 rounded-lg border border-error/30 px-3 py-1.5 text-sm text-error hover:bg-error/10 transition-colors"
-                  >
-                    <Unplug size={14} />
-                    Desconectar Instagram
-                  </button>
-                )}
+                  <div>
+                    <p className="font-medium">@{instagram.ig_username}</p>
+                    <p className="text-xs text-foreground-secondary">
+                      {instagram.followers_count?.toLocaleString("pt-BR") ?? "?"}{" "}
+                      seguidores
+                    </p>
+                  </div>
+                  <span className="ml-auto rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                    Conectado
+                  </span>
+                </div>
+                <div className="divide-y divide-border text-sm">
+                  <div className="flex justify-between py-2">
+                    <span className="text-foreground-secondary">Token expira</span>
+                    <span>
+                      {new Date(instagram.token_expires_at).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-foreground-secondary">Último refresh</span>
+                    <span>
+                      {instagram.token_refreshed_at
+                        ? new Date(instagram.token_refreshed_at).toLocaleDateString(
+                            "pt-BR",
+                          )
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+                <div className="pt-2">
+                  {confirmDisconnect ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleDisconnect}
+                        disabled={isPending}
+                        className="rounded-lg bg-error px-3 py-1.5 text-sm font-medium text-white hover:bg-error/90 disabled:opacity-50"
+                      >
+                        {isPending ? "Desconectando..." : "Confirmar"}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDisconnect(false)}
+                        className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-background-secondary"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDisconnect(true)}
+                      className="flex items-center gap-1.5 rounded-lg border border-error/30 px-3 py-1.5 text-sm text-error hover:bg-error/10 transition-colors"
+                    >
+                      <Unplug size={14} />
+                      Desconectar Instagram
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 rounded-lg bg-error/5 px-4 py-3">
-              <AtSign size={18} className="text-error" />
-              <span className="text-sm text-error">Instagram não conectado</span>
-            </div>
-          )}
-        </section>
+            ) : (
+              <div className="flex items-center gap-3 rounded-lg bg-error/5 px-4 py-3">
+                <AtSign size={18} className="text-error" />
+                <span className="text-sm text-error">Instagram não conectado</span>
+              </div>
+            )}
+          </section>
 
-        <section className="rounded-xl border border-border p-5">
-          <h2 className="mb-4 text-base font-semibold">Pagamento</h2>
-          <div className="divide-y divide-border">
-            <InfoRow
-              icon={Wallet}
-              label="Tipo PIX"
-              value={profile.pix_key_type?.toUpperCase() ?? null}
-            />
-            <InfoRow icon={Wallet} label="Chave PIX" value={profile.pix_key} />
-            <InfoRow icon={DollarSign} label="Hotmart URL" value={profile.hotmart_url} />
-            <InfoRow
-              icon={DollarSign}
-              label="Código afiliado"
-              value={profile.hotmart_affiliate_code}
-            />
-          </div>
-        </section>
-      </div>
+          <section className="rounded-xl border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold">Pagamento</h2>
+              <button
+                onClick={() => setEditMode(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-background-secondary transition-colors"
+              >
+                <Pencil size={12} />
+                Editar
+              </button>
+            </div>
+            <div className="divide-y divide-border">
+              <InfoRow
+                icon={Wallet}
+                label="Tipo PIX"
+                value={profile.pix_key_type?.toUpperCase() ?? null}
+              />
+              <InfoRow icon={Wallet} label="Chave PIX" value={profile.pix_key} />
+              <InfoRow
+                icon={DollarSign}
+                label="Hotmart URL"
+                value={profile.hotmart_url}
+              />
+              <InfoRow
+                icon={DollarSign}
+                label="Código afiliado"
+                value={profile.hotmart_affiliate_code}
+              />
+            </div>
+          </section>
+        </div>
+      )}
 
       {sectors.length > 0 && (
         <section className="rounded-xl border border-border p-5">
