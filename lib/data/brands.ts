@@ -8,7 +8,7 @@ export async function getActiveBrands() {
     .select("*")
     .eq("is_active", true)
     .order("name");
-  return data ?? [];
+  return (data as Brand[] | null) ?? [];
 }
 
 export async function getFutureBrands() {

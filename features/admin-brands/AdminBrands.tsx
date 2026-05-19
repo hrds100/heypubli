@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Users, Tag, Pencil, Trash2, X } from "lucide-react";
-import { createBrand, updateBrand, deleteBrand } from "@/lib/actions/admin";
+import { useState, useTransition, useRef } from "react";
+import Image from "next/image";
+import { Plus, Users, Tag, Pencil, Trash2, X, Upload } from "lucide-react";
+import {
+  createBrand,
+  updateBrand,
+  deleteBrand,
+  uploadBrandLogo,
+} from "@/lib/actions/admin";
 import type { Brand } from "@/types/database";
 
 interface BrandRow {
@@ -17,6 +23,16 @@ interface AdminBrandsProps {
 function BrandForm({ brand, onClose }: { brand?: Brand; onClose: () => void }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(brand?.logo_url ?? null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,6 +41,18 @@ function BrandForm({ brand, onClose }: { brand?: Brand; onClose: () => void }) {
 
     startTransition(async () => {
       try {
+        let logoUrl = brand?.logo_url ?? null;
+
+        if (logoFile) {
+          const uploadData = new FormData();
+          uploadData.append("file", logoFile);
+          const result = await uploadBrandLogo(uploadData);
+          if ("error" in result) throw new Error(result.error);
+          logoUrl = result.url;
+        }
+
+        formData.set("logo_url", logoUrl ?? "");
+
         if (brand) {
           await updateBrand(brand.id, formData);
         } else {
@@ -88,13 +116,33 @@ function BrandForm({ brand, onClose }: { brand?: Brand; onClose: () => void }) {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">URL do logo</label>
+            <label className="text-sm font-medium">Logo</label>
+            <input type="hidden" name="logo_url" value={logoPreview ?? ""} />
+            <div
+              onClick={() => fileRef.current?.click()}
+              className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-border px-4 py-3 hover:border-accent/50 hover:bg-accent/5 transition-colors"
+            >
+              {logoPreview ? (
+                <Image
+                  src={logoPreview}
+                  alt="Logo preview"
+                  width={120}
+                  height={40}
+                  className="h-8 w-auto object-contain"
+                />
+              ) : (
+                <Upload size={20} className="text-foreground-secondary" />
+              )}
+              <span className="text-sm text-foreground-secondary">
+                {logoPreview ? "Trocar logo" : "Enviar logo"}
+              </span>
+            </div>
             <input
-              name="logo_url"
-              type="url"
-              defaultValue={brand?.logo_url ?? ""}
-              placeholder="https://exemplo.com/logo.png"
-              className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
             />
           </div>
 
@@ -175,6 +223,17 @@ export function AdminBrands({ brands }: AdminBrandsProps) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {brands.map((row) => (
           <div key={row.brand.id} className="rounded-xl border border-border p-6">
+            {row.brand.logo_url && (
+              <div className="mb-3">
+                <Image
+                  src={row.brand.logo_url}
+                  alt={row.brand.name}
+                  width={140}
+                  height={40}
+                  className="h-8 w-auto object-contain"
+                />
+              </div>
+            )}
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold">{row.brand.name}</h3>

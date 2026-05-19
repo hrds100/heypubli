@@ -1,21 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
+import { getActiveBrands } from "@/lib/data";
 
-const BRAND_NAMES = [
-  "Natura",
-  "O Boticário",
-  "Havaianas",
-  "Magazine Luiza",
-  "Renner",
-  "Amaro",
-  "Farm",
-  "Reserva",
-  "Cacau Show",
-  "Hotmart",
-  "Loja Integrada",
-  "Mondaine",
-];
-
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const brands = await getActiveBrands();
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-[420px] shrink-0 flex-col bg-background-secondary px-10 py-10 lg:flex">
@@ -40,12 +28,24 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </h2>
 
           <div className="mt-8 grid grid-cols-3 gap-3">
-            {BRAND_NAMES.map((name) => (
+            {brands.map((brand) => (
               <div
-                key={name}
-                className="flex items-center justify-center rounded-lg border border-border bg-background px-2 py-3 text-center text-xs font-medium text-foreground-secondary"
+                key={brand.id}
+                className="flex items-center justify-center rounded-lg border border-border bg-background px-2 py-3 text-center"
               >
-                {name}
+                {brand.logo_url ? (
+                  <Image
+                    src={brand.logo_url}
+                    alt={brand.name}
+                    width={100}
+                    height={28}
+                    className="h-6 w-auto object-contain"
+                  />
+                ) : (
+                  <span className="text-xs font-medium text-foreground-secondary">
+                    {brand.name}
+                  </span>
+                )}
               </div>
             ))}
           </div>

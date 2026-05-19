@@ -284,3 +284,24 @@ export async function updateInfluencerAuth(profileId: string, formData: FormData
   revalidatePath("/admin/influenciadores");
   return { success: true };
 }
+
+export async function uploadBrandLogo(formData: FormData) {
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  const file = formData.get("file") as File;
+  if (!file || file.size === 0) return { error: "Nenhum arquivo enviado" };
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
+  const fileName = `brand-logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const { error } = await admin.storage.from("assets").upload(fileName, file, {
+    cacheControl: "3600",
+    upsert: false,
+  });
+
+  if (error) return { error: error.message };
+
+  const { data } = admin.storage.from("assets").getPublicUrl(fileName);
+  return { url: data.publicUrl };
+}
