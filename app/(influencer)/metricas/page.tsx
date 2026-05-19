@@ -55,7 +55,7 @@ function buildMetrics(
   }));
 
   return {
-    period: "Últimos 25 posts",
+    period: `Últimos ${media.length} posts`,
     reach: totalLikes + totalComments,
     reachChange: 0,
     views: 0,
@@ -95,11 +95,12 @@ export default async function MetricasPage() {
   try {
     const [igProfile, media] = await Promise.all([
       getInstagramProfile(igConnection.access_token),
-      getInstagramMedia(igConnection.access_token, 25),
+      getInstagramMedia(igConnection.access_token, 50),
     ]);
 
     if (media.length > 0) {
-      profileMetrics = [buildMetrics(igProfile, media)];
+      const limits = [5, 10, 25, 50].filter((n) => n <= media.length);
+      profileMetrics = limits.map((n) => buildMetrics(igProfile, media.slice(0, n)));
     }
   } catch {
     // Token expired or API error — show connected but no data

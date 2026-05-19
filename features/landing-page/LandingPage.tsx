@@ -127,15 +127,23 @@ function Hero() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <div className="mb-6 inline-flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-medium text-foreground-secondary shadow-sm">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#0081FB">
+            <div className="mb-4 md:mb-6 inline-flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-1.5 text-[10px] font-medium text-foreground-secondary shadow-sm sm:px-3 sm:py-2 sm:text-xs sm:gap-2">
+                <svg
+                  className="h-3 w-3 sm:h-4 sm:w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="#0081FB"
+                >
                   <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
                 </svg>
                 Meta Business Partner
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-medium text-foreground-secondary shadow-sm">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <div className="flex items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-1.5 text-[10px] font-medium text-foreground-secondary shadow-sm sm:px-3 sm:py-2 sm:text-xs sm:gap-2">
+                <svg
+                  className="h-3 w-3 sm:h-4 sm:w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z" />
                 </svg>
                 TikTok Partners (Em breve)
@@ -153,16 +161,16 @@ function Hero() {
               {landingCopy.hero.subtitle}
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:gap-4">
               <Link
                 href="/cadastro"
-                className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-8 py-4 text-center text-base font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30"
+                className="rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30 sm:px-8 sm:py-4 sm:text-base"
               >
                 {landingCopy.hero.cta}
               </Link>
               <a
                 href="#how-it-works"
-                className="flex items-center justify-center gap-2 rounded-full border border-border px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background-secondary"
+                className="flex items-center justify-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-background-secondary sm:px-8 sm:py-4 sm:text-base"
               >
                 <svg
                   className="h-5 w-5"
@@ -270,7 +278,7 @@ function HowItWorks() {
           {landingCopy.howItWorks.title}
         </h2>
 
-        <div className="relative mt-16 grid gap-0 md:grid-cols-4">
+        <div className="relative mt-10 grid gap-8 md:mt-16 md:gap-0 md:grid-cols-4">
           <div className="absolute top-12 right-0 left-0 hidden h-0.5 bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] md:block" />
 
           {landingCopy.howItWorks.steps.map((step) => (
@@ -278,11 +286,13 @@ function HowItWorks() {
               key={step.number}
               className="relative flex flex-col items-center px-4 text-center"
             >
-              <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-lg font-bold text-white shadow-lg shadow-accent/25">
+              <div className="relative z-10 mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584] text-sm font-bold text-white shadow-lg shadow-accent/25 sm:mb-5 sm:h-14 sm:w-14 sm:text-lg">
                 {step.number}
               </div>
-              <h3 className="mb-2 text-lg font-bold text-foreground">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-foreground-secondary">
+              <h3 className="mb-1.5 text-base font-bold text-foreground sm:mb-2 sm:text-lg">
+                {step.title}
+              </h3>
+              <p className="text-xs leading-relaxed text-foreground-secondary sm:text-sm">
                 {step.description}
               </p>
             </div>
@@ -752,15 +762,23 @@ function FinalCta() {
               {landingCopy.finalCta.subtitle}
             </p>
 
-            <div className="mt-6 flex items-center justify-center gap-4">
-              <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+            <div className="mt-4 flex items-center justify-center gap-2 sm:mt-6 sm:gap-4">
+              <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 text-[10px] font-medium text-white backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:gap-2">
+                <svg
+                  className="h-3 w-3 sm:h-4 sm:w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
                 </svg>
                 Meta Business Partner
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 text-[10px] font-medium text-white backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:gap-2">
+                <svg
+                  className="h-3 w-3 sm:h-4 sm:w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z" />
                 </svg>
                 TikTok Partners (Em breve)
@@ -769,7 +787,7 @@ function FinalCta() {
 
             <Link
               href="/cadastro"
-              className="mt-8 inline-block rounded-full bg-white px-10 py-4 text-base font-semibold text-accent shadow-lg transition-all hover:shadow-xl"
+              className="mt-6 inline-block rounded-full bg-white px-8 py-3 text-sm font-semibold text-accent shadow-lg transition-all hover:shadow-xl sm:mt-8 sm:px-10 sm:py-4 sm:text-base"
             >
               {landingCopy.finalCta.cta}
             </Link>

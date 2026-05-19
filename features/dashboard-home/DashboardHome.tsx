@@ -378,22 +378,22 @@ function TiersSection() {
                 </span>
               </div>
 
-              <div className="ml-8 mt-2 flex flex-wrap gap-2.5">
+              <div className="ml-8 mt-2 flex flex-wrap gap-2">
                 {tier.products.map((product) => (
                   <div
                     key={product.alt}
-                    className={`overflow-hidden rounded-xl border transition-all ${
+                    className={`overflow-hidden rounded-lg border bg-white px-1.5 py-1 transition-all ${
                       isUnlocked
                         ? "border-border shadow-sm"
-                        : "border-border/40 opacity-40 grayscale"
+                        : "border-border/40 opacity-35 grayscale"
                     }`}
                   >
                     <Image
                       src={product.logo}
                       alt={product.alt}
-                      width={56}
-                      height={56}
-                      className="h-14 w-14"
+                      width={140}
+                      height={40}
+                      className="h-9 w-auto"
                     />
                   </div>
                 ))}

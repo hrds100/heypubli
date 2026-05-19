@@ -88,6 +88,17 @@ function BrandForm({ brand, onClose }: { brand?: Brand; onClose: () => void }) {
           </div>
 
           <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">URL do logo</label>
+            <input
+              name="logo_url"
+              type="url"
+              defaultValue={brand?.logo_url ?? ""}
+              placeholder="https://exemplo.com/logo.png"
+              className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Setores (separados por vírgula)</label>
             <input
               name="target_sectors"

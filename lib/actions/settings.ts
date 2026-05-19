@@ -46,3 +46,26 @@ export async function saveSettings(formData: FormData) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function savePixKey(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Não autenticado" };
+
+  const pixKeyType = (formData.get("pix_key_type") as PixKeyType) || null;
+  const pixKey = (formData.get("pix_key") as string) || null;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from("profiles") as any)
+    .update({ pix_key_type: pixKeyType, pix_key: pixKey })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/vendas");
+  revalidatePath("/configuracoes");
+  return { success: true };
+}

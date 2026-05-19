@@ -9,8 +9,6 @@ import {
   MessageCircle,
   UserPlus,
   Users,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 export interface ProfileMetrics {
@@ -155,27 +153,17 @@ export function DashboardMetrics({
           </p>
         </div>
         {profileMetrics.length > 0 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() =>
-                setPeriodIndex(Math.min(periodIndex + 1, profileMetrics.length - 1))
-              }
-              disabled={periodIndex >= profileMetrics.length - 1}
-              className="rounded-lg border border-border p-2 hover:bg-background-secondary disabled:opacity-30"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <span className="min-w-[120px] text-center text-sm font-medium">
-              {metrics?.period ?? "-"}
-            </span>
-            <button
-              onClick={() => setPeriodIndex(Math.max(periodIndex - 1, 0))}
-              disabled={periodIndex <= 0}
-              className="rounded-lg border border-border p-2 hover:bg-background-secondary disabled:opacity-30"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+          <select
+            value={periodIndex}
+            onChange={(e) => setPeriodIndex(Number(e.target.value))}
+            className="rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+          >
+            {profileMetrics.map((m, i) => (
+              <option key={m.period} value={i}>
+                {m.period}
+              </option>
+            ))}
+          </select>
         )}
       </div>
 

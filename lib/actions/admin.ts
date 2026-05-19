@@ -99,12 +99,13 @@ export async function createBrand(formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean);
   const isActive = formData.get("is_active") === "true";
+  const logoUrl = (formData.get("logo_url") as string) || null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from("brands") as any).insert({
     name,
     description,
-    logo_url: null,
+    logo_url: logoUrl,
     hotmart_product_id: hotmartProductId,
     hotmart_product_url: hotmartProductUrl,
     target_sectors: targetSectors,
@@ -129,12 +130,14 @@ export async function updateBrand(brandId: string, formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean);
   const isActive = formData.get("is_active") === "true";
+  const logoUrl = (formData.get("logo_url") as string) || null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from("brands") as any)
     .update({
       name,
       description,
+      logo_url: logoUrl,
       hotmart_product_id: hotmartProductId,
       hotmart_product_url: hotmartProductUrl,
       target_sectors: targetSectors,

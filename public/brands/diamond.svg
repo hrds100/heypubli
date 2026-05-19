@@ -1,7 +1,8 @@
-<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="80" height="80" rx="16" fill="#F97316"/>
-  <polygon points="40,22 52,34 40,54 28,34" stroke="white" stroke-width="3" fill="none" stroke-linejoin="round"/>
-  <path d="M28 34 L52 34" stroke="white" stroke-width="2" stroke-linecap="round"/>
-  <path d="M36 34 L40 22 L44 34 L40 54 L36 34" stroke="white" stroke-width="1.5" fill="none"/>
-  <text x="40" y="70" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="white" opacity="0.9">DIAMOND</text>
+<svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="4" width="32" height="32" rx="7" fill="#F97316"/>
+  <polygon points="16,10 22,17 16,28 10,17" stroke="white" stroke-width="2" fill="none" stroke-linejoin="round"/>
+  <path d="M10 17 L22 17" stroke="white" stroke-width="1.5"/>
+  <path d="M14 17 L16 10 L18 17" stroke="white" stroke-width="1" fill="none"/>
+  <text x="40" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" fill="#F97316">Diamond</text>
+  <text x="40" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" fill="#9CA3AF" letter-spacing="1">JOIAS</text>
 </svg>

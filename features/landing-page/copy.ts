@@ -100,6 +100,12 @@ export const landingCopy = {
       { name: "Fitness & Esporte", emoji: "🏃" },
       { name: "Maternidade", emoji: "👪" },
       { name: "Saúde & Bem-estar", emoji: "💊" },
+      { name: "Carros & Motos", emoji: "🚗" },
+      { name: "Coaching & Mentoria", emoji: "🎯" },
+      { name: "Relacionamentos", emoji: "💑" },
+      { name: "Educação & Cursos", emoji: "📚" },
+      { name: "Tecnologia", emoji: "📱" },
+      { name: "Viagens & Turismo", emoji: "✈️" },
     ],
   },
   testimonials: [

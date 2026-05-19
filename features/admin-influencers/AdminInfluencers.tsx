@@ -84,7 +84,14 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                 </td>
                 <td className="px-4 py-3">
                   {row.instagram ? (
-                    <span className="text-accent">@{row.instagram.ig_username}</span>
+                    <a
+                      href={`https://instagram.com/${row.instagram.ig_username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      @{row.instagram.ig_username}
+                    </a>
                   ) : (
                     <span className="text-foreground-secondary">-</span>
                   )}

@@ -8,6 +8,8 @@ const baseProps = {
   monthlySales: [],
   lastPublishedAt: null,
   affiliateClicks: 42,
+  pixKeyType: null,
+  pixKey: null,
 };
 
 describe("DashboardAnalytics", () => {

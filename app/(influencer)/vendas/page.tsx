@@ -36,9 +36,14 @@ export default async function VendasPage() {
 
   if (!user) redirect("/login");
 
-  const [sales, posts] = await Promise.all([
+  const [sales, posts, profileResult] = await Promise.all([
     getSalesByProfile(user.id),
     getPostsByProfile(user.id),
+    supabase
+      .from("profiles")
+      .select("pix_key_type, pix_key")
+      .eq("id", user.id)
+      .single<{ pix_key_type: string | null; pix_key: string | null }>(),
   ]);
 
   const totalSales = sales.length;
@@ -59,6 +64,8 @@ export default async function VendasPage() {
       affiliateClicks={affiliateClicks}
       lastPublishedAt={lastPublishedAt}
       monthlySales={monthlySales}
+      pixKeyType={profileResult.data?.pix_key_type ?? null}
+      pixKey={profileResult.data?.pix_key ?? null}
     />
   );
 }
