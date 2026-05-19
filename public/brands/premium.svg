@@ -1,0 +1,5 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="80" height="80" rx="16" fill="#D946EF"/>
+  <polygon points="40,22 44,34 56,34 46,42 50,54 40,46 30,54 34,42 24,34 36,34" fill="white" opacity="0.85"/>
+  <text x="40" y="70" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="white" opacity="0.9">PREMIUM+</text>
+</svg>

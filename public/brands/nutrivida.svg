@@ -1,0 +1,7 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="80" height="80" rx="16" fill="#10B981"/>
+  <path d="M40 24 C40 24 28 30 28 42 C28 50 33 54 40 54 C47 54 52 50 52 42 C52 30 40 24 40 24Z" stroke="white" stroke-width="3" fill="none"/>
+  <path d="M40 32 L40 48" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M40 38 L46 33" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <text x="40" y="70" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="white" opacity="0.9">NUTRIVIDA</text>
+</svg>

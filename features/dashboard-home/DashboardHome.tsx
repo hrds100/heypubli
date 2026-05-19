@@ -5,36 +5,36 @@ const TIERS = [
   {
     tier: "Tier 1",
     threshold: 0,
-    products: [{ name: "ScanPlates", color: "#E1306C" }],
+    products: [{ name: "ScanPlates", logo: "/brands/scanplates.svg" }],
   },
   {
     tier: "Tier 2",
     threshold: 10,
     products: [
-      { name: "FitBoost", color: "#6366F1" },
-      { name: "GlowSkin", color: "#EC4899" },
-      { name: "NutriVida", color: "#10B981" },
+      { name: "FitBoost", logo: "/brands/fitboost.svg" },
+      { name: "GlowSkin", logo: "/brands/glowskin.svg" },
+      { name: "NutriVida", logo: "/brands/nutrivida.svg" },
     ],
   },
   {
     tier: "Tier 3",
     threshold: 50,
     products: [
-      { name: "TechWear", color: "#3B82F6" },
-      { name: "PetLove", color: "#F59E0B" },
-      { name: "EcoHome", color: "#14B8A6" },
-      { name: "BelaFlor", color: "#F43F5E" },
+      { name: "TechWear", logo: "/brands/techwear.svg" },
+      { name: "PetLove", logo: "/brands/petlove.svg" },
+      { name: "EcoHome", logo: "/brands/ecohome.svg" },
+      { name: "BelaFlor", logo: "/brands/belaflor.svg" },
     ],
   },
   {
     tier: "VIP",
     threshold: 200,
     products: [
-      { name: "LuxBrand", color: "#8B5CF6" },
-      { name: "Premium+", color: "#D946EF" },
-      { name: "Elite", color: "#0EA5E9" },
-      { name: "Diamond", color: "#F97316" },
-      { name: "Exclusive", color: "#84CC16" },
+      { name: "LuxBrand", logo: "/brands/luxbrand.svg" },
+      { name: "Premium+", logo: "/brands/premium.svg" },
+      { name: "Elite", logo: "/brands/elite.svg" },
+      { name: "Diamond", logo: "/brands/diamond.svg" },
+      { name: "Exclusive", logo: "/brands/exclusive.svg" },
     ],
   },
 ];
@@ -370,14 +370,13 @@ function TiersSection() {
                         : "border-border/50 bg-background-secondary/60"
                     }`}
                   >
-                    <div
-                      className={`h-5 w-5 shrink-0 rounded ${isUnlocked ? "" : "opacity-30 grayscale"}`}
-                      style={{ backgroundColor: product.color }}
-                    >
-                      <span className="flex h-full w-full items-center justify-center text-[8px] font-bold text-white">
-                        {product.name[0]}
-                      </span>
-                    </div>
+                    <Image
+                      src={product.logo}
+                      alt={product.name}
+                      width={24}
+                      height={24}
+                      className={`h-6 w-6 shrink-0 rounded ${isUnlocked ? "" : "opacity-25 grayscale"}`}
+                    />
                     <span
                       className={`text-[11px] font-medium ${
                         isUnlocked ? "text-foreground" : "text-foreground-secondary/50"
