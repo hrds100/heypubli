@@ -127,43 +127,43 @@ export function DashboardSettings({
         </button>
       </div>
 
-      <section className="rounded-xl border border-border p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+      <section className="rounded-xl border border-border p-4">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
           Dados pessoais
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Nome</label>
             <input
               type="text"
               defaultValue={profile.first_name}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Sobrenome</label>
             <input
               type="text"
               defaultValue={profile.last_name}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Email</label>
             <input
               type="email"
               defaultValue={profile.email}
               disabled
-              className="rounded-xl border border-border bg-background-secondary px-4 py-2.5 text-sm text-foreground-secondary"
+              className="rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm text-foreground-secondary"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-sm font-medium">WhatsApp</label>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 min-w-0">
               <select
                 value={dialCode}
                 onChange={(e) => setDialCode(e.target.value)}
-                className="w-[100px] shrink-0 rounded-xl border border-border bg-background px-2 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                className="w-20 shrink-0 rounded-lg border border-border bg-background px-1.5 py-2 text-xs focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               >
                 {DIAL_CODES.map((d) => (
                   <option key={d.dial} value={d.dial}>
@@ -175,24 +175,24 @@ export function DashboardSettings({
                 type="tel"
                 defaultValue={profile.whatsapp ?? ""}
                 placeholder="11 99999-9999"
-                className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-border p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+      <section className="rounded-xl border border-border p-4">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
           Endereço
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1 sm:col-span-2">
             <label className="text-sm font-medium">País</label>
             <select
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             >
               {COUNTRIES.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -201,40 +201,40 @@ export function DashboardSettings({
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <div className="flex flex-col gap-1 sm:col-span-2">
             <label className="text-sm font-medium">Rua</label>
             <input
               type="text"
               defaultValue={profile.address_street ?? ""}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Cidade</label>
             <input
               type="text"
               defaultValue={profile.address_city ?? ""}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">{countryInfo.postalLabel}</label>
             <input
               type="text"
               defaultValue={profile.address_postal_code ?? ""}
               placeholder={countryInfo.postalPlaceholder}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-border p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+      <section className="rounded-xl border border-border p-4">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
           Conexão Instagram
         </h2>
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584]">
             <AtSign size={18} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -245,33 +245,35 @@ export function DashboardSettings({
               {instagramConnected ? "Conta conectada" : "Conecte para começar"}
             </p>
           </div>
-          <a
-            href="/api/instagram/connect"
-            className="shrink-0 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-background-secondary"
-          >
-            {instagramConnected ? "Reconectar" : "Conectar"}
-          </a>
+          <div className="flex shrink-0 items-center gap-2">
+            {instagramConnected && (
+              <button
+                type="button"
+                className="rounded-lg border border-error/30 px-3 py-2 text-sm font-medium text-error hover:bg-error/10 transition-colors"
+              >
+                Desconectar
+              </button>
+            )}
+            <a
+              href="/api/instagram/connect"
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-background-secondary"
+            >
+              {instagramConnected ? "Reconectar" : "Conectar"}
+            </a>
+          </div>
         </div>
-        {instagramConnected && (
-          <button
-            type="button"
-            className="mt-3 text-xs text-foreground-secondary/60 hover:text-error transition-colors"
-          >
-            Desconectar conta
-          </button>
-        )}
       </section>
 
-      <section className="rounded-xl border border-error/20 p-5">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10">
-            <Trash2 size={18} className="text-error" />
+      <section className="rounded-xl border border-error/20 p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-error/10">
+            <Trash2 size={16} className="text-error" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-medium text-error">Excluir conta</h2>
+            <h2 className="text-sm font-medium text-error">Excluir conta</h2>
             <p className="text-xs text-foreground-secondary">Permanente e irreversível</p>
           </div>
-          <button className="shrink-0 rounded-xl border border-error px-4 py-2 text-sm font-medium text-error hover:bg-error/10">
+          <button className="shrink-0 rounded-lg border border-error px-3 py-1.5 text-sm font-medium text-error hover:bg-error/10">
             Excluir
           </button>
         </div>

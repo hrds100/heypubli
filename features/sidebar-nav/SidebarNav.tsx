@@ -82,7 +82,7 @@ export function SidebarNav({ variant }: SidebarNavProps) {
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-3">
+      <div className="flex flex-1 flex-col gap-0.5 px-3">
         {mainItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -91,10 +91,10 @@ export function SidebarNav({ variant }: SidebarNavProps) {
               key={item.href}
               href={item.href}
               title={collapsed ? item.label : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] ${
                 isActive
                   ? "bg-accent/10 text-accent"
-                  : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground"
+                  : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground active:bg-background-secondary"
               } ${collapsed ? "justify-center" : ""}`}
             >
               <Icon size={18} />
@@ -113,10 +113,10 @@ export function SidebarNav({ variant }: SidebarNavProps) {
               key={item.href}
               href={item.href}
               title={collapsed ? item.label : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] ${
                 isActive
                   ? "bg-accent/10 text-accent"
-                  : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground"
+                  : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground active:bg-background-secondary"
               } ${collapsed ? "justify-center" : ""}`}
             >
               <Icon size={18} />
@@ -128,7 +128,7 @@ export function SidebarNav({ variant }: SidebarNavProps) {
           <button
             type="submit"
             title={collapsed ? "Sair" : undefined}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-red-50 hover:text-error ${collapsed ? "justify-center" : ""}`}
+            className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground-secondary transition-all duration-150 active:scale-[0.97] hover:bg-red-50 hover:text-error ${collapsed ? "justify-center" : ""}`}
           >
             <LogOut size={18} />
             {!collapsed && "Sair"}

@@ -101,7 +101,7 @@ export function MobileNav({ variant }: MobileNavProps) {
               </button>
             </div>
 
-            <div className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-4">
+            <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-4 py-4">
               {items.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
@@ -110,10 +110,10 @@ export function MobileNav({ variant }: MobileNavProps) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] ${
                       isActive
                         ? "bg-accent/10 text-accent"
-                        : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground"
+                        : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground active:bg-background-secondary"
                     }`}
                   >
                     <Icon size={18} />
@@ -127,7 +127,7 @@ export function MobileNav({ variant }: MobileNavProps) {
               <form action="/api/auth/signout" method="POST">
                 <button
                   type="submit"
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground-secondary hover:bg-red-50 hover:text-error"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground-secondary transition-all duration-150 active:scale-[0.97] hover:bg-red-50 hover:text-error"
                 >
                   <LogOut size={18} />
                   Sair
