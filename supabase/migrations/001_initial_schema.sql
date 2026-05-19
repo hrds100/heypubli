@@ -98,7 +98,7 @@ create policy "Admins can read all influencer_sectors"
 -- 4. instagram_connections
 create table public.instagram_connections (
   id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null references public.profiles(id) on delete cascade,
+  profile_id uuid not null references public.profiles(id) on delete cascade unique,
   ig_user_id text not null,
   ig_username text not null,
   access_token text not null,

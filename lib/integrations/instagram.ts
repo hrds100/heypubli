@@ -58,7 +58,7 @@ export async function refreshLongLivedToken(token: string) {
 
 export async function getInstagramProfile(token: string) {
   const res = await fetch(
-    `${INSTAGRAM_API}/me?fields=user_id,username,account_type,media_count&access_token=${token}`,
+    `${INSTAGRAM_API}/me?fields=user_id,username,account_type,media_count,profile_picture_url,name,biography,followers_count,follows_count&access_token=${token}`,
   );
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message ?? "Profile fetch failed");
@@ -67,6 +67,11 @@ export async function getInstagramProfile(token: string) {
     username: string;
     account_type: string;
     media_count: number;
+    profile_picture_url?: string;
+    name?: string;
+    biography?: string;
+    followers_count?: number;
+    follows_count?: number;
   };
 }
 
