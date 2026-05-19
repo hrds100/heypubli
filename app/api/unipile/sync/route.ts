@@ -121,7 +121,7 @@ export async function POST() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: existingMsg } = await (admin.from("inbox_messages") as any)
         .select("id")
-        .eq("metadata->>external_id", m.id)
+        .contains("metadata", { external_id: m.id })
         .maybeSingle();
 
       if (existingMsg) continue;
