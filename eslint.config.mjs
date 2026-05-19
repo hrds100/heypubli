@@ -45,7 +45,7 @@ const eslintConfig = defineConfig([
               allow: ["components", "lib", "types", "schemas", "copy"],
             },
             { from: "components", allow: ["lib", "types"] },
-            { from: "lib", allow: ["types", "schemas"] },
+            { from: "lib", allow: ["lib", "types", "schemas"] },
             { from: "mocks", allow: ["types", "schemas"] },
           ],
         },
