@@ -9,7 +9,16 @@ export type ChannelType = "whatsapp" | "email";
 export type ChannelStatus = "connected" | "disconnected";
 export type ConversationStatus = "open" | "closed";
 export type InboxContentType = "text" | "image" | "audio" | "video" | "file";
-export type InboxSender = "contact" | "admin";
+export type InboxSender = "contact" | "admin" | "ai";
+export type InboxMessageStatus = "sent" | "draft" | "failed" | "pending";
+export type AiQueueStatus =
+  | "pending"
+  | "processing"
+  | "done"
+  | "cancelled"
+  | "owner_replied"
+  | "ai_replied"
+  | "expired";
 export type SaleStatus = "confirmed" | "refunded" | "cancelled";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 
@@ -134,6 +143,9 @@ export interface Channel {
   status: ChannelStatus;
   unipile_account_id: string | null;
   config: Record<string, unknown>;
+  auto_reply_enabled: boolean;
+  draft_mode: boolean;
+  auto_reply_delay_seconds: number;
   connected_at: string | null;
   disconnected_at: string | null;
   created_at: string;
@@ -149,6 +161,9 @@ export interface Conversation {
   last_message_at: string | null;
   last_message_preview: string | null;
   unread_count: number;
+  ai_handling: boolean;
+  is_group: boolean;
+  group_name: string | null;
   created_at: string;
   profile?: Profile | null;
 }
@@ -158,11 +173,34 @@ export interface InboxMessage {
   conversation_id: string;
   direction: MessageDirection;
   sender: InboxSender;
+  sender_name: string | null;
   body: string | null;
   media_url: string | null;
   content_type: InboxContentType;
-  status: MessageStatus;
+  status: InboxMessageStatus;
   metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AiSettings {
+  id: string;
+  openai_api_key: string | null;
+  system_prompt: string;
+  model: string;
+  max_tokens: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AiTakeoverQueue {
+  id: string;
+  conversation_id: string;
+  message_id: string | null;
+  status: AiQueueStatus;
+  scheduled_at: string;
+  grace_checked_at: string | null;
+  processed_at: string | null;
+  ai_reply_message_id: string | null;
   created_at: string;
 }
 
@@ -254,6 +292,18 @@ export interface Database {
         Row: InboxMessage;
         Insert: Omit<InboxMessage, "id" | "created_at">;
         Update: Partial<Omit<InboxMessage, "id" | "created_at">>;
+        Relationships: [];
+      };
+      ai_settings: {
+        Row: AiSettings;
+        Insert: Omit<AiSettings, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<AiSettings, "id" | "created_at">>;
+        Relationships: [];
+      };
+      ai_takeover_queue: {
+        Row: AiTakeoverQueue;
+        Insert: Omit<AiTakeoverQueue, "id" | "created_at">;
+        Update: Partial<Omit<AiTakeoverQueue, "id" | "created_at">>;
         Relationships: [];
       };
     };

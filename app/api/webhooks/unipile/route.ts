@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchAccount, toE164 } from "@/lib/integrations/unipile";
+import {
+  downloadAndStoreAttachment,
+  detectContentType,
+} from "@/lib/integrations/storage";
 
 const WEBHOOK_SECRET = process.env.UNIPILE_WEBHOOK_SECRET || "";
 
@@ -28,7 +32,7 @@ export async function POST(req: Request) {
 
   const admin = createAdminClient();
 
-  // Branch 1: Account connected (hosted-auth callback)
+  // ── Branch 1: Account connected (hosted-auth callback) ──
   if (
     payload.status === "CREATION_SUCCESS" ||
     payload.status === "OK" ||
@@ -40,7 +44,6 @@ export async function POST(req: Request) {
     const acct = await fetchAccount(accountId);
     const phone = toE164(acct?.phone ?? "");
 
-    // Try to find channel by account_id first (native QR flow)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: byAccountId } = await (admin.from("channels") as any)
       .select("id")
@@ -62,7 +65,6 @@ export async function POST(req: Request) {
       return ok("account_connected");
     }
 
-    // Fallback: find disconnected channel without account_id (hosted flow)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: pending } = await (admin.from("channels") as any)
       .select("id")
@@ -89,7 +91,7 @@ export async function POST(req: Request) {
     return ok("account_connected");
   }
 
-  // Branch 1b: Account status change
+  // ── Branch 2: Account status change ──
   if (payload.event === "account_status" || payload.account_status) {
     const statusData = payload.account_status || payload;
     const accountId = statusData.account_id || payload.account_id;
@@ -109,70 +111,117 @@ export async function POST(req: Request) {
     return ok("account_status");
   }
 
-  // Branch 2: Inbound message
+  // ── Branch 3: Message reaction ──
+  if (payload.event === "message_reaction") {
+    const externalId = payload.message_id || payload.reaction?.message_id || "";
+    const emoji = payload.reaction?.emoji || payload.emoji || "";
+    const reactSender = payload.reaction?.sender_id || payload.sender_id || "";
+
+    if (externalId && emoji) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: msg } = await (admin.from("inbox_messages") as any)
+        .select("id, metadata")
+        .contains("metadata", { external_id: externalId })
+        .maybeSingle();
+
+      if (msg) {
+        const meta =
+          (msg as { id: string; metadata: Record<string, unknown> }).metadata || {};
+        const reactions =
+          (meta.reactions as Array<{ emoji: string; sender: string }>) || [];
+        reactions.push({ emoji, sender: reactSender });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (admin.from("inbox_messages") as any)
+          .update({ metadata: { ...meta, reactions } })
+          .eq("id", (msg as { id: string }).id);
+      }
+    }
+
+    return ok("message_reaction");
+  }
+
+  // ── Branch 4: Inbound message ──
   if (payload.event === "message_received" && payload.account_id) {
     const accountId = payload.account_id;
+    const messageObj = typeof payload.message === "object" ? payload.message : null;
     const messageText =
-      (typeof payload.message === "string" ? payload.message : payload.message?.text) ||
-      "";
-    const chatId = payload.chat_id || payload.message?.chat_id || "";
+      (typeof payload.message === "string" ? payload.message : messageObj?.text) || "";
+    const chatId = payload.chat_id || messageObj?.chat_id || "";
+    const chatProviderId = messageObj?.chat_provider_id || payload.chat_provider_id || "";
     const senderObj = payload.sender || {};
     const senderPhone = toE164(senderObj.identifier || senderObj.provider_id || "");
     const senderName = senderObj.display_name || senderObj.name || "";
+    const externalMessageId = payload.message_id || messageObj?.id || "";
 
-    const rawAttachments: Array<{ id: string; type?: string }> =
-      payload.attachments || payload.message?.attachments || [];
+    const rawAttachments: Array<{ id: string; type?: string; name?: string }> =
+      payload.attachments || messageObj?.attachments || [];
     const hasAttachments = rawAttachments.length > 0;
 
     if (!messageText && !hasAttachments) return ok("no text or attachments");
 
+    // Detect group chat
+    const isGroup = chatProviderId.includes("@g.us");
+
     // Find channel
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: channel } = await (admin.from("channels") as any)
-      .select("id")
+      .select("id, auto_reply_enabled, draft_mode, auto_reply_delay_seconds")
       .eq("unipile_account_id", accountId)
       .eq("status", "connected")
       .single();
 
     if (!channel) return ok("no channel");
+    const ch = channel as {
+      id: string;
+      auto_reply_enabled: boolean;
+      draft_mode: boolean;
+      auto_reply_delay_seconds: number;
+    };
 
-    // Try to match sender phone to an influencer profile
+    // Dedup check
+    if (externalMessageId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: dup } = await (admin.from("inbox_messages") as any)
+        .select("id")
+        .contains("metadata", { external_id: externalMessageId })
+        .maybeSingle();
+      if (dup) return ok("duplicate");
+    }
+
+    // Match sender to profile
     let profileId: string | null = null;
-    if (senderPhone) {
+    if (senderPhone && !isGroup) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: matchedProfile } = await (admin.from("profiles") as any)
         .select("id")
         .or(`whatsapp.eq.${senderPhone},phone.eq.${senderPhone}`)
         .eq("is_admin", false)
         .limit(1)
-        .single();
+        .maybeSingle();
       profileId = (matchedProfile as { id: string } | null)?.id ?? null;
     }
 
     // Find or create conversation
     let conversationId: string | null = null;
 
-    if (profileId) {
+    if (chatId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: byChatId } = await (admin.from("conversations") as any)
+        .select("id")
+        .eq("unipile_chat_id", chatId)
+        .maybeSingle();
+      conversationId = (byChatId as { id: string } | null)?.id ?? null;
+    }
+
+    if (!conversationId && profileId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: existing } = await (admin.from("conversations") as any)
         .select("id")
         .eq("profile_id", profileId)
         .eq("channel", "whatsapp")
         .eq("status", "open")
-        .single();
-
-      if (existing) {
-        conversationId = (existing as { id: string }).id;
-      }
-    }
-
-    if (!conversationId && chatId) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: byChatId } = await (admin.from("conversations") as any)
-        .select("id")
-        .eq("unipile_chat_id", chatId)
-        .single();
-      conversationId = (byChatId as { id: string } | null)?.id ?? null;
+        .maybeSingle();
+      conversationId = (existing as { id: string } | null)?.id ?? null;
     }
 
     if (!conversationId) {
@@ -183,6 +232,9 @@ export async function POST(req: Request) {
           channel: "whatsapp",
           status: "open",
           unipile_chat_id: chatId || null,
+          subject: isGroup ? senderName || chatId : senderPhone || null,
+          is_group: isGroup,
+          group_name: isGroup ? senderName || null : null,
         })
         .select("id")
         .single();
@@ -191,29 +243,65 @@ export async function POST(req: Request) {
 
     if (!conversationId) return ok("conversation failed");
 
-    const contentType =
-      hasAttachments && rawAttachments[0]?.type?.includes("image") ? "image" : "text";
+    // Update group info if needed
+    if (isGroup && chatId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (admin.from("conversations") as any)
+        .update({ is_group: true, ...(senderName ? { group_name: senderName } : {}) })
+        .eq("id", conversationId);
+    }
+
+    // Download attachments
+    let mediaUrl: string | null = null;
+    let contentType: "text" | "image" | "audio" | "video" | "file" = "text";
+
+    if (hasAttachments && externalMessageId) {
+      const att = rawAttachments[0];
+      const stored = await downloadAndStoreAttachment(
+        externalMessageId,
+        att.id,
+        conversationId,
+      );
+      if (stored) {
+        mediaUrl = stored.url;
+        contentType = stored.contentType;
+      } else if (att.type) {
+        contentType = detectContentType(att.type);
+      }
+    }
+
+    if (contentType === "text" && hasAttachments) {
+      const attType = rawAttachments[0]?.type || "";
+      if (attType) contentType = detectContentType(attType);
+    }
 
     const preview = messageText.slice(0, 100) || (hasAttachments ? "📎 Anexo" : "");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (admin.from("inbox_messages") as any).insert({
-      conversation_id: conversationId,
-      direction: "inbound",
-      sender: "contact",
-      body: messageText || null,
-      content_type: contentType,
-      metadata: {
-        sender_phone: senderPhone,
-        sender_name: senderName,
-        external_id: payload.message_id || payload.message?.id,
-      },
-    });
+    const { data: insertedMsg } = await (admin.from("inbox_messages") as any)
+      .insert({
+        conversation_id: conversationId,
+        direction: "inbound",
+        sender: "contact",
+        sender_name: senderName || null,
+        body: messageText || null,
+        media_url: mediaUrl,
+        content_type: contentType,
+        status: "sent",
+        metadata: {
+          sender_phone: senderPhone,
+          sender_name: senderName,
+          external_id: externalMessageId,
+          chat_id: chatId,
+        },
+      })
+      .select("id")
+      .single();
 
     // Update conversation
     const { data: currentConvo } = await admin
       .from("conversations")
-      .select("unread_count")
+      .select("unread_count, ai_handling")
       .eq("id", conversationId)
       .single();
 
@@ -227,6 +315,31 @@ export async function POST(req: Request) {
         ...(chatId ? { unipile_chat_id: chatId } : {}),
       })
       .eq("id", conversationId);
+
+    // Queue AI takeover if enabled
+    const aiHandling =
+      (currentConvo as { ai_handling: boolean } | null)?.ai_handling ?? false;
+    if (aiHandling && ch.auto_reply_enabled && insertedMsg && !isGroup) {
+      const delay = ch.auto_reply_delay_seconds || 120;
+      const scheduledAt = new Date(Date.now() + delay * 1000).toISOString();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: existingQueue } = await (admin.from("ai_takeover_queue") as any)
+        .select("id")
+        .eq("conversation_id", conversationId)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      if (!existingQueue) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (admin.from("ai_takeover_queue") as any).insert({
+          conversation_id: conversationId,
+          message_id: (insertedMsg as { id: string }).id,
+          status: "pending",
+          scheduled_at: scheduledAt,
+        });
+      }
+    }
 
     return ok("message_received");
   }

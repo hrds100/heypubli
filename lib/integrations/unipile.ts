@@ -149,6 +149,13 @@ export async function getAccountStatus(
   return { status, phone };
 }
 
+export interface UnipileAttachment {
+  id: string;
+  type?: string;
+  name?: string;
+  size?: number;
+}
+
 export interface UnipileMessage {
   id: string;
   text?: string;
@@ -157,7 +164,9 @@ export interface UnipileMessage {
   chat_id?: string;
   chat_provider_id?: string;
   sender_id?: string;
-  attachments?: Array<{ id: string; type?: string }>;
+  sender_name?: string;
+  attachments?: UnipileAttachment[];
+  reactions?: Array<{ emoji: string; sender_id?: string }>;
 }
 
 export async function getMessages(
@@ -188,6 +197,64 @@ export async function listAccounts(): Promise<
     type: a.type ?? a.provider,
     status: a.sources?.[0]?.status ?? a.status ?? "UNKNOWN",
   }));
+}
+
+export async function downloadAttachment(
+  messageId: string,
+  attachmentId: string,
+): Promise<{ buffer: ArrayBuffer; contentType: string } | null> {
+  const { baseUrl } = getConfig();
+  const res = await fetch(
+    `${baseUrl}/messages/${messageId}/attachments/${attachmentId}`,
+    { headers: { "X-API-KEY": getConfig().token, accept: "*/*" } },
+  );
+  if (!res.ok) return null;
+  const buffer = await res.arrayBuffer();
+  const contentType = res.headers.get("content-type") || "application/octet-stream";
+  return { buffer, contentType };
+}
+
+export async function sendMessageWithAttachment(
+  accountId: string,
+  recipientPhone: string,
+  text: string,
+  file: { buffer: ArrayBuffer; name: string; type: string },
+): Promise<string | null> {
+  const { baseUrl } = getConfig();
+  const form = new FormData();
+  form.append("account_id", accountId);
+  form.append("attendees_ids", JSON.stringify([recipientPhone]));
+  form.append("text", text);
+  form.append("attachments", new Blob([file.buffer], { type: file.type }), file.name);
+  const res = await fetch(`${baseUrl}/chats`, {
+    method: "POST",
+    headers: { "X-API-KEY": getConfig().token, accept: "application/json" },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`Unipile sendWithAttachment failed: ${res.status}`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = await res.json();
+  return data.message_id ?? data.chat_id ?? data.id ?? null;
+}
+
+export async function sendAttachmentToChat(
+  chatId: string,
+  text: string,
+  file: { buffer: ArrayBuffer; name: string; type: string },
+): Promise<string | null> {
+  const { baseUrl } = getConfig();
+  const form = new FormData();
+  form.append("text", text);
+  form.append("attachments", new Blob([file.buffer], { type: file.type }), file.name);
+  const res = await fetch(`${baseUrl}/chats/${chatId}/messages`, {
+    method: "POST",
+    headers: { "X-API-KEY": getConfig().token, accept: "application/json" },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`Unipile sendAttachmentToChat failed: ${res.status}`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = await res.json();
+  return data.message_id ?? data.id ?? null;
 }
 
 export function toE164(raw: string): string {

@@ -1,21 +1,28 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   MessageSquare,
   Send,
   ArrowLeft,
   Search,
-  Phone,
   Wifi,
   WifiOff,
   Plus,
   User,
-  Settings,
+  Paperclip,
   X,
-  Smartphone,
+  Bot,
+  Check,
   RefreshCw,
+  Trash2,
+  Pencil,
+  FileText,
+  Download,
+  Smartphone,
   Loader2,
+  Settings,
 } from "lucide-react";
 import type { Conversation, InboxMessage, Channel } from "@/types/database";
 
@@ -28,129 +35,294 @@ function timeAgo(dateStr: string | null) {
   if (!dateStr) return "—";
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Agora";
+  if (mins < 1) return "agora";
   if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h`;
   const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(dateStr).toLocaleDateString("pt-BR", {
-    day: "numeric",
-    month: "short",
-  });
+  return `${days}d`;
 }
 
-function formatDate(dateStr: string) {
+function displayName(convo: Conversation): string {
+  if (convo.is_group && convo.group_name) return convo.group_name;
+  if (convo.profile) {
+    const p = convo.profile;
+    const name = `${p.first_name} ${p.last_name}`.trim();
+    if (name) return name;
+    return p.email || convo.subject || "Sem nome";
+  }
+  return convo.subject || "Sem nome";
+}
+
+function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const today = new Date();
+  if (d.toDateString() === today.toDateString()) {
+    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  }
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-
-  if (d.toDateString() === today.toDateString()) return "Hoje";
-  if (d.toDateString() === yesterday.toDateString()) return "Ontem";
-  return d.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  if (d.toDateString() === yesterday.toDateString()) {
+    return (
+      "Ontem " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    );
+  }
+  return (
+    d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) +
+    " " +
+    d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+  );
 }
 
-function displayName(conv: Conversation): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const p = (conv as any).profile as {
-    first_name: string;
-    last_name: string;
-    whatsapp?: string;
-    phone?: string;
-  } | null;
-  if (p) return `${p.first_name} ${p.last_name}`;
-  if (conv.subject) return conv.subject;
-  return "Contato desconhecido";
-}
-
-function contactPhone(conv: Conversation): string | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const p = (conv as any).profile as { whatsapp?: string; phone?: string } | null;
-  return p?.whatsapp || p?.phone || conv.subject || null;
-}
-
-function ConnectWhatsAppModal({ onClose }: { onClose: () => void }) {
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  const [hostedUrl, setHostedUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const startConnection = async () => {
-    setState("loading");
-    setError(null);
-    try {
-      const res = await fetch("/api/unipile/connect", { method: "POST" });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Falha ao conectar");
-      }
-      if (!data.url) throw new Error("Unipile não retornou URL");
-      setHostedUrl(data.url);
-      setState("ready");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
-      setState("error");
-    }
-  };
-
+function ConnectWhatsAppModal({
+  onClose,
+  onConnected,
+}: {
+  onClose: () => void;
+  onConnected: () => void;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const mountedRef = useRef(false);
+
   useEffect(() => {
     if (mountedRef.current) return;
     mountedRef.current = true;
-    startConnection();
+
+    (async () => {
+      try {
+        const res = await fetch("/api/unipile/connect", { method: "POST" });
+        const data = await res.json();
+        if (data.url) setUrl(data.url);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("whatsapp") === "connected") {
+      onConnected();
+      onClose();
+    }
+  }, [onClose, onConnected]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-xl border border-border bg-background shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-bold">Conectar WhatsApp</h2>
-          <button onClick={onClose} className="rounded p-1 hover:bg-background-secondary">
-            <X size={20} />
-          </button>
+      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <div className="mb-4 flex items-center gap-2">
+          <Smartphone className="h-5 w-5 text-[#E1306C]" />
+          <h2 className="text-lg font-semibold">Conectar WhatsApp</h2>
+        </div>
+        {loading ? (
+          <div className="flex h-[400px] items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[#E1306C]" />
+          </div>
+        ) : url ? (
+          <iframe
+            src={url}
+            className="h-[500px] w-full rounded-lg border-0"
+            title="Conectar WhatsApp"
+          />
+        ) : (
+          <p className="py-12 text-center text-gray-500">Erro ao gerar link de conexão</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MessageBubble({
+  msg,
+  onApprove,
+  onRewrite,
+  onDiscard,
+}: {
+  msg: InboxMessage;
+  onApprove: (id: string) => void;
+  onRewrite: (id: string) => void;
+  onDiscard: (id: string) => void;
+}) {
+  const isOutbound = msg.direction === "outbound";
+  const isDraft = msg.status === "draft";
+  const isAi = msg.sender === "ai";
+  const [editMode, setEditMode] = useState(false);
+  const [editBody, setEditBody] = useState(msg.body || "");
+  const [saving, setSaving] = useState(false);
+  const reactions =
+    (msg.metadata?.reactions as Array<{ emoji: string; sender: string }>) || [];
+
+  async function handleEditSave() {
+    setSaving(true);
+    try {
+      await fetch("/api/inbox/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId: msg.id, body: editBody }),
+      });
+      onApprove(msg.id);
+    } finally {
+      setSaving(false);
+      setEditMode(false);
+    }
+  }
+
+  return (
+    <div className={`flex ${isOutbound ? "justify-end" : "justify-start"} mb-2`}>
+      <div className="max-w-[75%]">
+        {/* Sender label */}
+        {msg.sender_name && !isOutbound && (
+          <p className="mb-0.5 text-xs font-medium text-[#6B7280]">{msg.sender_name}</p>
+        )}
+        {isAi && (
+          <p className="mb-0.5 flex items-center gap-1 text-xs font-medium text-purple-600">
+            <Bot className="h-3 w-3" /> IA
+          </p>
+        )}
+
+        <div
+          className={`rounded-2xl px-4 py-2 ${
+            isDraft
+              ? "border-2 border-amber-300 bg-amber-50"
+              : isOutbound
+                ? "bg-[#E1306C] text-white"
+                : "bg-[#F9FAFB] text-[#1A1A1A]"
+          }`}
+        >
+          {/* Media content */}
+          {msg.content_type === "image" && msg.media_url && (
+            <a href={msg.media_url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={msg.media_url}
+                alt="Imagem"
+                className="mb-2 max-h-[300px] rounded-lg object-contain"
+              />
+            </a>
+          )}
+
+          {msg.content_type === "audio" && msg.media_url && (
+            <audio controls className="mb-2 w-full max-w-[280px]">
+              <source src={msg.media_url} />
+            </audio>
+          )}
+
+          {msg.content_type === "video" && msg.media_url && (
+            <video controls className="mb-2 max-h-[300px] rounded-lg">
+              <source src={msg.media_url} />
+            </video>
+          )}
+
+          {msg.content_type === "file" && msg.media_url && (
+            <a
+              href={msg.media_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mb-2 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                isOutbound
+                  ? "border-white/30 text-white hover:bg-white/10"
+                  : "border-[#E5E7EB] text-[#1A1A1A] hover:bg-gray-100"
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              <span>Arquivo</span>
+              <Download className="h-4 w-4 ml-auto" />
+            </a>
+          )}
+
+          {/* Text body */}
+          {editMode ? (
+            <div className="space-y-2">
+              <textarea
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                className="w-full rounded border px-2 py-1 text-sm text-[#1A1A1A]"
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleEditSave}
+                  disabled={saving}
+                  className="rounded bg-green-500 px-3 py-1 text-xs text-white"
+                >
+                  {saving ? "..." : "Enviar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditMode(false)}
+                  className="rounded bg-gray-200 px-3 py-1 text-xs"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            msg.body && <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
+          )}
+
+          {/* Timestamp */}
+          <p
+            className={`mt-1 text-right text-[10px] ${
+              isDraft ? "text-amber-600" : isOutbound ? "text-white/70" : "text-[#6B7280]"
+            }`}
+          >
+            {formatDate(msg.created_at)}
+          </p>
         </div>
 
-        {state === "loading" && (
-          <div className="flex flex-col items-center py-12 gap-3">
-            <Loader2 size={32} className="animate-spin text-accent" />
-            <p className="text-sm text-foreground-secondary">Carregando Unipile...</p>
+        {/* Reactions */}
+        {reactions.length > 0 && (
+          <div className="mt-0.5 flex gap-0.5">
+            {reactions.map((r, i) => (
+              <span
+                key={i}
+                className="rounded-full bg-white px-1.5 py-0.5 text-sm shadow-sm border border-gray-200"
+              >
+                {r.emoji}
+              </span>
+            ))}
           </div>
         )}
 
-        {state === "ready" && hostedUrl && (
-          <div className="flex flex-col">
-            <iframe
-              src={hostedUrl}
-              className="w-full border-0"
-              style={{ height: "520px" }}
-              allow="camera"
-              title="Unipile WhatsApp QR"
-            />
-            <div className="px-6 py-3 border-t border-border bg-background-secondary">
-              <p className="text-xs text-foreground-secondary">
-                Escaneie o QR code com seu WhatsApp. Após conectar, a página recarregará
-                automaticamente.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {state === "error" && (
-          <div className="flex flex-col items-center py-12 gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-error/10">
-              <WifiOff size={32} className="text-error" />
-            </div>
-            <p className="text-sm text-error">{error}</p>
+        {/* Draft actions */}
+        {isDraft && !editMode && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-xs font-medium text-amber-600">Rascunho IA</span>
             <button
-              onClick={startConnection}
-              className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90"
+              type="button"
+              onClick={() => onApprove(msg.id)}
+              className="flex items-center gap-1 rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-600"
             >
-              <RefreshCw size={14} />
-              Tentar novamente
+              <Check className="h-3 w-3" /> Aprovar
+            </button>
+            <button
+              type="button"
+              onClick={() => onRewrite(msg.id)}
+              className="flex items-center gap-1 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+            >
+              <RefreshCw className="h-3 w-3" /> Reescrever
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditMode(true)}
+              className="flex items-center gap-1 rounded bg-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-300"
+            >
+              <Pencil className="h-3 w-3" /> Editar
+            </button>
+            <button
+              type="button"
+              onClick={() => onDiscard(msg.id)}
+              className="flex items-center gap-1 rounded bg-red-100 px-2 py-1 text-xs text-red-600 hover:bg-red-200"
+            >
+              <Trash2 className="h-3 w-3" /> Descartar
             </button>
           </div>
         )}
@@ -159,520 +331,408 @@ function ConnectWhatsAppModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function AdminMessages({
-  conversations: initialConversations,
-  channels,
-}: AdminMessagesProps) {
-  const [conversations, setConversations] = useState(initialConversations);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [disconnecting, setDisconnecting] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showQR, setShowQR] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-
-  const whatsappChannel = channels.find(
-    (ch) => ch.type === "whatsapp" && ch.status === "connected",
-  );
-
-  const handleDisconnect = async () => {
-    if (!whatsappChannel) return;
-    setDisconnecting(true);
-    try {
-      await fetch("/api/unipile/disconnect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channelId: whatsappChannel.id }),
-      });
-      window.location.reload();
-    } finally {
-      setDisconnecting(false);
-    }
-  };
-
-  const handleSync = async () => {
-    setSyncing(true);
-    try {
-      await fetch("/api/unipile/sync", { method: "POST" });
-      window.location.reload();
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  const selected = conversations.find((c) => c.id === selectedId);
-
-  const filtered = conversations.filter((c) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    const name = displayName(c).toLowerCase();
-    const preview = c.last_message_preview?.toLowerCase() ?? "";
-    return name.includes(q) || preview.includes(q);
-  });
-
-  const handleMessageSent = useCallback((conversationId: string, preview: string) => {
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === conversationId
-          ? {
-              ...c,
-              last_message_at: new Date().toISOString(),
-              last_message_preview: preview.slice(0, 100),
-              unread_count: 0,
-            }
-          : c,
-      ),
-    );
-  }, []);
-
-  // Mobile: show thread only
-  if (selected && typeof window !== "undefined" && window.innerWidth < 1024) {
-    return (
-      <div className="flex h-[calc(100vh-64px)] flex-col">
-        <ThreadView
-          key={selected.id}
-          conversation={selected}
-          onBack={() => setSelectedId(null)}
-          onMessageSent={handleMessageSent}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-[calc(100vh-64px)]">
-      {/* Sidebar */}
-      <div className="flex w-full flex-col border-r border-border lg:w-[340px] lg:shrink-0">
-        <div className="flex items-center justify-between px-4 pt-4">
-          <h1 className="text-lg font-bold">Mensagens</h1>
-          <div className="flex items-center gap-2">
-            {whatsappChannel ? (
-              <>
-                <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
-                  <Wifi size={12} />
-                  Conectado
-                </span>
-                <button
-                  onClick={handleSync}
-                  disabled={syncing}
-                  className="rounded-lg p-1.5 hover:bg-background-secondary transition-colors"
-                  title="Sincronizar mensagens"
-                >
-                  <RefreshCw
-                    size={16}
-                    className={`text-foreground-secondary ${syncing ? "animate-spin" : ""}`}
-                  />
-                </button>
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="rounded-lg p-1.5 hover:bg-background-secondary transition-colors"
-                  title="Configurações do WhatsApp"
-                >
-                  <Settings size={16} className="text-foreground-secondary" />
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setShowQR(true)}
-                className="flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-medium text-white hover:bg-success/90"
-              >
-                <Plus size={12} />
-                Conectar WhatsApp
-              </button>
-            )}
-          </div>
-        </div>
-
-        {whatsappChannel && showSettings && (
-          <div className="mx-4 mt-3 rounded-lg border border-border bg-background p-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Smartphone size={16} className="text-success" />
-                <span className="text-sm font-medium">WhatsApp</span>
-              </div>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="rounded p-0.5 hover:bg-background-secondary"
-              >
-                <X size={14} className="text-foreground-secondary" />
-              </button>
-            </div>
-            <div className="space-y-1.5 text-xs text-foreground-secondary">
-              {whatsappChannel.label && (
-                <p>
-                  <span className="font-medium text-foreground">Número:</span>{" "}
-                  {whatsappChannel.label}
-                </p>
-              )}
-              {whatsappChannel.connected_at && (
-                <p>
-                  <span className="font-medium text-foreground">Conectado em:</span>{" "}
-                  {new Date(whatsappChannel.connected_at).toLocaleDateString("pt-BR", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              )}
-              <p>
-                <span className="font-medium text-foreground">Status:</span>{" "}
-                <span className="text-success">Ativo</span>
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowQR(true)}
-                className="flex-1 rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-background-secondary transition-colors"
-              >
-                Conectar outro
-              </button>
-              <button
-                onClick={handleDisconnect}
-                disabled={disconnecting}
-                className="flex-1 rounded-lg border border-error/30 px-3 py-2 text-xs font-medium text-error hover:bg-error/5 disabled:opacity-50 transition-colors"
-              >
-                {disconnecting ? "Desconectando..." : "Desconectar"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!whatsappChannel && (
-          <div className="mx-4 mt-3 flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
-            <WifiOff size={14} className="mt-0.5 shrink-0 text-warning" />
-            <p className="text-xs text-foreground-secondary">
-              Nenhum WhatsApp conectado. Conecte para enviar e receber mensagens.
-            </p>
-          </div>
-        )}
-
-        <div className="relative mt-3 px-4">
-          <Search
-            size={14}
-            className="absolute left-7 top-1/2 -translate-y-1/2 text-foreground-secondary"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar conversas..."
-            className="h-9 w-full rounded-lg border border-border pl-9 pr-3 text-sm outline-none placeholder:text-foreground-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20"
-          />
-        </div>
-
-        <div className="mt-2 flex-1 space-y-0.5 overflow-y-auto px-2">
-          {filtered.length === 0 ? (
-            <div className="py-12 text-center">
-              <MessageSquare size={24} className="mx-auto text-foreground-secondary/30" />
-              <p className="mt-2 text-sm text-foreground-secondary">
-                {conversations.length === 0
-                  ? "Nenhuma conversa ainda"
-                  : "Nenhum resultado"}
-              </p>
-            </div>
-          ) : (
-            filtered.map((conv) => {
-              const name = displayName(conv);
-              const phone = contactPhone(conv);
-              const unread = conv.unread_count > 0;
-              return (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedId(conv.id)}
-                  className={`flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition ${
-                    selectedId === conv.id
-                      ? "bg-accent/5 border border-accent/20"
-                      : "hover:bg-background-secondary border border-transparent"
-                  }`}
-                >
-                  <div className="relative">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
-                      <User size={18} className="text-accent" />
-                    </div>
-                    {unread && (
-                      <div className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-accent" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p
-                        className={`truncate text-sm ${unread ? "font-semibold" : "font-medium text-foreground-secondary"}`}
-                      >
-                        {name}
-                      </p>
-                      <span className="shrink-0 text-[10px] text-foreground-secondary">
-                        {timeAgo(conv.last_message_at)}
-                      </span>
-                    </div>
-                    {phone && (
-                      <p className="truncate text-[11px] text-foreground-secondary">
-                        {phone}
-                      </p>
-                    )}
-                    <div className="mt-0.5 flex items-center gap-1.5">
-                      <MessageSquare size={10} className="shrink-0 text-success" />
-                      <p
-                        className={`truncate text-xs ${unread ? "font-medium" : "text-foreground-secondary"}`}
-                      >
-                        {conv.last_message_preview || "Sem mensagens"}
-                      </p>
-                    </div>
-                    {unread && (
-                      <span className="mt-1 inline-block rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
-                        {conv.unread_count}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* Thread */}
-      <div className="hidden flex-1 lg:flex lg:flex-col">
-        {selected ? (
-          <ThreadView
-            key={selected.id}
-            conversation={selected}
-            onBack={() => setSelectedId(null)}
-            onMessageSent={handleMessageSent}
-          />
-        ) : (
-          <div className="flex flex-1 items-center justify-center">
-            <div className="text-center">
-              <MessageSquare size={32} className="mx-auto text-foreground-secondary/30" />
-              <p className="mt-3 text-sm font-medium text-foreground-secondary">
-                Selecione uma conversa
-              </p>
-              <p className="mt-1 text-xs text-foreground-secondary">
-                Escolha uma conversa na lista para ver as mensagens
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {showQR && <ConnectWhatsAppModal onClose={() => setShowQR(false)} />}
-    </div>
-  );
-}
-
 function ThreadView({
   conversation,
+  messages,
   onBack,
   onMessageSent,
 }: {
   conversation: Conversation;
+  messages: InboxMessage[];
   onBack: () => void;
-  onMessageSent: (conversationId: string, preview: string) => void;
+  onMessageSent: () => void;
 }) {
-  const [messages, setMessages] = useState<InboxMessage[]>([]);
-  const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [localAi, setLocalAi] = useState(conversation.ai_handling);
+  const [togglingAi, setTogglingAi] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const name = displayName(conversation);
-  const phone = contactPhone(conversation);
-
-  useEffect(() => {
-    let mounted = true;
-
-    fetch(`/api/inbox/messages?conversationId=${conversation.id}`)
-      .then((r) => r.json() as Promise<{ messages: InboxMessage[] }>)
-      .then((data) => {
-        if (mounted) {
-          setMessages(data.messages);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (mounted) setLoading(false);
-      });
-
-    fetch("/api/inbox/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversationId: conversation.id }),
-    }).catch(() => {});
-
-    return () => {
-      mounted = false;
-    };
-  }, [conversation.id]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages]);
 
-  const handleSend = async () => {
-    if (!reply.trim() || sending) return;
+  async function handleSend() {
+    if ((!reply.trim() && !attachment) || sending) return;
     setSending(true);
     try {
-      const res = await fetch("/api/inbox/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId: conversation.id, body: reply.trim() }),
-      });
-      if (res.ok) {
-        const sent: InboxMessage = {
-          id: crypto.randomUUID(),
-          conversation_id: conversation.id,
-          direction: "outbound",
-          sender: "admin",
-          body: reply.trim(),
-          media_url: null,
-          content_type: "text",
-          status: "sent",
-          metadata: {},
-          created_at: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, sent]);
-        onMessageSent(conversation.id, reply.trim());
-        setReply("");
+      if (attachment) {
+        const form = new FormData();
+        form.append("conversationId", conversation.id);
+        form.append("body", reply || attachment.name);
+        form.append("attachment", attachment);
+        await fetch("/api/inbox/send", { method: "POST", body: form });
+      } else {
+        await fetch("/api/inbox/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversationId: conversation.id, body: reply }),
+        });
       }
+      setReply("");
+      setAttachment(null);
+      onMessageSent();
     } finally {
       setSending(false);
     }
-  };
+  }
 
-  let lastDate = "";
+  async function handleApprove(messageId: string) {
+    await fetch("/api/inbox/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId }),
+    });
+    onMessageSent();
+  }
+
+  async function handleRewrite(messageId: string) {
+    await fetch("/api/inbox/rewrite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId }),
+    });
+    onMessageSent();
+  }
+
+  async function handleDiscard(messageId: string) {
+    await fetch("/api/inbox/discard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId }),
+    });
+    onMessageSent();
+  }
+
+  async function handleToggleAi() {
+    setTogglingAi(true);
+    const newVal = !localAi;
+    try {
+      await fetch("/api/inbox/ai-toggle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: conversation.id,
+          enabled: newVal,
+        }),
+      });
+      setLocalAi(newVal);
+    } finally {
+      setTogglingAi(false);
+    }
+  }
 
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="shrink-0 border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="rounded-lg p-1.5 hover:bg-background-secondary lg:hidden"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/10">
-            <User size={16} className="text-accent" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">{name}</p>
-            {phone && (
-              <div className="flex items-center gap-1.5">
-                <Phone size={10} className="text-success" />
-                <span className="text-xs text-foreground-secondary">{phone}</span>
-              </div>
-            )}
-          </div>
-          {phone && (
-            <a
-              href={`https://wa.me/${phone.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-background-secondary transition-colors"
-            >
-              <MessageSquare size={12} className="text-success" />
-              Abrir no WhatsApp
-            </a>
+      <div className="flex items-center gap-3 border-b border-[#E5E7EB] px-4 py-3">
+        <button type="button" onClick={onBack} className="md:hidden">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F9FAFB]">
+          {conversation.is_group ? (
+            <MessageSquare className="h-5 w-5 text-[#6B7280]" />
+          ) : (
+            <User className="h-5 w-5 text-[#6B7280]" />
           )}
         </div>
+        <div className="flex-1">
+          <p className="font-semibold text-[#1A1A1A]">{displayName(conversation)}</p>
+          {conversation.is_group && <p className="text-xs text-[#6B7280]">Grupo</p>}
+        </div>
+        <button
+          type="button"
+          onClick={handleToggleAi}
+          disabled={togglingAi}
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            localAi ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-500"
+          }`}
+          title={localAi ? "IA ativada" : "IA desativada"}
+        >
+          <Bot className="h-3.5 w-3.5" />
+          {localAi ? "IA ON" : "IA OFF"}
+        </button>
       </div>
 
       {/* Messages */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 space-y-2 bg-background-secondary/50">
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-          </div>
-        ) : messages.length === 0 ? (
-          <p className="py-8 text-center text-sm text-foreground-secondary">
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {messages.length === 0 ? (
+          <p className="py-12 text-center text-sm text-[#6B7280]">
             Nenhuma mensagem ainda
           </p>
         ) : (
-          messages.map((msg) => {
-            const msgDate = formatDate(msg.created_at);
-            let showDate = false;
-            if (msgDate !== lastDate) {
-              lastDate = msgDate;
-              showDate = true;
-            }
-            const isOutbound = msg.direction === "outbound";
-            const meta = msg.metadata as Record<string, string> | undefined;
-            const senderName = meta?.sender_name;
-
-            return (
-              <div key={msg.id}>
-                {showDate && (
-                  <div className="flex justify-center py-2">
-                    <span className="rounded-full bg-background px-3 py-0.5 text-[10px] font-medium text-foreground-secondary border border-border">
-                      {msgDate}
-                    </span>
-                  </div>
-                )}
-                <div className={`flex ${isOutbound ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                      isOutbound
-                        ? "bg-accent text-white rounded-br-md"
-                        : "bg-background border border-border rounded-bl-md"
-                    }`}
-                  >
-                    {!isOutbound && senderName && (
-                      <p className="text-[10px] font-semibold text-accent mb-0.5">
-                        {senderName}
-                      </p>
-                    )}
-                    <p className="text-sm whitespace-pre-wrap">
-                      {msg.body || "📎 Anexo"}
-                    </p>
-                    <p
-                      className={`mt-1 text-[10px] text-right ${isOutbound ? "text-white/60" : "text-foreground-secondary"}`}
-                    >
-                      {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              msg={msg}
+              onApprove={handleApprove}
+              onRewrite={handleRewrite}
+              onDiscard={handleDiscard}
+            />
+          ))
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Reply bar */}
-      <div className="shrink-0 border-t border-border bg-background p-3">
-        <div className="flex items-end gap-2">
-          <textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Digite uma mensagem..."
-            rows={1}
-            className="min-h-[36px] max-h-[120px] w-full resize-none rounded-xl border border-border bg-background-secondary px-4 py-2.5 text-sm outline-none placeholder:text-foreground-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20"
-          />
-          <button
-            disabled={!reply.trim() || sending}
-            onClick={handleSend}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-white transition hover:bg-accent/90 disabled:opacity-40"
-          >
-            {sending ? (
-              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            ) : (
-              <Send size={16} />
-            )}
+      {/* Attachment preview */}
+      {attachment && (
+        <div className="flex items-center gap-2 border-t border-[#E5E7EB] bg-[#F9FAFB] px-4 py-2">
+          {attachment.type.startsWith("image/") ? (
+            <img
+              src={URL.createObjectURL(attachment)}
+              alt="Preview"
+              className="h-12 w-12 rounded-lg object-cover"
+            />
+          ) : (
+            <FileText className="h-6 w-6 text-[#6B7280]" />
+          )}
+          <span className="flex-1 truncate text-sm text-[#6B7280]">
+            {attachment.name}
+          </span>
+          <button type="button" onClick={() => setAttachment(null)}>
+            <X className="h-4 w-4 text-[#6B7280]" />
           </button>
         </div>
-        <p className="mt-1.5 text-[10px] text-foreground-secondary">
-          Respondendo via WhatsApp
-        </p>
+      )}
+
+      {/* Reply bar */}
+      <div className="flex items-center gap-2 border-t border-[#E5E7EB] px-4 py-3">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="rounded-full p-2 text-[#6B7280] hover:bg-[#F9FAFB]"
+        >
+          <Paperclip className="h-5 w-5" />
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={(e) => setAttachment(e.target.files?.[0] || null)}
+        />
+        <input
+          type="text"
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Digite uma mensagem..."
+          className="flex-1 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-2 text-sm focus:border-[#E1306C] focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={sending || (!reply.trim() && !attachment)}
+          className="rounded-full bg-[#E1306C] p-2.5 text-white hover:bg-[#C13584] disabled:opacity-50"
+        >
+          {sending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+        </button>
       </div>
+    </div>
+  );
+}
+
+export function AdminMessages({ conversations: initial, channels }: AdminMessagesProps) {
+  const [conversations, setConversations] = useState(initial);
+  const [selected, setSelected] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<InboxMessage[]>([]);
+  const [search, setSearch] = useState("");
+  const [showConnect, setShowConnect] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval>>(undefined);
+
+  const connected = channels.find(
+    (c) => c.type === "whatsapp" && c.status === "connected",
+  );
+
+  const filteredConversations = conversations.filter((c) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    const name = displayName(c).toLowerCase();
+    const preview = (c.last_message_preview || "").toLowerCase();
+    return name.includes(q) || preview.includes(q);
+  });
+
+  const loadMessages = useCallback(async (convoId: string) => {
+    const res = await fetch(`/api/inbox/messages?conversationId=${convoId}`);
+    const data = await res.json();
+    setMessages(data.messages || []);
+  }, []);
+
+  const refreshConversations = useCallback(async () => {
+    const res = await fetch("/api/inbox/conversations");
+    const data = await res.json();
+    if (data.conversations) setConversations(data.conversations);
+  }, []);
+
+  function selectConversation(convo: Conversation) {
+    setSelected(convo);
+    loadMessages(convo.id);
+    fetch("/api/inbox/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId: convo.id }),
+    });
+  }
+
+  function handleMessageSent() {
+    if (selected) {
+      loadMessages(selected.id);
+      refreshConversations();
+    }
+  }
+
+  // Poll for new messages
+  useEffect(() => {
+    pollRef.current = setInterval(() => {
+      refreshConversations();
+      if (selected) loadMessages(selected.id);
+    }, 10000);
+    return () => clearInterval(pollRef.current);
+  }, [selected, loadMessages, refreshConversations]);
+
+  return (
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
+      {/* Sidebar */}
+      <div
+        className={`w-full border-r border-[#E5E7EB] md:w-80 lg:w-96 ${
+          selected ? "hidden md:block" : ""
+        }`}
+      >
+        {/* Sidebar header */}
+        <div className="border-b border-[#E5E7EB] px-4 py-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[#1A1A1A]">Mensagens</h2>
+            <div className="flex items-center gap-2">
+              {connected ? (
+                <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs text-green-600">
+                  <Wifi className="h-3 w-3" /> Conectado
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowConnect(true)}
+                  className="flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
+                >
+                  <WifiOff className="h-3 w-3" /> Conectar
+                </button>
+              )}
+              <a
+                href="/admin/ai-settings"
+                className="rounded-full p-1.5 text-[#6B7280] hover:bg-gray-100"
+                title="Configurações de IA"
+              >
+                <Settings className="h-4 w-4" />
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowConnect(true)}
+                className="rounded-full p-1.5 text-[#6B7280] hover:bg-gray-100"
+                title="Adicionar WhatsApp"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div className="mt-2 relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#6B7280]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar conversas..."
+              className="w-full rounded-full bg-[#F9FAFB] py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#E1306C]"
+            />
+          </div>
+        </div>
+
+        {/* Conversation list */}
+        <div className="overflow-y-auto" style={{ height: "calc(100% - 110px)" }}>
+          {filteredConversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-[#6B7280]">
+              <MessageSquare className="mb-3 h-10 w-10" />
+              <p className="text-sm">Nenhuma conversa</p>
+            </div>
+          ) : (
+            filteredConversations.map((convo) => (
+              <button
+                key={convo.id}
+                type="button"
+                onClick={() => selectConversation(convo)}
+                className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-[#F9FAFB] transition-colors ${
+                  selected?.id === convo.id ? "bg-[#F9FAFB]" : ""
+                }`}
+              >
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] to-[#C13584]">
+                  {convo.is_group ? (
+                    <MessageSquare className="h-5 w-5 text-white" />
+                  ) : (
+                    <User className="h-5 w-5 text-white" />
+                  )}
+                  {convo.ai_handling && (
+                    <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-purple-500 p-0.5">
+                      <Bot className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="truncate text-sm font-semibold text-[#1A1A1A]">
+                      {displayName(convo)}
+                    </p>
+                    <span className="ml-2 shrink-0 text-xs text-[#6B7280]">
+                      {timeAgo(convo.last_message_at)}
+                    </span>
+                  </div>
+                  <p className="truncate text-xs text-[#6B7280]">
+                    {convo.last_message_preview || "—"}
+                  </p>
+                </div>
+                {convo.unread_count > 0 && (
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E1306C] text-[10px] font-bold text-white">
+                    {convo.unread_count}
+                  </span>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Thread panel */}
+      <div className={`flex-1 ${!selected ? "hidden md:flex" : "flex"} flex-col`}>
+        {selected ? (
+          <ThreadView
+            conversation={selected}
+            messages={messages}
+            onBack={() => setSelected(null)}
+            onMessageSent={handleMessageSent}
+          />
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center text-[#6B7280]">
+            <MessageSquare className="mb-4 h-16 w-16" />
+            <p className="text-lg font-medium">Selecione uma conversa</p>
+            <p className="text-sm">Escolha uma conversa na lista para visualizar</p>
+          </div>
+        )}
+      </div>
+
+      {/* Connect modal */}
+      {showConnect && (
+        <ConnectWhatsAppModal
+          onClose={() => setShowConnect(false)}
+          onConnected={() => window.location.reload()}
+        />
+      )}
     </div>
   );
 }

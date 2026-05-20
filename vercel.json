@@ -11,6 +11,10 @@
     {
       "path": "/api/unipile/sync-cron",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/inbox/process-takeovers",
+      "schedule": "*/1 * * * *"
     }
   ]
 }

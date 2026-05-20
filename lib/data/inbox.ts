@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Conversation, InboxMessage, Channel } from "@/types/database";
+import type { Conversation, InboxMessage, Channel, AiSettings } from "@/types/database";
 
 export async function getConversations(): Promise<Conversation[]> {
   const admin = createAdminClient();
@@ -84,4 +84,47 @@ export async function markConversationRead(conversationId: string): Promise<void
   await (admin.from("conversations") as any)
     .update({ unread_count: 0 })
     .eq("id", conversationId);
+}
+
+export async function toggleConversationAi(
+  conversationId: string,
+  enabled: boolean,
+): Promise<void> {
+  const admin = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (admin.from("conversations") as any)
+    .update({ ai_handling: enabled })
+    .eq("id", conversationId);
+}
+
+export async function getAiSettings(): Promise<AiSettings | null> {
+  const admin = createAdminClient();
+  const { data } = await admin.from("ai_settings").select("*").limit(1).single();
+  return (data as AiSettings | null) ?? null;
+}
+
+export async function updateAiSettings(
+  settings: Partial<{
+    openai_api_key: string;
+    system_prompt: string;
+    model: string;
+    max_tokens: number;
+  }>,
+): Promise<void> {
+  const admin = createAdminClient();
+  const { data: existing } = await admin
+    .from("ai_settings")
+    .select("id")
+    .limit(1)
+    .single();
+
+  if (existing) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (admin.from("ai_settings") as any)
+      .update({ ...settings, updated_at: new Date().toISOString() })
+      .eq("id", (existing as { id: string }).id);
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (admin.from("ai_settings") as any).insert(settings);
+  }
 }
