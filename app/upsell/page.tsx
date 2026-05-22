@@ -3,8 +3,7 @@
 import { useState } from "react";
 
 const WIDGET_CODE = `<!-- COLE O CÓDIGO DO WIDGET HOTMART AQUI -->
-<!-- Vá em Hotmart → Ferramentas → Funil de Vendas → ScanPlates Upsell Funnel → Código do Widget -->
-<!-- Copie o código e substitua este bloco -->
+<!-- Hotmart → Ferramentas → Funil de Vendas → ScanPlates Upsell Funnel → Código do Widget -->
 <script src="https://static.hotmart.com/checkout/widget.min.js"></script>
 <div class="hotmart-fb"></div>`;
 
@@ -19,74 +18,69 @@ export default function UpsellPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
-      {/* DEV: Copy Code Button */}
-      <div className="bg-blue-600 text-white text-center py-2 px-4 text-sm flex items-center justify-center gap-3">
-        <span>🛠 DEV: Página de Upsell (Vitalício)</span>
+    <div className="min-h-screen bg-white text-[#1a1a1a] font-[system-ui]">
+      {/* DEV: Copy Code */}
+      <div className="bg-[#1a1a1a] text-white text-center py-2 px-4 text-sm flex items-center justify-center gap-3">
+        <span>DEV: Página de Upsell (Vitalício)</span>
         <button
           onClick={handleCopyCode}
-          className="bg-white text-blue-600 px-4 py-1 rounded font-bold text-xs hover:bg-blue-50 transition"
+          className="bg-white text-[#1a1a1a] px-4 py-1 rounded-full font-semibold text-xs hover:bg-gray-100 transition"
         >
-          {copied ? "✓ Copiado!" : "Copiar HTML"}
+          {copied ? "Copiado!" : "Copiar HTML"}
         </button>
       </div>
 
       {/* Warning Bar */}
-      <div className="bg-[#e63946] text-white text-center py-3 px-4">
-        <p className="text-sm md:text-base font-bold tracking-wide animate-pulse">
-          ⚠️ ATENÇÃO: NÃO FECHE ESTA PÁGINA — SUA OFERTA EXCLUSIVA ESTÁ LOGO ABAIXO ⚠️
+      <div className="bg-[#f5f5f5] border-b border-gray-200 text-center py-3 px-4">
+        <p className="text-sm font-semibold text-[#1a1a1a] tracking-wide">
+          Atenção: não feche esta página — sua oferta exclusiva está abaixo
         </p>
       </div>
 
       {/* Hero */}
-      <div className="max-w-2xl mx-auto px-4 pt-10 pb-6 text-center">
-        <p className="text-[#10B981] font-semibold text-sm uppercase tracking-widest mb-3">
+      <div className="max-w-2xl mx-auto px-6 pt-14 pb-8 text-center">
+        <p className="text-sm uppercase tracking-[0.2em] text-gray-500 mb-4">
           Oferta exclusiva — disponível apenas agora
         </p>
-        <h1 className="text-3xl md:text-4xl font-extrabold leading-tight mb-4">
-          Garanta <span className="text-[#10B981]">Acesso Vitalício</span> ao ScanPlates e{" "}
-          <span className="underline decoration-[#10B981]">
-            nunca mais pague mensalidade
-          </span>
+        <h1 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-5">
+          Garanta acesso vitalício ao ScanPlates
         </h1>
-        <p className="text-gray-400 text-base md:text-lg mt-4">
-          Você acabou de assinar o ScanPlates — parabéns! Mas antes de continuar, temos
-          uma oferta única para você.
+        <p className="text-lg text-gray-500 max-w-lg mx-auto">
+          Você acabou de assinar o ScanPlates — parabéns! Antes de continuar, temos uma
+          oferta única para você.
         </p>
       </div>
 
-      {/* Savings Comparison */}
-      <div className="max-w-xl mx-auto px-4 pb-8">
-        <div className="bg-[#1a1a1a] border border-gray-800 rounded-2xl p-6 md:p-8">
-          <h2 className="text-xl font-bold text-center mb-6">
-            Veja quanto você economiza:
+      {/* Savings Card */}
+      <div className="max-w-lg mx-auto px-6 pb-10">
+        <div className="border border-gray-200 rounded-2xl p-8">
+          <h2 className="text-xl font-bold text-center mb-8">
+            Veja quanto você economiza
           </h2>
 
-          {/* Monthly cost */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-400">Plano Mensal (1 ano)</span>
-            <span className="text-red-400 line-through text-lg">R$ 708,00</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-400">Plano Mensal (2 anos)</span>
-            <span className="text-red-400 line-through text-lg">R$ 1.416,00</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-400">Plano Mensal (5 anos)</span>
-            <span className="text-red-400 line-through text-lg">R$ 3.540,00</span>
-          </div>
-
-          {/* Lifetime */}
-          <div className="flex items-center justify-between py-4 mt-2">
-            <span className="text-[#10B981] font-bold text-lg">✅ Acesso Vitalício</span>
-            <span className="text-[#10B981] font-extrabold text-2xl">R$ 1.120,00</span>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500">Plano Mensal (1 ano)</span>
+              <span className="text-gray-400 line-through">R$ 708,00</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500">Plano Mensal (2 anos)</span>
+              <span className="text-gray-400 line-through">R$ 1.416,00</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500">Plano Mensal (5 anos)</span>
+              <span className="text-gray-400 line-through">R$ 3.540,00</span>
+            </div>
           </div>
 
-          <div className="mt-4 bg-[#10B981]/10 border border-[#10B981]/30 rounded-xl p-4 text-center">
-            <p className="text-[#10B981] font-bold text-lg">
-              Você economiza até R$ 2.420,00
-            </p>
-            <p className="text-gray-400 text-sm mt-1">
+          <div className="flex items-center justify-between py-4 mt-4">
+            <span className="font-bold text-lg">Acesso Vitalício</span>
+            <span className="font-bold text-2xl">R$ 1.120,00</span>
+          </div>
+
+          <div className="mt-4 bg-[#f5f5f5] rounded-xl p-4 text-center">
+            <p className="font-bold text-lg">Economize até R$ 2.420,00</p>
+            <p className="text-gray-500 text-sm mt-1">
               Pagamento único — sem cobranças recorrentes, para sempre.
             </p>
           </div>
@@ -94,11 +88,11 @@ export default function UpsellPage() {
       </div>
 
       {/* Benefits */}
-      <div className="max-w-xl mx-auto px-4 pb-8">
-        <h3 className="text-lg font-bold mb-4 text-center">
-          O que você recebe com o Vitalício:
+      <div className="max-w-lg mx-auto px-6 pb-10">
+        <h3 className="text-lg font-bold mb-6 text-center">
+          O que você recebe com o Vitalício
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[
             "Acesso ilimitado ao scanner de calorias por IA",
             "Acompanhe calorias, macros e alimentação para sempre",
@@ -108,43 +102,46 @@ export default function UpsellPage() {
             "Garantia de 7 dias — satisfação garantida",
           ].map((benefit) => (
             <div key={benefit} className="flex items-start gap-3">
-              <span className="text-[#10B981] text-lg mt-0.5">✓</span>
-              <span className="text-gray-300">{benefit}</span>
+              <svg
+                className="w-5 h-5 text-[#1a1a1a] mt-0.5 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <span className="text-gray-600">{benefit}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Widget Placeholder */}
-      <div className="max-w-xl mx-auto px-4 pb-8">
-        <div className="bg-[#1a1a1a] border-2 border-dashed border-yellow-500/50 rounded-2xl p-8 text-center">
-          <p className="text-yellow-500 text-xs font-mono mb-4 uppercase tracking-widest">
-            ↓ Widget Hotmart (cole o código aqui) ↓
+      <div className="max-w-lg mx-auto px-6 pb-10">
+        <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center">
+          <p className="text-gray-400 text-xs font-mono mb-4 uppercase tracking-widest">
+            Widget Hotmart — cole o código aqui
           </p>
-
-          {/* This div is where the Hotmart widget goes */}
           <div id="hotmart-widget" dangerouslySetInnerHTML={{ __html: WIDGET_CODE }} />
-
-          <p className="text-yellow-500/60 text-xs font-mono mt-4 uppercase tracking-widest">
-            ↑ Fim do Widget Hotmart ↑
+          <p className="text-gray-300 text-xs font-mono mt-4 uppercase tracking-widest">
+            Fim do Widget
           </p>
         </div>
       </div>
 
-      {/* Trust / Urgency */}
-      <div className="max-w-xl mx-auto px-4 pb-10 text-center">
-        <div className="flex items-center justify-center gap-6 text-gray-500 text-sm">
-          <div className="flex items-center gap-2">
-            <span>🔒</span>
-            <span>Compra 100% segura</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span>↩️</span>
-            <span>Garantia de 7 dias</span>
-          </div>
+      {/* Trust */}
+      <div className="max-w-lg mx-auto px-6 pb-16 text-center">
+        <div className="flex items-center justify-center gap-8 text-gray-400 text-sm">
+          <span>Compra 100% segura</span>
+          <span>Garantia de 7 dias</span>
         </div>
-        <p className="text-gray-600 text-xs mt-6">
-          ScanPlates © {new Date().getFullYear()} — Todos os direitos reservados.
+        <p className="text-gray-300 text-xs mt-8">
+          ScanPlates © {new Date().getFullYear()}
         </p>
       </div>
     </div>
