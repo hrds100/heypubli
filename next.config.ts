@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lmzttpfckdknrmeaecce.supabase.co",
       },
+      {
+        protocol: "https",
+        hostname: "www.scanplates.com",
+      },
     ],
   },
 };
