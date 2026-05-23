@@ -54,7 +54,7 @@ export default function UpsellPage() {
       </div>
 
       {/* App Image */}
-      <div className="max-w-md mx-auto px-6 pb-10">
+      <div className="max-w-2xl mx-auto px-6 pb-10">
         <Image
           src="https://www.scanplates.com/hero-image.png"
           alt="ScanPlates App"
