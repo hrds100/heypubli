@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { LoginForm, TestCredentials } from "@/features/auth-form";
+import { IgLoginButton, igLoginCopy } from "@/features/ig-login";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ erro?: string }>;
+}) {
+  const { erro } = await searchParams;
+
   return (
     <div className="w-full max-w-md space-y-8">
       <div>
@@ -18,18 +24,20 @@ export default function LoginPage() {
           </span>
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Bem-vindo de volta</h1>
-        <p className="mt-2 text-foreground-secondary">Entre na sua conta HeyPubli</p>
+        <p className="mt-2 text-foreground-secondary">
+          Entre com a sua conta do Instagram
+        </p>
       </div>
 
-      <LoginForm />
+      {erro && (
+        <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{erro}</div>
+      )}
 
-      <TestCredentials />
+      <IgLoginButton label={igLoginCopy.defaultLabel} />
 
-      <p className="text-sm text-foreground-secondary">
-        Não tem conta?{" "}
-        <Link href="/cadastro" className="font-medium text-accent hover:underline">
-          Cadastre-se
-        </Link>
+      <p className="text-xs text-foreground-secondary">
+        Use uma conta Profissional do Instagram (Criador ou Empresa). É grátis trocar nas
+        configurações do Instagram.
       </p>
     </div>
   );

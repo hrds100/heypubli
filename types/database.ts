@@ -20,6 +20,7 @@ export type AiQueueStatus =
   | "ai_replied"
   | "expired";
 export type SaleStatus = "confirmed" | "refunded" | "cancelled";
+export type PostingProvider = "heypubli" | "outstand";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 
 export interface Profile {
@@ -40,6 +41,9 @@ export interface Profile {
   pix_key: string | null;
   hotmart_url: string | null;
   hotmart_affiliate_code: string | null;
+  ig_username: string | null;
+  auth_provider: "email" | "instagram";
+  needs_contact: boolean;
   onboarding_step: number;
   onboarding_complete: boolean;
   is_admin: boolean;
@@ -104,7 +108,9 @@ export interface ScheduledPost {
   caption: string;
   scheduled_at: string;
   status: PostStatus;
+  provider: PostingProvider;
   ig_media_id: string | null;
+  outstand_post_id: string | null;
   published_at: string | null;
   error_message: string | null;
   reach: number | null;
@@ -213,6 +219,24 @@ export interface AdminSession {
   actions_taken: Record<string, unknown>;
 }
 
+export interface PostingSettings {
+  id: string;
+  active_provider: PostingProvider;
+  outstand_api_key: string | null;
+  outstand_social_network_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OutstandConnection {
+  id: string;
+  profile_id: string;
+  outstand_social_account_id: string;
+  ig_username: string | null;
+  is_connected: boolean;
+  created_at: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -304,6 +328,18 @@ export interface Database {
         Row: AiTakeoverQueue;
         Insert: Omit<AiTakeoverQueue, "id" | "created_at">;
         Update: Partial<Omit<AiTakeoverQueue, "id" | "created_at">>;
+        Relationships: [];
+      };
+      posting_settings: {
+        Row: PostingSettings;
+        Insert: Omit<PostingSettings, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<PostingSettings, "id" | "created_at">>;
+        Relationships: [];
+      };
+      outstand_connections: {
+        Row: OutstandConnection;
+        Insert: Omit<OutstandConnection, "id" | "created_at">;
+        Update: Partial<Omit<OutstandConnection, "id" | "created_at">>;
         Relationships: [];
       };
     };

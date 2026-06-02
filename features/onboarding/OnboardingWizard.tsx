@@ -13,9 +13,14 @@ import { ChevronLeft, Check } from "lucide-react";
 interface OnboardingWizardProps {
   sectors: Sector[];
   userName: string;
+  connectUrl?: string;
 }
 
-export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
+export function OnboardingWizard({
+  sectors,
+  userName,
+  connectUrl = "/api/instagram/connect",
+}: OnboardingWizardProps) {
   const searchParams = useSearchParams();
   const igConnected = searchParams.get("ig_connected") === "true";
   const igError = searchParams.get("ig_error");
@@ -151,7 +156,7 @@ export function OnboardingWizard({ sectors, userName }: OnboardingWizardProps) {
               </div>
 
               <a
-                href="/api/instagram/connect"
+                href={connectUrl}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-6 py-3.5 font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
               >
                 <svg

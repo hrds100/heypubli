@@ -38,6 +38,7 @@ interface DashboardMetricsProps {
   profileMetrics: ProfileMetrics[];
   isConnected?: boolean;
   igUsername?: string;
+  connectUrl?: string;
 }
 
 function MetricCard({
@@ -155,6 +156,7 @@ export function DashboardMetrics({
   profileMetrics,
   isConnected = false,
   igUsername,
+  connectUrl = "/api/instagram/connect",
 }: DashboardMetricsProps) {
   const [periodIndex, setPeriodIndex] = useState(0);
   const metrics = profileMetrics[periodIndex];
@@ -361,7 +363,7 @@ export function DashboardMetrics({
             Conecte seu Instagram para ver as métricas do perfil
           </p>
           <a
-            href="/api/instagram/connect"
+            href={connectUrl}
             className="mt-4 inline-block rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-6 py-2.5 text-sm font-medium text-white"
           >
             Conectar Instagram

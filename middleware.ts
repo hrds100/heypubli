@@ -4,34 +4,30 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const { response, user, supabase } = await updateSession(request);
 
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const isDashboardRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/vendas") ||
-    request.nextUrl.pathname.startsWith("/calendario") ||
-    request.nextUrl.pathname.startsWith("/metricas") ||
-    request.nextUrl.pathname.startsWith("/configuracoes");
-  const isOnboardingRoute = request.nextUrl.pathname.startsWith("/onboarding");
-  const isProtectedRoute = isAdminRoute || isDashboardRoute || isOnboardingRoute;
-
-  if (!isProtectedRoute) return response;
+  const path = request.nextUrl.pathname;
+  const isAdminRoute = path.startsWith("/admin");
+  const isContactRoute = path.startsWith("/bem-vindo");
 
   if (!user) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (isAdminRoute) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin, needs_contact")
+    .eq("id", user.id)
+    .single<{ is_admin: boolean; needs_contact: boolean }>();
 
-    if (!profile?.is_admin) {
-      const dashboardUrl = new URL("/dashboard", request.url);
-      return NextResponse.redirect(dashboardUrl);
-    }
+  // New Instagram accounts must give us a real email + WhatsApp before anything else.
+  if (profile?.needs_contact && !isContactRoute) {
+    return NextResponse.redirect(new URL("/bem-vindo", request.url));
+  }
+  if (!profile?.needs_contact && isContactRoute) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  if (isAdminRoute && !profile?.is_admin) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;
@@ -46,5 +42,6 @@ export const config = {
     "/metricas/:path*",
     "/configuracoes/:path*",
     "/onboarding/:path*",
+    "/bem-vindo/:path*",
   ],
 };

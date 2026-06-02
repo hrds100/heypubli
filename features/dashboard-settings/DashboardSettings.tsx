@@ -97,12 +97,14 @@ interface DashboardSettingsProps {
   selectedSectors: string[];
   instagramConnected: boolean;
   instagramUsername: string | null;
+  connectUrl?: string;
 }
 
 export function DashboardSettings({
   profile,
   instagramConnected,
   instagramUsername,
+  connectUrl = "/api/instagram/connect",
 }: DashboardSettingsProps) {
   const [country, setCountry] = useState(profile.address_country || "BR");
   const [dialCode, setDialCode] = useState("+55");
@@ -351,7 +353,7 @@ export function DashboardSettings({
               </button>
             )}
             <a
-              href="/api/instagram/connect"
+              href={connectUrl}
               className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-background-secondary"
             >
               {instagramConnected ? "Reconectar" : "Conectar"}

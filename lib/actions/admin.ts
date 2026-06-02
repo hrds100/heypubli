@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import type { PostMediaType } from "@/types/database";
+import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -182,6 +183,9 @@ export async function schedulePost(formData: FormData) {
   const caption = formData.get("caption") as string;
   const scheduledAt = formData.get("scheduled_at") as string;
 
+  const settings = await getPostingSettingsAdmin();
+  const provider = settings?.active_provider ?? "heypubli";
+
   const rows = influencerIds.map((profileId) => ({
     profile_id: profileId.trim(),
     brand_id: brandId,
@@ -190,7 +194,9 @@ export async function schedulePost(formData: FormData) {
     caption,
     scheduled_at: new Date(scheduledAt).toISOString(),
     status: "pending" as const,
+    provider,
     ig_media_id: null,
+    outstand_post_id: null,
     published_at: null,
     error_message: null,
     reach: null,

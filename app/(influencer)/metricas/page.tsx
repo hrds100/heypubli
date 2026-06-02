@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getInstagramConnection } from "@/lib/data/instagram";
 import { getInstagramProfile, getInstagramMedia } from "@/lib/integrations/instagram";
+import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 import { DashboardMetrics } from "@/features/dashboard-metrics";
 import type { ProfileMetrics } from "@/features/dashboard-metrics";
 
@@ -84,10 +85,20 @@ export default async function MetricasPage() {
 
   if (!user) redirect("/login");
 
-  const igConnection = await getInstagramConnection(user.id);
+  const [igConnection, postingSettings] = await Promise.all([
+    getInstagramConnection(user.id),
+    getPostingSettingsAdmin(),
+  ]);
+
+  const connectUrl =
+    postingSettings?.active_provider === "outstand"
+      ? "/api/outstand/connect"
+      : "/api/instagram/connect";
 
   if (!igConnection) {
-    return <DashboardMetrics profileMetrics={[]} isConnected={false} />;
+    return (
+      <DashboardMetrics profileMetrics={[]} isConnected={false} connectUrl={connectUrl} />
+    );
   }
 
   let profileMetrics: ProfileMetrics[] = [];
@@ -111,6 +122,7 @@ export default async function MetricasPage() {
       profileMetrics={profileMetrics}
       isConnected={true}
       igUsername={igConnection.ig_username}
+      connectUrl={connectUrl}
     />
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Upload, Calendar, Send, CheckCircle } from "lucide-react";
 import { schedulePost } from "@/lib/actions/admin";
-import type { Profile } from "@/types/database";
+import type { Profile, PostingProvider } from "@/types/database";
 
 interface BrandOption {
   id: string;
@@ -13,6 +13,7 @@ interface BrandOption {
 interface AdminSchedulerProps {
   influencers: Pick<Profile, "id" | "first_name" | "last_name">[];
   brands: BrandOption[];
+  activeProvider?: PostingProvider;
 }
 
 const POST_TYPES = [
@@ -23,7 +24,11 @@ const POST_TYPES = [
   { value: "carousel", label: "Carrossel" },
 ] as const;
 
-export function AdminScheduler({ influencers, brands }: AdminSchedulerProps) {
+export function AdminScheduler({
+  influencers,
+  brands,
+  activeProvider,
+}: AdminSchedulerProps) {
   const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([]);
   const [postType, setPostType] = useState("feed");
   const [brandId, setBrandId] = useState(brands[0]?.id ?? "");
@@ -92,7 +97,14 @@ export function AdminScheduler({ influencers, brands }: AdminSchedulerProps) {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Agendador</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-2xl font-bold">Agendador</h1>
+        {activeProvider && (
+          <span className="rounded-full bg-background-secondary px-2 py-0.5 text-[10px] text-foreground-secondary">
+            {activeProvider === "outstand" ? "Outstand" : "HeyPubli"}
+          </span>
+        )}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-border p-6">

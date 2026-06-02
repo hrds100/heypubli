@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingWizard } from "@/features/onboarding";
 import { getAllSectors } from "@/lib/data";
+import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 import type { Sector } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -15,13 +16,24 @@ export default async function OnboardingPage() {
 
   if (!user) redirect("/login");
 
-  const sectors: Sector[] = await getAllSectors();
+  const [sectors, postingSettings] = await Promise.all([
+    getAllSectors(),
+    getPostingSettingsAdmin(),
+  ]);
 
   const userName = user.user_metadata?.first_name || "Influenciador";
+  const connectUrl =
+    postingSettings?.active_provider === "outstand"
+      ? "/api/outstand/connect"
+      : "/api/instagram/connect";
 
   return (
     <Suspense>
-      <OnboardingWizard sectors={sectors} userName={userName} />
+      <OnboardingWizard
+        sectors={sectors as Sector[]}
+        userName={userName}
+        connectUrl={connectUrl}
+      />
     </Suspense>
   );
 }

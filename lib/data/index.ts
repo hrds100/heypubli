@@ -31,3 +31,9 @@ export {
   getChannels,
   markConversationRead,
 } from "./inbox";
+export {
+  getPostingSettings,
+  getPostingSettingsAdmin,
+  getOutstandConnection,
+  getAllOutstandConnections,
+} from "./outstand";
