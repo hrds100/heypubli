@@ -77,6 +77,36 @@ export async function listSocialAccounts(
   return json.data;
 }
 
+// Outstand's managed OAuth auto-connects the Instagram account against the tenant_id
+// we passed when building the auth URL, then redirects back WITHOUT a session token.
+// So after the OAuth we look the account up by that tenant_id. Retries briefly to
+// absorb any propagation delay right after the redirect.
+export async function getSocialAccountByTenant(
+  apiKey: string,
+  tenantId: string,
+  attempts = 4,
+): Promise<{ id: string; username: string } | null> {
+  for (let i = 0; i < attempts; i++) {
+    const res = await fetch(
+      `${BASE}/social-accounts?network=instagram&tenant_id=${encodeURIComponent(tenantId)}`,
+      { method: "GET", headers: headers(apiKey) },
+    );
+    const json = await handleResponse<{
+      data: Array<{ id: string; username: string; createdAt?: string }>;
+    }>(res);
+    const accounts = json.data ?? [];
+    if (accounts.length > 0) {
+      // most recently connected account for this tenant
+      const latest = [...accounts].sort((a, b) =>
+        (b.createdAt ?? "").localeCompare(a.createdAt ?? ""),
+      )[0];
+      return { id: latest.id, username: latest.username };
+    }
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1000));
+  }
+  return null;
+}
+
 // --- Pending Connections ---
 
 export async function getPendingConnection(sessionToken: string): Promise<{
