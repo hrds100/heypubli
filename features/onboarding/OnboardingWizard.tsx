@@ -175,6 +175,16 @@ export function OnboardingWizard({
                 {onboardingCopy.step2.connectButton}
               </a>
 
+              <a
+                href="https://www.instagram.com/accounts/convert_to_professional_account/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center text-xs text-foreground-secondary"
+              >
+                Sua conta precisa ser Profissional (Criador/Empresa).{" "}
+                <span className="font-medium text-accent underline">Ativar agora</span>
+              </a>
+
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleSkipInstagram}

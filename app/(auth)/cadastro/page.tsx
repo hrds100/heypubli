@@ -36,8 +36,16 @@ export default async function CadastroPage({
       <IgSignupForm />
 
       <p className="text-xs text-foreground-secondary">
-        Use uma conta Profissional do Instagram (Criador ou Empresa). É grátis trocar nas
-        configurações do Instagram.
+        Use uma conta Profissional do Instagram (Criador ou Empresa).{" "}
+        <a
+          href="https://www.instagram.com/accounts/convert_to_professional_account/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-accent hover:underline"
+        >
+          Ativar agora
+        </a>{" "}
+        — é grátis.
       </p>
 
       <p className="text-sm text-foreground-secondary">
