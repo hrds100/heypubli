@@ -6,22 +6,25 @@ import { markPostPublished, markPostFailed } from "@/lib/data/posts";
 export async function POST(request: Request) {
   const rawBody = await request.text();
 
+  // Fail closed: never accept an unsigned/unverified webhook.
   const signingSecret = process.env.OUTSTAND_WEBHOOK_SECRET;
-  if (signingSecret) {
-    const raw = request.headers.get("x-outstand-signature") ?? "";
-    const signature = raw.startsWith("sha256=") ? raw.slice(7) : raw;
-    const expected = crypto
-      .createHmac("sha256", signingSecret)
-      .update(rawBody)
-      .digest("hex");
+  if (!signingSecret) {
+    console.error("[outstand-webhook] OUTSTAND_WEBHOOK_SECRET not configured");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+  const raw = request.headers.get("x-outstand-signature") ?? "";
+  const signature = raw.startsWith("sha256=") ? raw.slice(7) : raw;
+  const expected = crypto
+    .createHmac("sha256", signingSecret)
+    .update(rawBody)
+    .digest("hex");
 
-    if (
-      !signature ||
-      signature.length !== expected.length ||
-      !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
-    ) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  if (
+    !signature ||
+    signature.length !== expected.length ||
+    !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  ) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

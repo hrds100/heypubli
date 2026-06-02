@@ -29,12 +29,9 @@ describe("AdminPostingSettings", () => {
     render(
       <AdminPostingSettings
         settings={{
-          id: "1",
           active_provider: "outstand",
-          outstand_api_key: "sk_live_xyz",
           outstand_social_network_id: "net_abc",
-          created_at: "",
-          updated_at: "",
+          hasApiKey: true,
         }}
       />,
     );
@@ -47,12 +44,9 @@ describe("AdminPostingSettings", () => {
     render(
       <AdminPostingSettings
         settings={{
-          id: "1",
           active_provider: "outstand",
-          outstand_api_key: "sk_live_xyz",
           outstand_social_network_id: "net_abc",
-          created_at: "",
-          updated_at: "",
+          hasApiKey: true,
         }}
       />,
     );

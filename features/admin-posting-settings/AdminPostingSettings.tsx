@@ -2,15 +2,20 @@
 
 import { useState } from "react";
 import { Settings } from "lucide-react";
-import type { PostingSettings } from "@/types/database";
 
+// The Outstand API key is a server-side secret — it is NEVER sent to the browser.
+// We only receive whether one is configured (hasApiKey) so the UI can hint it.
 interface AdminPostingSettingsProps {
-  settings: PostingSettings | null;
+  settings: {
+    active_provider: string;
+    outstand_social_network_id: string | null;
+    hasApiKey: boolean;
+  } | null;
 }
 
 export function AdminPostingSettings({ settings }: AdminPostingSettingsProps) {
   const [provider, setProvider] = useState(settings?.active_provider ?? "heypubli");
-  const [apiKey, setApiKey] = useState(settings?.outstand_api_key ?? "");
+  const [apiKey, setApiKey] = useState("");
   const [networkId, setNetworkId] = useState(settings?.outstand_social_network_id ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -27,8 +32,12 @@ export function AdminPostingSettings({ settings }: AdminPostingSettingsProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           active_provider: provider,
-          outstand_api_key: provider === "outstand" ? apiKey : null,
           outstand_social_network_id: provider === "outstand" ? networkId : null,
+          // Only send the key when the admin actually typed a new one; an empty
+          // field keeps the existing key (it's never round-tripped to the client).
+          ...(provider === "outstand" && apiKey.trim()
+            ? { outstand_api_key: apiKey.trim() }
+            : {}),
         }),
       });
 
@@ -111,7 +120,11 @@ export function AdminPostingSettings({ settings }: AdminPostingSettingsProps) {
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk_live_..."
+                placeholder={
+                  settings?.hasApiKey
+                    ? "•••••••• (configurada — deixe em branco para manter)"
+                    : "sk_live_..."
+                }
                 className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
               />
             </div>
