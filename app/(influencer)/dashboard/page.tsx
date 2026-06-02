@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardHome } from "@/features/dashboard-home";
 import { getInstagramProfile } from "@/lib/integrations/instagram";
+import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 import type { InstagramData } from "@/features/dashboard-home";
 import type { Profile, Brand } from "@/types/database";
 
@@ -90,18 +91,27 @@ export default async function DashboardPage() {
       last_accessed_at: null,
     } as Profile);
 
-  const instagram = await getInstagramData(user.id);
+  const [instagram, postingSettings] = await Promise.all([
+    getInstagramData(user.id),
+    getPostingSettingsAdmin(),
+  ]);
 
   const { data: brands } = await supabase
     .from("brands")
     .select("*")
     .eq("is_active", true);
 
+  const connectUrl =
+    postingSettings?.active_provider === "outstand"
+      ? "/api/outstand/connect"
+      : "/api/instagram/connect";
+
   return (
     <DashboardHome
       profile={fallbackProfile}
       activeBrands={(brands as Brand[]) ?? []}
       instagram={instagram}
+      connectUrl={connectUrl}
     />
   );
 }

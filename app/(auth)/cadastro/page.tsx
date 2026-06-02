@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { SignupForm } from "@/features/auth-form";
+import { IgSignupForm } from "@/features/ig-login";
 
-export default function CadastroPage() {
+export default async function CadastroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ erro?: string }>;
+}) {
+  const { erro } = await searchParams;
+
   return (
     <div className="w-full max-w-md space-y-8">
       <div>
@@ -19,11 +25,20 @@ export default function CadastroPage() {
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Crie sua conta</h1>
         <p className="mt-2 text-foreground-secondary">
-          Comece a ganhar com suas redes sociais
+          Comece a ganhar com o seu Instagram
         </p>
       </div>
 
-      <SignupForm />
+      {erro && (
+        <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{erro}</div>
+      )}
+
+      <IgSignupForm />
+
+      <p className="text-xs text-foreground-secondary">
+        Use uma conta Profissional do Instagram (Criador ou Empresa). É grátis trocar nas
+        configurações do Instagram.
+      </p>
 
       <p className="text-sm text-foreground-secondary">
         Já tem conta?{" "}

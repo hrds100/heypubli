@@ -55,6 +55,7 @@ interface DashboardHomeProps {
   profile: Profile;
   activeBrands: Brand[];
   instagram: InstagramData | null;
+  connectUrl?: string;
 }
 
 function InstagramCard({ ig }: { ig: InstagramData }) {
@@ -125,7 +126,7 @@ function InstagramCard({ ig }: { ig: InstagramData }) {
   );
 }
 
-function ConnectAccountCard() {
+function ConnectAccountCard({ connectUrl }: { connectUrl: string }) {
   return (
     <div className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-border p-5">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-secondary">
@@ -146,7 +147,7 @@ function ConnectAccountCard() {
         </p>
       </div>
       <a
-        href="/api/instagram/connect"
+        href={connectUrl}
         className="shrink-0 rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-4 py-2 text-xs font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
       >
         Adicionar
@@ -155,7 +156,7 @@ function ConnectAccountCard() {
   );
 }
 
-function ConnectFirstCard() {
+function ConnectFirstCard({ connectUrl }: { connectUrl: string }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border p-8 text-center">
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-background-secondary">
@@ -174,7 +175,7 @@ function ConnectFirstCard() {
         Conecte para receber publicações de marcas
       </p>
       <a
-        href="/api/instagram/connect"
+        href={connectUrl}
         className="mt-4 rounded-full bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-2 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-accent/25"
       >
         Conectar meu Instagram
@@ -406,7 +407,12 @@ function TiersSection() {
   );
 }
 
-export function DashboardHome({ profile, activeBrands, instagram }: DashboardHomeProps) {
+export function DashboardHome({
+  profile,
+  activeBrands,
+  instagram,
+  connectUrl = "/api/instagram/connect",
+}: DashboardHomeProps) {
   return (
     <div className="space-y-5 p-6">
       <h1 className="text-2xl font-bold">
@@ -419,10 +425,10 @@ export function DashboardHome({ profile, activeBrands, instagram }: DashboardHom
           {instagram?.isConnected ? (
             <>
               <InstagramCard ig={instagram} />
-              <ConnectAccountCard />
+              <ConnectAccountCard connectUrl={connectUrl} />
             </>
           ) : (
-            <ConnectFirstCard />
+            <ConnectFirstCard connectUrl={connectUrl} />
           )}
 
           <HotmartSteps profile={profile} brands={activeBrands} />

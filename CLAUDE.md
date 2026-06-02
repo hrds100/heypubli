@@ -133,6 +133,70 @@ Full schema in `docs/DATABASE-SCHEMA.md`. Tables:
 - **Phase 6:** Backend wiring (lib/data layer with Supabase queries)
 - **Phase 7 (current):** Instagram integration — OAuth, publishing, token refresh, Vercel Cron
 
+## Kimi WebBridge — Browser access
+
+Claude Code has full browser control via Kimi WebBridge (local daemon at `http://127.0.0.1:10086`).
+This means Claude can see, click, type, navigate, and screenshot any website using Hugo's real
+browser sessions (logged-in cookies and all).
+
+### How it works
+
+- **Daemon:** `~/.kimi-webbridge/bin/kimi-webbridge` runs locally
+- **Status check:** `~/.kimi-webbridge/bin/kimi-webbridge status`
+- **Skill docs:** `~/.claude/skills/kimi-webbridge/SKILL.md`
+- **Commands:** navigate, snapshot, click, fill, evaluate, screenshot, save_as_pdf
+- **Sessions:** each task gets its own session name to keep tabs isolated
+
+### When to use browser testing
+
+Every feature or bug fix that has a UI component MUST be browser-tested before marking done:
+
+1. Start the dev server (`pnpm dev`)
+2. Use Kimi WebBridge to navigate to the page
+3. Click through the user flow (golden path + edge cases)
+4. Screenshot any issues found
+5. Fix and re-test
+
+### Pre-task login checklist — Non-negotiable
+
+Before starting any task, tell Hugo which browser sessions you'll need so he can log in.
+Present a checklist like this:
+
+> **Hugo, before I start I'll need you logged into these in your browser:**
+>
+> - [ ] Supabase Dashboard (supabase.com/dashboard)
+> - [ ] Vercel Dashboard (vercel.com)
+> - [ ] Meta Developer Console (developers.facebook.com)
+> - [ ] localhost:3000 (I'll start the dev server)
+>
+> **Once you're logged in, say "go" and I'll start working + testing.**
+
+Common services that may need browser login:
+
+| Service            | URL                     | When needed                        |
+| ------------------ | ----------------------- | ---------------------------------- |
+| Supabase Dashboard | supabase.com/dashboard  | DB changes, RLS policies, testing  |
+| Vercel Dashboard   | vercel.com              | Deploy checks, env vars, logs      |
+| Meta Developer     | developers.facebook.com | Instagram API, OAuth, app settings |
+| Hotmart            | hotmart.com             | Affiliate/sales integration        |
+| GitHub             | github.com              | PR reviews, repo settings          |
+| HeyPubli (prod)    | heypubli.com            | Production smoke tests             |
+| HeyPubli (dev)     | localhost:3000          | Local development testing          |
+| Squarespace        | squarespace.com         | If touching landing pages          |
+
+### Browser testing workflow
+
+```
+1. Write code (feature or fix)
+2. Start dev server if not running
+3. kimi-webbridge status → confirm connected
+4. navigate to page → snapshot → verify layout
+5. click/fill through the user flow
+6. screenshot results
+7. Fix issues if any → re-test
+8. Only then mark task as DONE
+```
+
 ## Credentials
 
 All stored in Claude Code memory at `~/.claude/projects/-Users-hugo-Whats-mypubli/memory/`.

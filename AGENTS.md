@@ -69,3 +69,70 @@ Fetches and reads official API documentation before any integration work.
 2. Read and understand auth flow, endpoints, rate limits, error codes
 3. Summarize key points relevant to the implementation
 4. Only then proceed to write code
+
+## browser-tester
+
+Tests features and fixes in Hugo's real browser via Kimi WebBridge.
+
+**When to use:** Every feature or bug fix that has a UI component. Run AFTER code passes
+TypeScript and linting checks, BEFORE marking task as done.
+
+**Pre-requisites:**
+
+1. Tell Hugo which browser sessions are needed (see login checklist in CLAUDE.md)
+2. Wait for Hugo to confirm he's logged in
+3. Check daemon: `~/.kimi-webbridge/bin/kimi-webbridge status`
+4. Confirm `running: true` and `extension_connected: true`
+
+**Steps:**
+
+1. Start dev server if not running (`pnpm dev`)
+2. Navigate to the page under test via Kimi WebBridge
+3. Take a snapshot — read the page structure
+4. Click through the golden path (happy flow)
+5. Test edge cases (empty states, errors, missing data)
+6. Screenshot any issues
+7. If issues found → fix code → re-test
+8. Only mark DONE when the flow works visually in the browser
+
+**Key commands:**
+
+```bash
+# Health check
+~/.kimi-webbridge/bin/kimi-webbridge status
+
+# Navigate
+curl -s -X POST http://127.0.0.1:10086/command \
+  -d '{"action":"navigate","args":{"url":"URL","newTab":true},"session":"SESSION"}'
+
+# Read page
+curl -s -X POST http://127.0.0.1:10086/command \
+  -d '{"action":"snapshot","args":{},"session":"SESSION"}'
+
+# Click
+curl -s -X POST http://127.0.0.1:10086/command \
+  -d '{"action":"click","args":{"selector":"@eREF"},"session":"SESSION"}'
+
+# Type into field
+curl -s -X POST http://127.0.0.1:10086/command \
+  -d '{"action":"fill","args":{"selector":"@eREF","value":"TEXT"},"session":"SESSION"}'
+
+# Screenshot (use helper script — never call API directly)
+bash ~/.claude/skills/kimi-webbridge/scripts/screenshot.sh -s SESSION
+```
+
+**Full docs:** `~/.claude/skills/kimi-webbridge/SKILL.md`
+
+## task-planner
+
+Plans work and presents Hugo with a login checklist before starting.
+
+**When to use:** At the start of every non-trivial task.
+
+**Steps:**
+
+1. Read the task requirements
+2. Identify which browser sessions will be needed for testing
+3. Present Hugo with the login checklist (see CLAUDE.md "Pre-task login checklist")
+4. Wait for Hugo to confirm
+5. Then proceed with the work

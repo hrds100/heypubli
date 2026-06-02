@@ -1,5 +1,8 @@
-import { ScreenPlaceholder } from "@/components/screen-placeholder";
+import { AdminPostingSettings } from "@/features/admin-posting-settings";
+import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 
-export default function AdminConfiguracoesPage() {
-  return <ScreenPlaceholder name="Configurações Admin" />;
+export default async function AdminConfiguracoesPage() {
+  const settings = await getPostingSettingsAdmin();
+
+  return <AdminPostingSettings settings={settings} />;
 }

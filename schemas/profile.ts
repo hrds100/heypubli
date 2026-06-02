@@ -32,6 +32,22 @@ export const hotmartLinkSchema = z.object({
   hotmart_url: z.url("URL inválida"),
 });
 
+// Captured once, right after the first Instagram login (Instagram gives us no email).
+export const contactSchema = z.object({
+  email: z.email("Email inválido"),
+  whatsapp: z.string().trim().min(10, "Informe um WhatsApp válido com DDD"),
+});
+
+// Collected on /cadastro BEFORE the influencer is sent to Instagram.
+export const igSignupSchema = z.object({
+  first_name: z.string().trim().min(1, "Nome é obrigatório"),
+  last_name: z.string().trim().min(1, "Sobrenome é obrigatório"),
+  email: z.email("Email inválido"),
+  whatsapp: z.string().trim().min(10, "Informe um WhatsApp válido com DDD"),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type PersonalProfileInput = z.infer<typeof personalProfileSchema>;
 export type HotmartLinkInput = z.infer<typeof hotmartLinkSchema>;
+export type ContactInput = z.infer<typeof contactSchema>;
+export type IgSignupInput = z.infer<typeof igSignupSchema>;
