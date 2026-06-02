@@ -23,12 +23,19 @@ async function outstandAuthUrl(origin: string, state: string): Promise<string | 
   }
 }
 
+// Short-lived, single-use CSRF nonce. We bind it to the browser via the cookie and
+// reject mismatches if Outstand echoes the state back (tenant_id/state) on the
+// callback. NOTE: if Outstand does NOT echo it, this degrades to cookie-presence —
+// the short TTL limits the login-CSRF window. To fully bind, confirm via one real
+// callback whether Outstand echoes tenant_id, then make the callback check require it.
+const STATE_TTL_SECONDS = 300;
+
 function withStateCookie(res: NextResponse, state: string) {
   res.cookies.set(STATE_COOKIE, state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 600,
+    maxAge: STATE_TTL_SECONDS,
     path: "/",
   });
 }
@@ -82,7 +89,7 @@ export async function POST(request: Request) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 600,
+    maxAge: STATE_TTL_SECONDS,
     path: "/",
   });
   return res;

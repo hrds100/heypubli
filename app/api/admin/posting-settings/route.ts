@@ -35,11 +35,19 @@ export async function POST(request: Request) {
     await requireAdmin();
 
     const body = await request.json();
-    await savePostingSettings({
+    const params: {
+      active_provider: string;
+      outstand_social_network_id: string | null;
+      outstand_api_key?: string;
+    } = {
       active_provider: body.active_provider,
-      outstand_api_key: body.outstand_api_key ?? null,
       outstand_social_network_id: body.outstand_social_network_id ?? null,
-    });
+    };
+    // Only overwrite the stored key when a new one was actually submitted.
+    if (typeof body.outstand_api_key === "string" && body.outstand_api_key.trim()) {
+      params.outstand_api_key = body.outstand_api_key.trim();
+    }
+    await savePostingSettings(params);
 
     return NextResponse.json({ success: true });
   } catch {

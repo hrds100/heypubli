@@ -82,8 +82,7 @@ async function publishViaMeta(
     .single();
 
   if (!connection) {
-    await markPostFailed(post.id, "Instagram não conectado");
-    return;
+    throw new Error("Instagram não conectado");
   }
 
   const containerParams = buildContainerParams(
@@ -109,14 +108,12 @@ async function publishViaMeta(
 
 async function publishViaOutstand(post: ScheduledPost, apiKey: string | null) {
   if (!apiKey) {
-    await markPostFailed(post.id, "Outstand API key não configurada");
-    return;
+    throw new Error("Outstand API key não configurada");
   }
 
   const connection = await getOutstandConnection(post.profile_id);
   if (!connection) {
-    await markPostFailed(post.id, "Outstand não conectado");
-    return;
+    throw new Error("Outstand não conectado");
   }
 
   const mediaIds = await uploadMediaToOutstand(apiKey, post.media_url, post.media_type);
@@ -139,8 +136,7 @@ async function publishViaOutstand(post: ScheduledPost, apiKey: string | null) {
   const accountStatus = status.socialAccounts[0];
 
   if (accountStatus?.status === "failed") {
-    await markPostFailed(post.id, accountStatus.error || "Outstand publish failed");
-    return;
+    throw new Error(accountStatus.error || "Outstand publish failed");
   }
 
   await markPostPublished(post.id, accountStatus?.platformPostId || outstandPost.id);

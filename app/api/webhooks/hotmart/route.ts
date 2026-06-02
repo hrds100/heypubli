@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SaleStatus } from "@/types/database";
 
@@ -7,8 +8,14 @@ export async function POST(request: Request) {
 
   const hottok = body.hottok as string | undefined;
   const expectedHottok = process.env.HOTMART_HOTTOK;
-  if (expectedHottok && hottok !== expectedHottok) {
-    return NextResponse.json({ error: "Invalid hottok" }, { status: 401 });
+  if (expectedHottok) {
+    if (
+      !hottok ||
+      hottok.length !== expectedHottok.length ||
+      !crypto.timingSafeEqual(Buffer.from(hottok), Buffer.from(expectedHottok))
+    ) {
+      return NextResponse.json({ error: "Invalid hottok" }, { status: 401 });
+    }
   }
 
   const event = body.event as string | undefined;
