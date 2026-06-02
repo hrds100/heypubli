@@ -51,7 +51,16 @@ export async function GET(request: Request) {
   };
 
   if (error || !session) {
-    return fail("Conexão com o Instagram cancelada");
+    // Surface the real reason from Instagram/Outstand instead of a generic message.
+    const detail =
+      searchParams.get("error_description") ??
+      searchParams.get("error_message") ??
+      (error && error !== "access_denied" ? error : null);
+    return fail(
+      detail
+        ? `Instagram: ${detail}`
+        : "Login do Instagram não concluído. Use uma conta Profissional (Criador/Empresa) e tente de novo.",
+    );
   }
 
   // For the login/sign-up flow, validate the CSRF nonce BEFORE consuming the one-time
