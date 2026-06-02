@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getPendingConnection, finalizeConnection } from "@/lib/integrations/outstand";
-import { saveOutstandConnection } from "@/lib/data/outstand";
+import { getSocialAccountByTenant } from "@/lib/integrations/outstand";
+import { saveOutstandConnection, getPostingSettingsAdmin } from "@/lib/data/outstand";
 import { findOrCreateInfluencerByOutstand, type IgSignupData } from "@/lib/data/auth-ig";
 
 const STATE_COOKIE = "ig_login_state";
@@ -29,7 +29,6 @@ function readSignupData(raw: string | undefined): IgSignupData | undefined {
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const session = searchParams.get("session");
   const error = searchParams.get("error");
 
   const supabase = await createClient();
@@ -38,8 +37,8 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   const cookieStore = await cookies();
 
-  // Already signed in → connecting/reconnecting from inside the app (errors → onboarding).
-  // Not signed in → logging in / signing up with Instagram (errors → login page).
+  // Already signed in → connecting from inside the app (errors → onboarding).
+  // Not signed in → signing up with Instagram (errors → login page).
   const errBase = user ? `${origin}/onboarding` : `${origin}/login`;
   const errKey = user ? "ig_error" : "erro";
   const fail = (msg: string) => {
@@ -50,41 +49,39 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${errBase}?${errKey}=${encodeURIComponent(msg)}`);
   };
 
-  if (error || !session) {
-    // Surface the real reason from Instagram/Outstand instead of a generic message.
-    const detail =
-      searchParams.get("error_description") ??
-      searchParams.get("error_message") ??
-      (error && error !== "access_denied" ? error : null);
-    return fail(
-      detail
-        ? `Instagram: ${detail}`
-        : "Login do Instagram não concluído. Use uma conta Profissional (Criador/Empresa) e tente de novo.",
-    );
+  if (error) {
+    return fail("Conexão com o Instagram cancelada");
   }
 
-  // For the login/sign-up flow, validate the CSRF nonce BEFORE consuming the one-time
-  // Outstand session token, so a forged callback can't trigger a login.
+  // The tenant_id we passed to Outstand when starting the OAuth:
+  //  - connect (logged in):     the user's id
+  //  - sign-up (not logged in): the random state nonce stored in the cookie
+  const expectedState = cookieStore.get(STATE_COOKIE)?.value;
   if (!user) {
-    const expectedState = cookieStore.get(STATE_COOKIE)?.value;
     const returnedState = searchParams.get("tenant_id") ?? searchParams.get("state");
     if (!expectedState || (returnedState && returnedState !== expectedState)) {
       return fail("Sua sessão de login expirou. Tente novamente.");
     }
   }
+  const tenantId = user ? user.id : expectedState;
+  if (!tenantId) {
+    return fail("Sua sessão de login expirou. Tente novamente.");
+  }
 
   try {
-    const pending = await getPendingConnection(session);
-    const pageIds = pending.availablePages.map((p) => p.id);
-    if (pageIds.length === 0) {
-      return fail("Nenhuma conta do Instagram encontrada");
+    const settings = await getPostingSettingsAdmin();
+    if (!settings?.outstand_api_key) {
+      return fail("Integração do Instagram indisponível no momento");
     }
 
-    const accounts = await finalizeConnection(session, pageIds);
-    if (accounts.length === 0) {
-      return fail("Não foi possível conectar a conta do Instagram");
+    // Outstand auto-connects the account against tenant_id and redirects back without a
+    // session token, so we look the just-connected account up by tenant_id.
+    const account = await getSocialAccountByTenant(settings.outstand_api_key, tenantId);
+    if (!account) {
+      return fail(
+        "Login do Instagram não concluído. Tente novamente e conclua a autorização.",
+      );
     }
-    const account = accounts[0];
 
     // --- Connect flow (user already authenticated) ---
     if (user) {
@@ -92,7 +89,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/onboarding?ig_connected=true`);
     }
 
-    // --- Login / sign-up flow ---
+    // --- Sign-up flow ---
     const signup = readSignupData(cookieStore.get(SIGNUP_COOKIE)?.value);
     const { email, isNew } = await findOrCreateInfluencerByOutstand(
       { socialAccountId: account.id, username: account.username },
@@ -119,7 +116,6 @@ export async function GET(request: Request) {
     cookieStore.delete(SIGNUP_COOKIE);
     // Sign-up (data already collected) → onboarding. Returning influencer → dashboard.
     // New influencer via the login button (no data) → /bem-vindo to capture contact.
-    // (middleware also enforces the needs_contact gate.)
     const dest = !isNew ? "/dashboard" : signup ? "/onboarding" : "/bem-vindo";
     return NextResponse.redirect(`${origin}${dest}`);
   } catch (err) {

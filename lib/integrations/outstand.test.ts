@@ -9,6 +9,7 @@ import {
   getPostStatus,
   getPendingConnection,
   finalizeConnection,
+  getSocialAccountByTenant,
 } from "./outstand";
 
 const API_KEY = "sk_test_abc123";
@@ -261,5 +262,26 @@ describe("finalizeConnection", () => {
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("acc_new");
     expect(result[0].username).toBe("myuser");
+  });
+});
+
+describe("getSocialAccountByTenant", () => {
+  it("returns the account connected for that tenant", async () => {
+    const spy = mockFetch({
+      success: true,
+      data: [{ id: "acc_t", username: "joe", tenant_id: "T1", createdAt: "2026-01-01" }],
+      count: 1,
+    });
+
+    const result = await getSocialAccountByTenant(API_KEY, "T1");
+
+    expect(spy.mock.calls[0][0]).toContain("tenant_id=T1");
+    expect(result).toEqual({ id: "acc_t", username: "joe" });
+  });
+
+  it("returns null when no account is connected for the tenant", async () => {
+    mockFetch({ success: true, data: [], count: 0 });
+    const result = await getSocialAccountByTenant(API_KEY, "T1", 1);
+    expect(result).toBeNull();
   });
 });
