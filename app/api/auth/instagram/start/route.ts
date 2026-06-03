@@ -30,14 +30,33 @@ async function outstandAuthUrl(origin: string, state: string): Promise<string | 
 // callback whether Outstand echoes tenant_id, then make the callback check require it.
 const STATE_TTL_SECONDS = 300;
 
-function withStateCookie(res: NextResponse, state: string) {
-  res.cookies.set(STATE_COOKIE, state, {
+// Share the auth cookies across apex + www so they survive the heypubli.com → www
+// redirect that happens mid-flow — otherwise the sign-up data (incl. the name) is lost.
+function cookieDomain(origin: string): string | undefined {
+  try {
+    const host = new URL(origin).hostname;
+    if (host === "heypubli.com" || host.endsWith(".heypubli.com")) {
+      return ".heypubli.com";
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
+
+function authCookieOptions(origin: string) {
+  return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax" as const,
     maxAge: STATE_TTL_SECONDS,
     path: "/",
-  });
+    domain: cookieDomain(origin),
+  };
+}
+
+function withStateCookie(res: NextResponse, state: string, origin: string) {
+  res.cookies.set(STATE_COOKIE, state, authCookieOptions(origin));
 }
 
 // GET — "Sign in with Instagram" for returning influencers (no data collected).
@@ -51,7 +70,7 @@ export async function GET(request: Request) {
     );
   }
   const res = NextResponse.redirect(authUrl);
-  withStateCookie(res, state);
+  withStateCookie(res, state, origin);
   return res;
 }
 
@@ -83,14 +102,8 @@ export async function POST(request: Request) {
   }
 
   const res = NextResponse.redirect(authUrl, 303);
-  withStateCookie(res, state);
+  withStateCookie(res, state, origin);
   // Carried across the Instagram round-trip; consumed (and cleared) by the callback.
-  res.cookies.set(SIGNUP_COOKIE, JSON.stringify(parsed.data), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: STATE_TTL_SECONDS,
-    path: "/",
-  });
+  res.cookies.set(SIGNUP_COOKIE, JSON.stringify(parsed.data), authCookieOptions(origin));
   return res;
 }

@@ -24,13 +24,15 @@ async function getInstagramData(
     if (!ig) return null;
     return {
       username: ig.username,
+      name: ig.name ?? undefined,
+      biography: ig.biography ?? undefined,
       profilePictureUrl: ig.profilePictureUrl ?? undefined,
-      followersCount: 0,
-      followsCount: 0,
-      mediaCount: 0,
-      accountType: "BUSINESS",
+      followersCount: ig.followersCount,
+      followsCount: ig.followingCount,
+      mediaCount: ig.postsCount,
+      accountType: ig.accountType,
       isConnected: true,
-      statsAvailable: false,
+      statsAvailable: true,
     };
   }
 
@@ -115,6 +117,12 @@ export default async function DashboardPage() {
     user.id,
     postingSettings?.active_provider ?? "heypubli",
   );
+
+  // If the influencer's name wasn't captured at sign-up, fall back to their
+  // Instagram display name so the greeting isn't blank.
+  if (!fallbackProfile.first_name && instagram?.name) {
+    fallbackProfile.first_name = instagram.name.split(" ")[0];
+  }
 
   const { data: brands } = await supabase
     .from("brands")
