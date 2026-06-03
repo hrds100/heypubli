@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardHome } from "@/features/dashboard-home";
 import { getInstagramProfile } from "@/lib/integrations/instagram";
-import { getPostingSettingsAdmin, getOutstandConnection } from "@/lib/data/outstand";
+import { getPostingSettingsAdmin, getOutstandInstagramData } from "@/lib/data/outstand";
 import type { InstagramData } from "@/features/dashboard-home";
 import type { Profile, Brand } from "@/types/database";
 
@@ -20,15 +20,17 @@ async function getInstagramData(
 ): Promise<InstagramData | null> {
   // When posting goes through Outstand, the connection lives in outstand_connections.
   if (provider === "outstand") {
-    const conn = await getOutstandConnection(profileId);
-    if (!conn) return null;
+    const ig = await getOutstandInstagramData(profileId);
+    if (!ig) return null;
     return {
-      username: conn.ig_username ?? "",
+      username: ig.username,
+      profilePictureUrl: ig.profilePictureUrl ?? undefined,
       followersCount: 0,
       followsCount: 0,
       mediaCount: 0,
       accountType: "BUSINESS",
       isConnected: true,
+      statsAvailable: false,
     };
   }
 

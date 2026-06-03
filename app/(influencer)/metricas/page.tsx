@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getInstagramConnection } from "@/lib/data/instagram";
 import { getInstagramProfile, getInstagramMedia } from "@/lib/integrations/instagram";
-import { getPostingSettingsAdmin } from "@/lib/data/outstand";
+import { getPostingSettingsAdmin, getOutstandInstagramData } from "@/lib/data/outstand";
 import { DashboardMetrics } from "@/features/dashboard-metrics";
 import type { ProfileMetrics } from "@/features/dashboard-metrics";
 
@@ -85,16 +85,25 @@ export default async function MetricasPage() {
 
   if (!user) redirect("/login");
 
-  const [igConnection, postingSettings] = await Promise.all([
-    getInstagramConnection(user.id),
-    getPostingSettingsAdmin(),
-  ]);
-
+  const postingSettings = await getPostingSettingsAdmin();
+  const provider = postingSettings?.active_provider ?? "heypubli";
   const connectUrl =
-    postingSettings?.active_provider === "outstand"
-      ? "/api/outstand/connect"
-      : "/api/instagram/connect";
+    provider === "outstand" ? "/api/outstand/connect" : "/api/instagram/connect";
 
+  // Outstand has no profile-insights API, so just reflect the connection state.
+  if (provider === "outstand") {
+    const ig = await getOutstandInstagramData(user.id);
+    return (
+      <DashboardMetrics
+        profileMetrics={[]}
+        isConnected={!!ig}
+        igUsername={ig?.username}
+        connectUrl={connectUrl}
+      />
+    );
+  }
+
+  const igConnection = await getInstagramConnection(user.id);
   if (!igConnection) {
     return (
       <DashboardMetrics profileMetrics={[]} isConnected={false} connectUrl={connectUrl} />

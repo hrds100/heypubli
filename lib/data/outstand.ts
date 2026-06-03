@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSocialAccountById } from "@/lib/integrations/outstand";
 import type { PostingSettings, OutstandConnection } from "@/types/database";
 
 // --- Posting Settings ---
@@ -52,6 +53,26 @@ export async function getOutstandConnection(
     .eq("is_connected", true)
     .single();
   return (data as OutstandConnection | null) ?? null;
+}
+
+// Display info for the dashboard/metrics: connection + username + profile photo.
+// (Outstand's basic API does not expose follower/post counts.)
+export async function getOutstandInstagramData(profileId: string): Promise<{
+  username: string;
+  profilePictureUrl: string | null;
+} | null> {
+  const conn = await getOutstandConnection(profileId);
+  if (!conn) return null;
+  const settings = await getPostingSettingsAdmin();
+  let profilePictureUrl: string | null = null;
+  if (settings?.outstand_api_key) {
+    const acc = await getSocialAccountById(
+      settings.outstand_api_key,
+      conn.outstand_social_account_id,
+    );
+    profilePictureUrl = acc?.profilePictureUrl ?? null;
+  }
+  return { username: conn.ig_username ?? "", profilePictureUrl };
 }
 
 export async function getAllOutstandConnections(): Promise<OutstandConnection[]> {
