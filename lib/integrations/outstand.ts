@@ -89,6 +89,65 @@ export async function getSocialAccountById(
     : null;
 }
 
+export interface OutstandIgMetrics {
+  username: string;
+  name: string | null;
+  biography: string | null;
+  profilePictureUrl: string | null;
+  accountType: string;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  engagement: {
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+    saves: number;
+    reach: number;
+    accountsEngaged: number;
+    totalInteractions: number;
+  };
+}
+
+// Real Instagram profile + engagement metrics (available on Outstand's analytics tier).
+export async function getInstagramMetrics(
+  apiKey: string,
+  accountId: string,
+): Promise<OutstandIgMetrics | null> {
+  const res = await fetch(`${BASE}/social-accounts/${accountId}/metrics`, {
+    method: "GET",
+    headers: headers(apiKey),
+  });
+  if (!res.ok) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const json = (await res.json()) as any;
+  const d = json?.data;
+  if (!d) return null;
+  const ps = d.platform_specific ?? {};
+  const e = d.engagement ?? {};
+  return {
+    username: ps.username ?? "",
+    name: ps.name ?? null,
+    biography: ps.biography ?? null,
+    profilePictureUrl: ps.profile_picture_url ?? null,
+    accountType: ps.account_type ?? "BUSINESS",
+    followersCount: d.followers_count ?? ps.followers_count ?? 0,
+    followingCount: d.following_count ?? ps.follows_count ?? 0,
+    postsCount: d.posts_count ?? ps.media_count ?? 0,
+    engagement: {
+      views: e.views ?? 0,
+      likes: e.likes ?? 0,
+      comments: e.comments ?? 0,
+      shares: e.shares ?? 0,
+      saves: e.saves ?? 0,
+      reach: e.reach ?? 0,
+      accountsEngaged: e.accounts_engaged ?? 0,
+      totalInteractions: e.total_interactions ?? 0,
+    },
+  };
+}
+
 // Outstand's managed OAuth auto-connects the Instagram account against the tenant_id
 // we passed when building the auth URL, then redirects back WITHOUT a session token.
 // So after the OAuth we look the account up by that tenant_id. Retries briefly to

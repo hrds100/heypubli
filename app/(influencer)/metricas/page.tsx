@@ -90,12 +90,39 @@ export default async function MetricasPage() {
   const connectUrl =
     provider === "outstand" ? "/api/outstand/connect" : "/api/instagram/connect";
 
-  // Outstand has no profile-insights API, so just reflect the connection state.
+  // Outstand (analytics tier) exposes profile + engagement metrics.
   if (provider === "outstand") {
     const ig = await getOutstandInstagramData(user.id);
+    let profileMetrics: ProfileMetrics[] = [];
+    if (ig && ig.followersCount > 0) {
+      const e = ig.engagement;
+      const engagementRate = (e.totalInteractions / ig.followersCount) * 100;
+      profileMetrics = [
+        {
+          period: "Últimos 30 dias",
+          reach: e.reach,
+          reachChange: 0,
+          views: e.views,
+          viewsChange: 0,
+          engagement: Math.round(engagementRate * 100) / 100,
+          engagementChange: 0,
+          likes: e.likes,
+          comments: e.comments,
+          shares: e.shares,
+          saves: e.saves,
+          newFollowers: 0,
+          followersChange: 0,
+          profileVisits: 0,
+          topCities: [],
+          topCountries: [],
+          ageGender: [],
+          contentBreakdown: [],
+        },
+      ];
+    }
     return (
       <DashboardMetrics
-        profileMetrics={[]}
+        profileMetrics={profileMetrics}
         isConnected={!!ig}
         igUsername={ig?.username}
         connectUrl={connectUrl}

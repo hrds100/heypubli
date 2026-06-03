@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSocialAccountById } from "@/lib/integrations/outstand";
+import { getInstagramMetrics, type OutstandIgMetrics } from "@/lib/integrations/outstand";
 import type { PostingSettings, OutstandConnection } from "@/types/database";
 
 // --- Posting Settings ---
@@ -55,24 +55,44 @@ export async function getOutstandConnection(
   return (data as OutstandConnection | null) ?? null;
 }
 
-// Display info for the dashboard/metrics: connection + username + profile photo.
-// (Outstand's basic API does not expose follower/post counts.)
-export async function getOutstandInstagramData(profileId: string): Promise<{
-  username: string;
-  profilePictureUrl: string | null;
-} | null> {
+// Full Instagram profile + engagement metrics for a connected influencer.
+// Returns null only when there is no connection; otherwise returns the metrics
+// (or a connected-but-no-data fallback if the metrics call fails).
+export async function getOutstandInstagramData(
+  profileId: string,
+): Promise<OutstandIgMetrics | null> {
   const conn = await getOutstandConnection(profileId);
   if (!conn) return null;
+
   const settings = await getPostingSettingsAdmin();
-  let profilePictureUrl: string | null = null;
   if (settings?.outstand_api_key) {
-    const acc = await getSocialAccountById(
+    const metrics = await getInstagramMetrics(
       settings.outstand_api_key,
       conn.outstand_social_account_id,
     );
-    profilePictureUrl = acc?.profilePictureUrl ?? null;
+    if (metrics) return metrics;
   }
-  return { username: conn.ig_username ?? "", profilePictureUrl };
+
+  return {
+    username: conn.ig_username ?? "",
+    name: null,
+    biography: null,
+    profilePictureUrl: null,
+    accountType: "BUSINESS",
+    followersCount: 0,
+    followingCount: 0,
+    postsCount: 0,
+    engagement: {
+      views: 0,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      saves: 0,
+      reach: 0,
+      accountsEngaged: 0,
+      totalInteractions: 0,
+    },
+  };
 }
 
 export async function getAllOutstandConnections(): Promise<OutstandConnection[]> {
