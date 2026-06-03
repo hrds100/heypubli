@@ -49,6 +49,8 @@ export interface InstagramData {
   mediaCount: number;
   accountType: string;
   isConnected: boolean;
+  // Outstand's basic API doesn't expose follower/post counts; hide the stat row then.
+  statsAvailable?: boolean;
 }
 
 interface DashboardHomeProps {
@@ -101,26 +103,28 @@ function InstagramCard({ ig }: { ig: InstagramData }) {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
-          <div className="text-center">
-            <div className="text-lg font-bold text-foreground">
-              {ig.followersCount.toLocaleString("pt-BR")}
+        {ig.statsAvailable !== false && (
+          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-foreground">
+                {ig.followersCount.toLocaleString("pt-BR")}
+              </div>
+              <div className="text-xs text-foreground-secondary">Seguidores</div>
             </div>
-            <div className="text-xs text-foreground-secondary">Seguidores</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-foreground">
-              {ig.followsCount.toLocaleString("pt-BR")}
+            <div className="text-center">
+              <div className="text-lg font-bold text-foreground">
+                {ig.followsCount.toLocaleString("pt-BR")}
+              </div>
+              <div className="text-xs text-foreground-secondary">Seguindo</div>
             </div>
-            <div className="text-xs text-foreground-secondary">Seguindo</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-foreground">
-              {ig.mediaCount.toLocaleString("pt-BR")}
+            <div className="text-center">
+              <div className="text-lg font-bold text-foreground">
+                {ig.mediaCount.toLocaleString("pt-BR")}
+              </div>
+              <div className="text-xs text-foreground-secondary">Posts</div>
             </div>
-            <div className="text-xs text-foreground-secondary">Posts</div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

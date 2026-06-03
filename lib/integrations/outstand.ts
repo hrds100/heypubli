@@ -77,6 +77,18 @@ export async function listSocialAccounts(
   return json.data;
 }
 
+// Fetch a connected account's display info (username + profile photo) by its id.
+export async function getSocialAccountById(
+  apiKey: string,
+  accountId: string,
+): Promise<{ username: string; profilePictureUrl: string | null } | null> {
+  const accounts = await listSocialAccounts(apiKey);
+  const a = accounts.find((x) => x.id === accountId);
+  return a
+    ? { username: a.username, profilePictureUrl: a.profile_picture_url ?? null }
+    : null;
+}
+
 // Outstand's managed OAuth auto-connects the Instagram account against the tenant_id
 // we passed when building the auth URL, then redirects back WITHOUT a session token.
 // So after the OAuth we look the account up by that tenant_id. Retries briefly to

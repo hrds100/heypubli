@@ -25,8 +25,7 @@ export function OnboardingWizard({
   const igConnected = searchParams.get("ig_connected") === "true";
   const igError = searchParams.get("ig_error");
 
-  const [step, setStep] = useState(igConnected ? 3 : 2);
-  const [preferredSectors, setPreferredSectors] = useState<string[]>([]);
+  const [step, setStep] = useState(igConnected ? 4 : 2);
   const [contentTopics, setContentTopics] = useState<string[]>([]);
   const [profile, setProfile] = useState({
     date_of_birth: "",
@@ -42,8 +41,6 @@ export function OnboardingWizard({
     switch (step) {
       case 2:
         return true;
-      case 3:
-        return preferredSectors.length >= 3;
       case 4:
         return contentTopics.length >= 1;
       case 5:
@@ -65,9 +62,7 @@ export function OnboardingWizard({
       const formData = new FormData();
       formData.set("step", String(step));
 
-      if (step === 3) {
-        formData.set("sector_ids", preferredSectors.join(","));
-      } else if (step === 4) {
+      if (step === 4) {
         formData.set("sector_ids", contentTopics.join(","));
       } else if (step === 5) {
         formData.set("date_of_birth", profile.date_of_birth);
@@ -91,7 +86,7 @@ export function OnboardingWizard({
       const formData = new FormData();
       formData.set("step", "2");
       await saveOnboarding(formData);
-      setStep(3);
+      setStep(4);
     });
   };
 
@@ -114,7 +109,7 @@ export function OnboardingWizard({
         </div>
 
         <div className="rounded-2xl border border-border bg-background p-8 shadow-sm">
-          <StepIndicator currentStep={step - 1} totalSteps={5} />
+          <StepIndicator currentStep={step === 2 ? 1 : step - 2} totalSteps={4} />
 
           {error && (
             <div className="mt-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
@@ -192,22 +187,6 @@ export function OnboardingWizard({
                   {onboardingCopy.step2.skip}
                 </button>
               </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="mt-8 space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">Setores preferidos</h2>
-                <p className="mt-2 text-sm text-foreground-secondary">
-                  {onboardingCopy.step3.title}
-                </p>
-              </div>
-              <SectorGrid
-                sectors={sectors}
-                selected={preferredSectors}
-                onToggle={(id) => toggleSector(id, preferredSectors, setPreferredSectors)}
-              />
             </div>
           )}
 
