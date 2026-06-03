@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   createUserSpy: vi.fn(),
   getUserByIdSpy: vi.fn(),
   deleteUserSpy: vi.fn(),
+  updateUserByIdSpy: vi.fn(),
   fromSpy: vi.fn(),
 }));
 
@@ -44,6 +45,9 @@ vi.mock("@/lib/supabase/admin", () => {
   mocks.deleteUserSpy.mockImplementation(() =>
     Promise.resolve({ data: null, error: null }),
   );
+  mocks.updateUserByIdSpy.mockImplementation(() =>
+    Promise.resolve({ data: null, error: null }),
+  );
   mocks.upsertSpy.mockResolvedValue({ data: null, error: null });
 
   return {
@@ -54,6 +58,7 @@ vi.mock("@/lib/supabase/admin", () => {
           createUser: mocks.createUserSpy,
           getUserById: mocks.getUserByIdSpy,
           deleteUser: mocks.deleteUserSpy,
+          updateUserById: mocks.updateUserByIdSpy,
         },
       },
     }),
@@ -72,6 +77,7 @@ beforeEach(() => {
   mocks.createUserSpy.mockClear();
   mocks.getUserByIdSpy.mockClear();
   mocks.deleteUserSpy.mockClear();
+  mocks.updateUserByIdSpy.mockClear();
   mocks.fromSpy.mockClear();
 });
 
@@ -175,6 +181,12 @@ describe("findOrCreateInfluencerByOutstand", () => {
         needs_contact: false,
       }),
     );
+    // auth email set to the real email so they can use an email magic link later
+    expect(mocks.updateUserByIdSpy).toHaveBeenCalledWith(
+      "new-3",
+      expect.objectContaining({ email: "maria@gmail.com", email_confirm: true }),
+    );
+    expect(result.email).toBe("maria@gmail.com");
     expect(result.isNew).toBe(true);
   });
 

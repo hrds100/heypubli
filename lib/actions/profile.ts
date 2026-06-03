@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { contactSchema } from "@/schemas";
 import { redirect } from "next/navigation";
 
@@ -41,6 +42,15 @@ export async function saveContactInfo(
   if (error) {
     return { error: "Não foi possível salvar. Tente novamente." };
   }
+
+  // Use the real email as the auth email too, so they can log in via an email
+  // magic link later (not just Instagram). Best-effort.
+  await createAdminClient()
+    .auth.admin.updateUserById(user.id, {
+      email: parsed.data.email,
+      email_confirm: true,
+    })
+    .catch(() => {});
 
   redirect("/onboarding");
 }
