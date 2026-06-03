@@ -59,17 +59,25 @@ export async function findOrCreateInfluencerByOutstand(
 ): Promise<IgUserResult> {
   const admin = createAdminClient();
 
-  // 1. Returning influencer — already mapped to this Outstand account.
+  // 1. Returning influencer — matched by their STABLE Instagram username. Outstand
+  //    mints a new social-account id on every reconnect, so keying on that id would
+  //    create a duplicate account on each login.
   const { data: existingRow, error: lookupErr } = await admin
     .from("outstand_connections")
     .select("profile_id")
-    .eq("outstand_social_account_id", account.socialAccountId)
+    .eq("ig_username", account.username)
     .maybeSingle();
   if (lookupErr) {
     throw new Error(`Falha ao buscar conexão do Instagram: ${lookupErr.message}`);
   }
   const existing = existingRow as { profile_id: string } | null;
   if (existing) {
+    // Refresh the latest Outstand social-account id (used for posting).
+    await saveOutstandConnection(
+      existing.profile_id,
+      account.socialAccountId,
+      account.username,
+    );
     return {
       userId: existing.profile_id,
       email: await authEmailFor(admin, existing.profile_id),
