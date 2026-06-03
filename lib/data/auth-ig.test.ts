@@ -103,7 +103,11 @@ describe("findOrCreateInfluencerByOutstand", () => {
     });
     expect(mocks.getUserByIdSpy).toHaveBeenCalledWith("existing-id");
     expect(mocks.createUserSpy).not.toHaveBeenCalled();
-    expect(mocks.upsertSpy).not.toHaveBeenCalled();
+    // the existing connection is refreshed with the latest Outstand account id
+    expect(mocks.upsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ profile_id: "existing-id", ig_username: "joe" }),
+      { onConflict: "profile_id" },
+    );
   });
 
   it("creates a new auth user and maps the Outstand account when none exists", async () => {
