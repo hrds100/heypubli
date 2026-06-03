@@ -34,7 +34,6 @@ export function OnboardingWizard({
     address_street: "",
     address_city: "",
     address_postal_code: "",
-    phone: "",
   });
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +47,7 @@ export function OnboardingWizard({
       case 4:
         return contentTopics.length >= 1;
       case 5:
-        return profile.date_of_birth && profile.gender && profile.phone;
+        return profile.date_of_birth && profile.gender;
       default:
         return true;
     }
@@ -73,7 +72,6 @@ export function OnboardingWizard({
       } else if (step === 5) {
         formData.set("date_of_birth", profile.date_of_birth);
         formData.set("gender", profile.gender);
-        formData.set("phone", profile.phone);
         formData.set("address_street", profile.address_street);
         formData.set("address_city", profile.address_city);
         formData.set("address_postal_code", profile.address_postal_code);
@@ -313,17 +311,6 @@ export function OnboardingWizard({
                       className="rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                     />
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-foreground">Celular</label>
-                  <input
-                    type="tel"
-                    placeholder="+55 11 99999-9999"
-                    value={profile.phone}
-                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                    className="rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-foreground-secondary/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                  />
                 </div>
               </div>
 

@@ -45,7 +45,6 @@ export async function saveOnboarding(formData: FormData) {
   if (step === 5) {
     const dateOfBirth = (formData.get("date_of_birth") as string) || null;
     const gender = (formData.get("gender") as Gender) || null;
-    const phone = (formData.get("phone") as string) || null;
     const addressStreet = (formData.get("address_street") as string) || null;
     const addressCity = (formData.get("address_city") as string) || null;
     const addressPostalCode = (formData.get("address_postal_code") as string) || null;
@@ -55,7 +54,6 @@ export async function saveOnboarding(formData: FormData) {
       .update({
         date_of_birth: dateOfBirth,
         gender,
-        phone,
         address_street: addressStreet,
         address_city: addressCity,
         address_postal_code: addressPostalCode,
