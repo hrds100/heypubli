@@ -11,19 +11,19 @@ const TIERS = [
     name: "Crescimento",
     threshold: 10,
     products: [
-      { alt: "Fitbit", logo: "/brands/fitbit.svg" },
-      { alt: "OnePlus", logo: "/brands/oneplus.svg" },
-      { alt: "Insta360", logo: "/brands/insta360.svg" },
+      { alt: "Florê", logo: "/brands/flore.svg" },
+      { alt: "Raízes", logo: "/brands/raizes.svg" },
+      { alt: "Aurora", logo: "/brands/aurora.svg" },
     ],
   },
   {
     name: "Profissional",
     threshold: 50,
     products: [
-      { alt: "DJI", logo: "/brands/dji.svg" },
-      { alt: "Razer", logo: "/brands/razer.svg" },
-      { alt: "Sennheiser", logo: "/brands/sennheiser.svg" },
-      { alt: "Garmin", logo: "/brands/garmin.svg" },
+      { alt: "Pet Lar", logo: "/brands/petlar.svg" },
+      { alt: "Casa Viva", logo: "/brands/casaviva.svg" },
+      { alt: "Bem Leve", logo: "/brands/bemleve.svg" },
+      { alt: "Studio Fit", logo: "/brands/studiofit.svg" },
     ],
   },
   {
