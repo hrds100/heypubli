@@ -118,7 +118,16 @@ export async function findOrCreateInfluencerByOutstand(
   // 4. Signup flow: we already have their real email + WhatsApp, so store them now and
   //    clear needs_contact (no /bem-vindo step). Best-effort — a failure just falls back
   //    to the contact-capture screen.
+  let authEmail = syntheticEmail;
   if (signup) {
+    // Use the real email as the auth email too, so they can log in via an email
+    // magic link later (not just Instagram).
+    const { error: emailErr } = await admin.auth.admin.updateUserById(userId, {
+      email: signup.email,
+      email_confirm: true,
+    });
+    if (!emailErr) authEmail = signup.email;
+
     await // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (admin.from("profiles") as any)
       .update({
@@ -130,5 +139,5 @@ export async function findOrCreateInfluencerByOutstand(
       .then(undefined, () => {});
   }
 
-  return { userId, email: syntheticEmail, isNew: true };
+  return { userId, email: authEmail, isNew: true };
 }

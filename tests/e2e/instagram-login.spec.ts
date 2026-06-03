@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
 
-test("login page offers Instagram as the only sign-in method", async ({ page }) => {
+test("login page offers email magic-link sign-in", async ({ page }) => {
   await page.goto("/login");
-  const button = page.getByRole("link", { name: /entrar com instagram/i });
-  await expect(button).toBeVisible();
-  await expect(button).toHaveAttribute("href", "/api/auth/instagram/start");
-  // No email/password fields anymore.
+  await expect(page.getByLabel("Email")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /receber link de acesso/i }),
+  ).toBeVisible();
+  // No password field — passwordless login.
   await expect(page.getByLabel(/senha/i)).toHaveCount(0);
 });
 

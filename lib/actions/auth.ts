@@ -1,7 +1,39 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+// Returning influencers log in with an email magic link (no Instagram re-auth).
+// We email a one-time login link to the address on their account.
+export async function sendLoginLink(
+  formData: FormData,
+): Promise<{ sent?: boolean; email?: string; error?: string }> {
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
+  if (!email || !email.includes("@")) {
+    return { error: "Informe um email válido" };
+  }
+
+  const h = await headers();
+  const host = h.get("host") ?? "www.heypubli.com";
+  const proto = host.includes("localhost") ? "http" : "https";
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${proto}://${host}/auth/callback`,
+      shouldCreateUser: false, // only existing accounts; sign-up is via Instagram
+    },
+  });
+
+  if (error) {
+    return {
+      error: "Não foi possível enviar o link. Verifique o email e tente novamente.",
+    };
+  }
+  return { sent: true, email };
+}
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IgLoginButton, igLoginCopy } from "@/features/ig-login";
+import { EmailLoginForm } from "@/features/email-login";
 
 export default async function LoginPage({
   searchParams,
@@ -25,7 +25,7 @@ export default async function LoginPage({
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Bem-vindo de volta</h1>
         <p className="mt-2 text-foreground-secondary">
-          Entre com a sua conta do Instagram
+          Digite seu email e enviamos um link de acesso — sem senha.
         </p>
       </div>
 
@@ -33,11 +33,13 @@ export default async function LoginPage({
         <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{erro}</div>
       )}
 
-      <IgLoginButton label={igLoginCopy.defaultLabel} />
+      <EmailLoginForm />
 
-      <p className="text-xs text-foreground-secondary">
-        Use uma conta Profissional do Instagram (Criador ou Empresa). É grátis trocar nas
-        configurações do Instagram.
+      <p className="text-sm text-foreground-secondary">
+        Ainda não tem conta?{" "}
+        <Link href="/cadastro" className="font-medium text-accent hover:underline">
+          Cadastre-se com Instagram
+        </Link>
       </p>
     </div>
   );
