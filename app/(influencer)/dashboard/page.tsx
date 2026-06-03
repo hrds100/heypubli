@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardHome } from "@/features/dashboard-home";
 import { getInstagramProfile } from "@/lib/integrations/instagram";
-import { getPostingSettingsAdmin } from "@/lib/data/outstand";
+import { getPostingSettingsAdmin, getOutstandConnection } from "@/lib/data/outstand";
 import type { InstagramData } from "@/features/dashboard-home";
 import type { Profile, Brand } from "@/types/database";
 
@@ -14,7 +14,24 @@ interface IgConnection {
   followers_count: number | null;
 }
 
-async function getInstagramData(profileId: string): Promise<InstagramData | null> {
+async function getInstagramData(
+  profileId: string,
+  provider: string,
+): Promise<InstagramData | null> {
+  // When posting goes through Outstand, the connection lives in outstand_connections.
+  if (provider === "outstand") {
+    const conn = await getOutstandConnection(profileId);
+    if (!conn) return null;
+    return {
+      username: conn.ig_username ?? "",
+      followersCount: 0,
+      followsCount: 0,
+      mediaCount: 0,
+      accountType: "BUSINESS",
+      isConnected: true,
+    };
+  }
+
   const supabase = await createClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: connection } = (await (supabase.from("instagram_connections") as any)
@@ -91,10 +108,11 @@ export default async function DashboardPage() {
       last_accessed_at: null,
     } as Profile);
 
-  const [instagram, postingSettings] = await Promise.all([
-    getInstagramData(user.id),
-    getPostingSettingsAdmin(),
-  ]);
+  const postingSettings = await getPostingSettingsAdmin();
+  const instagram = await getInstagramData(
+    user.id,
+    postingSettings?.active_provider ?? "heypubli",
+  );
 
   const { data: brands } = await supabase
     .from("brands")
