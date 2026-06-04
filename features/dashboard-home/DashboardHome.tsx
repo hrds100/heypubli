@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Profile, Brand } from "@/types/database";
+import { saveHotmartUrl } from "@/lib/actions/profile";
 
 const TIERS = [
   {
@@ -208,33 +209,35 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
             <p className="text-sm font-semibold text-foreground">Visite o Hotmart</p>
             <p className="mt-0.5 text-xs text-foreground-secondary">
               Cadastre-se como afiliado de{" "}
-              <span className="font-medium text-foreground">
-                {firstBrand?.name ?? "sua marca"}
-              </span>
-            </p>
-            {firstBrand?.hotmart_product_url ? (
-              <a
-                href={firstBrand.hotmart_product_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
-              >
-                Abrir Hotmart
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+              {firstBrand?.hotmart_product_url ? (
+                <a
+                  href={firstBrand.hotmart_product_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 font-medium text-accent underline-offset-2 hover:underline"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-                  />
-                </svg>
-              </a>
-            ) : (
+                  {firstBrand.name}
+                  <svg
+                    className="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+                    />
+                  </svg>
+                </a>
+              ) : (
+                <span className="font-medium text-foreground">
+                  {firstBrand?.name ?? "sua marca"}
+                </span>
+              )}
+            </p>
+            {!firstBrand?.hotmart_product_url && (
               <p className="mt-1 text-xs text-foreground-secondary/70">
                 Link disponível em breve
               </p>
@@ -265,17 +268,22 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">Cole seu link aqui</p>
-            <div className="mt-2 flex gap-2">
+            <form action={saveHotmartUrl} className="mt-2 flex gap-2">
               <input
                 type="url"
+                name="hotmart_url"
+                required
                 placeholder="https://hotmart.com/affiliate/seu-link"
                 defaultValue={profile.hotmart_url ?? ""}
                 className="flex-1 rounded-lg border border-border bg-background-secondary/50 px-3 py-2 text-sm focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
-              <button className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90">
+              <button
+                type="submit"
+                className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90"
+              >
                 Salvar
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
