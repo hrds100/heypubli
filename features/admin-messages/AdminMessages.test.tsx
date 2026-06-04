@@ -10,11 +10,11 @@ describe("AdminMessages", () => {
 
   it("shows connect button when no WhatsApp channel", () => {
     render(<AdminMessages conversations={[]} channels={[]} />);
-    expect(screen.getByText("Conectar WhatsApp")).toBeInTheDocument();
+    expect(screen.getByText("Conectar")).toBeInTheDocument();
   });
 
   it("shows empty state when no conversations", () => {
     render(<AdminMessages conversations={[]} channels={[]} />);
-    expect(screen.getByText("Nenhuma conversa ainda")).toBeInTheDocument();
+    expect(screen.getByText("Nenhuma conversa")).toBeInTheDocument();
   });
 });
