@@ -1,4 +1,4 @@
--- HeyPubli — Initial Schema
+-- NextPubli — Initial Schema
 -- All 10 tables + RLS policies + seed data
 
 -- 1. profiles

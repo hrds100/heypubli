@@ -19,14 +19,14 @@ export async function POST() {
   if (!profile?.is_admin)
     return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://heypubli.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nextpubli.com";
 
   try {
     const { url } = await createHostedLink({
       successUrl: `${appUrl}/admin/mensagens?whatsapp=connected`,
       failureUrl: `${appUrl}/admin/mensagens?whatsapp=failed`,
       notifyUrl: `${appUrl}/api/webhooks/unipile`,
-      label: `HeyPubli-${user.id.slice(0, 8)}`,
+      label: `NextPubli-${user.id.slice(0, 8)}`,
     });
 
     const admin = createAdminClient();

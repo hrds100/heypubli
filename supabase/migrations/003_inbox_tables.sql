@@ -1,5 +1,5 @@
 -- Unified inbox: channels, conversations, inbox_messages
--- Mirrors the pattern from HeyElsie/NFStay adapted for HeyPubli
+-- Mirrors the pattern from HeyElsie/NFStay adapted for NextPubli
 
 -- 1. Channels — connected WhatsApp/email accounts via Unipile
 create table if not exists public.channels (

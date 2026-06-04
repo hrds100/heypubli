@@ -6,9 +6,11 @@ export function TermsContent() {
       <p className="text-xs">Versão simplificada — última atualização: junho de 2026.</p>
 
       <section>
-        <h3 className="text-base font-semibold text-foreground">1. O que é a HeyPubli</h3>
+        <h3 className="text-base font-semibold text-foreground">
+          1. O que é a NextPubli
+        </h3>
         <p className="mt-1">
-          A HeyPubli conecta influenciadores a marcas parceiras. Ao criar sua conta com o
+          A NextPubli conecta influenciadores a marcas parceiras. Ao criar sua conta com o
           Instagram, você passa a fazer parte da nossa rede e pode ganhar comissões
           divulgando produtos das marcas.
         </p>
@@ -21,7 +23,7 @@ export function TermsContent() {
         <p className="mt-1">
           Ao aceitar estes termos, você{" "}
           <strong>
-            autoriza a HeyPubli a publicar conteúdo na sua conta do Instagram em seu nome
+            autoriza a NextPubli a publicar conteúdo na sua conta do Instagram em seu nome
           </strong>
           , incluindo <strong>stories, posts no feed, reels e carrosséis</strong>. As
           publicações são feitas em nome das marcas parceiras às quais você está
@@ -60,8 +62,8 @@ export function TermsContent() {
       <section>
         <h3 className="text-base font-semibold text-foreground">6. Observações</h3>
         <p className="mt-1">
-          A HeyPubli não é afiliada, patrocinada ou endossada pelo Instagram ou pela Meta.
-          Estes termos podem ser atualizados; avisaremos sobre mudanças importantes.
+          A NextPubli não é afiliada, patrocinada ou endossada pelo Instagram ou pela
+          Meta. Estes termos podem ser atualizados; avisaremos sobre mudanças importantes.
         </p>
       </section>
     </div>

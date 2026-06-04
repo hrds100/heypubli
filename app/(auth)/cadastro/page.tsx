@@ -20,7 +20,7 @@ export default async function CadastroPage({
               WebkitTextFillColor: "transparent",
             }}
           >
-            HeyPubli
+            NextPubli
           </span>
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Crie sua conta</h1>

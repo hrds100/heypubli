@@ -4,5 +4,5 @@ export const igLoginCopy = {
   termsPrefix: "Li e aceito os ",
   termsLinkLabel: "Termos de Uso",
   termsSuffix:
-    " e autorizo a HeyPubli a publicar conteúdo (stories, feed e reels) na minha conta do Instagram em meu nome.",
+    " e autorizo a NextPubli a publicar conteúdo (stories, feed e reels) na minha conta do Instagram em meu nome.",
 } as const;

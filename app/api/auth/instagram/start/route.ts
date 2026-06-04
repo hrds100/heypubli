@@ -30,13 +30,13 @@ async function outstandAuthUrl(origin: string, state: string): Promise<string | 
 // callback whether Outstand echoes tenant_id, then make the callback check require it.
 const STATE_TTL_SECONDS = 300;
 
-// Share the auth cookies across apex + www so they survive the heypubli.com → www
+// Share the auth cookies across apex + www so they survive the nextpubli.com → www
 // redirect that happens mid-flow — otherwise the sign-up data (incl. the name) is lost.
 function cookieDomain(origin: string): string | undefined {
   try {
     const host = new URL(origin).hostname;
-    if (host === "heypubli.com" || host.endsWith(".heypubli.com")) {
-      return ".heypubli.com";
+    if (host === "nextpubli.com" || host.endsWith(".nextpubli.com")) {
+      return ".nextpubli.com";
     }
   } catch {
     // ignore

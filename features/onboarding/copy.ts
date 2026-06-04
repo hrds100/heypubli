@@ -18,7 +18,7 @@ export const onboardingCopy = {
   },
   step6: {
     title: "Tudo pronto!",
-    subtitle: "Seu dashboard está liberado. Bem-vindo à HeyPubli!",
+    subtitle: "Seu dashboard está liberado. Bem-vindo à NextPubli!",
     button: "Ir para o Dashboard",
   },
 } as const;

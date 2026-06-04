@@ -32,7 +32,7 @@ function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold tracking-tight">
           <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
-            HeyPubli
+            NextPubli
           </span>
         </Link>
 
@@ -510,7 +510,7 @@ function Testimonials() {
     <section className="py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <h2 className="text-center text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          Quem já ganha com a HeyPubli
+          Quem já ganha com a NextPubli
         </h2>
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -810,7 +810,7 @@ function Footer() {
           <div className="md:col-span-2">
             <span className="text-xl font-bold">
               <span className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] bg-clip-text text-transparent">
-                HeyPubli
+                NextPubli
               </span>
             </span>
 
@@ -900,7 +900,7 @@ function Footer() {
 
           <div className="flex items-center gap-4">
             <a
-              href="https://instagram.com/heypubli"
+              href="https://instagram.com/nextpubli"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/40 transition-colors hover:text-white"
@@ -910,7 +910,7 @@ function Footer() {
               </svg>
             </a>
             <a
-              href="https://tiktok.com/@heypubli"
+              href="https://tiktok.com/@nextpubli"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/40 transition-colors hover:text-white"

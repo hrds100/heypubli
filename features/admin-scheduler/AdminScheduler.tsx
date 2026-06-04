@@ -101,7 +101,7 @@ export function AdminScheduler({
         <h1 className="text-2xl font-bold">Agendador</h1>
         {activeProvider && (
           <span className="rounded-full bg-background-secondary px-2 py-0.5 text-[10px] text-foreground-secondary">
-            {activeProvider === "outstand" ? "Outstand" : "HeyPubli"}
+            {activeProvider === "outstand" ? "Outstand" : "NextPubli"}
           </span>
         )}
       </div>

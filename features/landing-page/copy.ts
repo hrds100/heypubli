@@ -30,7 +30,7 @@ export const landingCopy = {
     ],
   },
   valueProps: {
-    title: "Por que entrar na HeyPubli?",
+    title: "Por que entrar na NextPubli?",
     items: [
       {
         title: "Variedade de marcas parceiras",
@@ -59,7 +59,7 @@ export const landingCopy = {
     ],
   },
   collabTypes: {
-    title: "Como você ganha com a HeyPubli",
+    title: "Como você ganha com a NextPubli",
     items: [
       {
         text: "Receba publicações automáticas de marcas parceiras no seu feed e stories do Instagram",
@@ -114,9 +114,9 @@ export const landingCopy = {
       handle: "@camilarodrigues",
       joinDate: "Março 2024",
       partnerships: "89+ parcerias com marcas",
-      earned: "R$ 34.637 ganhos via HeyPubli",
+      earned: "R$ 34.637 ganhos via NextPubli",
       quote:
-        "A HeyPubli transformou meu Instagram em uma fonte de renda real. Eu não preciso criar conteúdo. As marcas publicam direto no meu perfil e eu ganho comissão em cada venda. É incrível!",
+        "A NextPubli transformou meu Instagram em uma fonte de renda real. Eu não preciso criar conteúdo. As marcas publicam direto no meu perfil e eu ganho comissão em cada venda. É incrível!",
       badge: "Top Criadora",
       badgeDetail: "50+ campanhas entregues",
     },
@@ -125,9 +125,9 @@ export const landingCopy = {
       handle: "@lucasmendesfit",
       joinDate: "Julho 2024",
       partnerships: "42+ parcerias com marcas",
-      earned: "R$ 15.941 ganhos via HeyPubli",
+      earned: "R$ 15.941 ganhos via NextPubli",
       quote:
-        "Sou personal trainer e uso meu Instagram para compartilhar treinos. Com a HeyPubli, marcas de fitness publicam no meu perfil e eu ganho sem fazer nada a mais. Sensacional!",
+        "Sou personal trainer e uso meu Instagram para compartilhar treinos. Com a NextPubli, marcas de fitness publicam no meu perfil e eu ganho sem fazer nada a mais. Sensacional!",
       badge: "Especialista Fitness",
       badgeDetail: "30+ campanhas de fitness",
     },
@@ -136,9 +136,9 @@ export const landingCopy = {
       handle: "@anabeatrizsilva",
       joinDate: "Janeiro 2025",
       partnerships: "125+ parcerias com marcas",
-      earned: "R$ 51.217 ganhos via HeyPubli",
+      earned: "R$ 51.217 ganhos via NextPubli",
       quote:
-        "A HeyPubli foi essencial para monetizar meu perfil de beleza. Trabalho com marcas incríveis e ganho comissão em todas as vendas. Recomendo para qualquer influenciador!",
+        "A NextPubli foi essencial para monetizar meu perfil de beleza. Trabalho com marcas incríveis e ganho comissão em todas as vendas. Recomendo para qualquer influenciador!",
       badge: "Top Rated",
       badgeDetail: "100+ campanhas 5 estrelas",
     },
@@ -176,12 +176,12 @@ export const landingCopy = {
     title: "Perguntas Frequentes",
     items: [
       {
-        question: "Quais são os requisitos para entrar na HeyPubli?",
+        question: "Quais são os requisitos para entrar na NextPubli?",
         answer:
           "Você precisa ter uma conta profissional ou de criador no Instagram com pelo menos 1.000 seguidores e taxa de engajamento acima de 1%. Seu conteúdo deve ser autêntico e alinhado com as marcas parceiras. Não aceitamos contas com seguidores comprados ou engajamento artificial.",
       },
       {
-        question: "Em quais países a HeyPubli está disponível?",
+        question: "Em quais países a NextPubli está disponível?",
         answer:
           "Atualmente operamos no Brasil, Portugal, Angola e Moçambique. Estamos expandindo para novos mercados lusófonos em breve. Se você está em outro país, cadastre-se na lista de espera.",
       },
@@ -208,15 +208,15 @@ export const landingCopy = {
     ],
   },
   finalCta: {
-    title: "Comece a ganhar com a HeyPubli hoje!",
+    title: "Comece a ganhar com a NextPubli hoje!",
     subtitle:
       "Monetize seu Instagram e construa parcerias com grandes marcas. Cadastro grátis, sem taxa, sem complicação.",
     cta: "Começar agora",
   },
   footer: {
     description:
-      "HeyPubli é a plataforma que conecta micro-influenciadores a grandes marcas brasileiras. Publicação automática, comissão garantida e suporte dedicado.",
-    address: "HeyPubli Ltda. | Rua Augusta, 1234, Sala 56, São Paulo, SP, 01304-001",
+      "NextPubli é a plataforma que conecta micro-influenciadores a grandes marcas brasileiras. Publicação automática, comissão garantida e suporte dedicado.",
+    address: "NextPubli Ltda. | Rua Augusta, 1234, Sala 56, São Paulo, SP, 01304-001",
     columns: {
       platform: {
         title: "Plataforma",
@@ -228,13 +228,13 @@ export const landingCopy = {
       },
     },
     emails: {
-      brands: "marcas@heypubli.com",
-      creators: "criadores@heypubli.com",
+      brands: "marcas@nextpubli.com",
+      creators: "criadores@nextpubli.com",
     },
     legal: {
       terms: "Termos de Uso",
       privacy: "Política de Privacidade",
     },
-    copyright: "© 2026 HeyPubli. Todos os direitos reservados.",
+    copyright: "© 2026 NextPubli. Todos os direitos reservados.",
   },
 } as const;
