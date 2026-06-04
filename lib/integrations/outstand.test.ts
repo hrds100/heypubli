@@ -68,7 +68,7 @@ describe("getAuthUrl", () => {
     const result = await getAuthUrl(
       API_KEY,
       "net_123",
-      "https://heypubli.com/auth/outstand/callback",
+      "https://nextpubli.com/auth/outstand/callback",
     );
 
     expect(spy).toHaveBeenCalledWith(
@@ -76,7 +76,7 @@ describe("getAuthUrl", () => {
       expect.objectContaining({ method: "POST" }),
     );
     const body = JSON.parse(spy.mock.calls[0][1]!.body as string);
-    expect(body.redirect_uri).toBe("https://heypubli.com/auth/outstand/callback");
+    expect(body.redirect_uri).toBe("https://nextpubli.com/auth/outstand/callback");
     expect(result).toBe("https://outstand.so/app/api/socials/instagram/org123");
   });
 });

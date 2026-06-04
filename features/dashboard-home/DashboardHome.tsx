@@ -420,7 +420,7 @@ export function DashboardHome({
   return (
     <div className="space-y-5 p-6">
       <h1 className="text-2xl font-bold">
-        Olá, {profile.first_name}! Bem-vindo à HeyPubli
+        Olá, {profile.first_name}! Bem-vindo à NextPubli
       </h1>
 
       <div className="grid gap-6 lg:grid-cols-2">

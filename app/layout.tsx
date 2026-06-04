@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HeyPubli | Plataforma de Influenciadores",
+  title: "NextPubli | Plataforma de Influenciadores",
   description:
     "Plataforma profissional de gestão de micro-influenciadores para marcas brasileiras.",
 };

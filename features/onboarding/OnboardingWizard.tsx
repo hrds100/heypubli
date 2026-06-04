@@ -103,7 +103,7 @@ export function OnboardingWizard({
                 WebkitTextFillColor: "transparent",
               }}
             >
-              HeyPubli
+              NextPubli
             </span>
           </Link>
         </div>

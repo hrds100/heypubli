@@ -45,7 +45,7 @@ Configured in `vercel.json`. No external automation tool needed.
 | Post publisher | `/api/instagram/publish`        | Every 15 minutes | Publishes pending scheduled posts via API |
 
 - **Auth:** Both routes require `Authorization: Bearer {CRON_SECRET}` header (Vercel sends this automatically)
-- **Meta App:** HeyPubli (App ID: 494214389576737), Live, Business type
+- **Meta App:** NextPubli (App ID: 494214389576737), Live, Business type
 
 ---
 

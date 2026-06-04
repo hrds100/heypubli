@@ -6,7 +6,7 @@ import { signIn } from "@/lib/actions/auth";
 const testAccounts = [
   {
     role: "Admin",
-    email: "admin@heypubli.com",
+    email: "admin@nextpubli.com",
     password: "admin123456",
     bg: "bg-purple-50",
     border: "border-purple-200 hover:border-purple-300",
@@ -15,7 +15,7 @@ const testAccounts = [
   },
   {
     role: "Influenciador",
-    email: "influencer@heypubli.com",
+    email: "influencer@nextpubli.com",
     password: "test123456",
     bg: "bg-pink-50",
     border: "border-pink-200 hover:border-pink-300",

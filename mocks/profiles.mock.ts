@@ -32,7 +32,7 @@ export const MOCK_ADMIN: Profile = {
   id: "admin-1",
   first_name: "Hugo",
   last_name: "Admin",
-  email: "admin@heypubli.com",
+  email: "admin@nextpubli.com",
   whatsapp: "+5511888888888",
   date_of_birth: "1990-01-01",
   gender: "male",

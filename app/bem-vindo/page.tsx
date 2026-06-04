@@ -14,7 +14,7 @@ export default function BemVindoPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            HeyPubli
+            NextPubli
           </span>
         </Link>
         <ContactCaptureForm />

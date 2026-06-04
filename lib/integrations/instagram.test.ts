@@ -22,11 +22,11 @@ beforeEach(() => {
 
 describe("getInstagramAuthUrl", () => {
   it("builds correct OAuth URL with required params", () => {
-    const url = getInstagramAuthUrl("https://heypubli.com/auth/instagram/callback");
+    const url = getInstagramAuthUrl("https://nextpubli.com/auth/instagram/callback");
     expect(url).toContain("https://api.instagram.com/oauth/authorize");
     expect(url).toContain("client_id=test-app-id");
     expect(url).toContain(
-      "redirect_uri=https%3A%2F%2Fheypubli.com%2Fauth%2Finstagram%2Fcallback",
+      "redirect_uri=https%3A%2F%2Fnextpubli.com%2Fauth%2Finstagram%2Fcallback",
     );
     expect(url).toContain(
       "scope=instagram_business_basic%2Cinstagram_business_content_publish",
@@ -45,7 +45,7 @@ describe("exchangeCodeForToken", () => {
 
     const result = await exchangeCodeForToken(
       "auth-code",
-      "https://heypubli.com/callback",
+      "https://nextpubli.com/callback",
     );
     expect(result).toEqual({ access_token: "short-token", user_id: "12345" });
     expect(mockFetch).toHaveBeenCalledWith(
@@ -61,7 +61,7 @@ describe("exchangeCodeForToken", () => {
     });
 
     await expect(
-      exchangeCodeForToken("bad-code", "https://heypubli.com/callback"),
+      exchangeCodeForToken("bad-code", "https://nextpubli.com/callback"),
     ).rejects.toThrow("Invalid code");
   });
 });

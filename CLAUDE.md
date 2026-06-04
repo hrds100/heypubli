@@ -1,16 +1,16 @@
-# HeyPubli — Claude Code Rules
+# NextPubli — Claude Code Rules
 
 @AGENTS.md
 
 ## About this project
 
-**HeyPubli** is a Portuguese-language micro-influencer management platform for Brazil.
+**NextPubli** is a Portuguese-language micro-influencer management platform for Brazil.
 Influencers sign up, connect Instagram, and we auto-publish content on their feed/stories
 for partner brands. They earn 30% recurring commission per sale via their Hotmart affiliate
 link. Admin has full control: schedule posts, manage brands, message influencers, track
 sales.
 
-Domain: heypubli.com | Stack: Next.js 16 + Supabase + Vercel Cron + Meta Graph API
+Domain: nextpubli.com | Stack: Next.js 16 + Supabase + Vercel Cron + Meta Graph API
 
 ## User context
 
@@ -180,8 +180,8 @@ Common services that may need browser login:
 | Meta Developer     | developers.facebook.com | Instagram API, OAuth, app settings |
 | Hotmart            | hotmart.com             | Affiliate/sales integration        |
 | GitHub             | github.com              | PR reviews, repo settings          |
-| HeyPubli (prod)    | heypubli.com            | Production smoke tests             |
-| HeyPubli (dev)     | localhost:3000          | Local development testing          |
+| NextPubli (prod)   | nextpubli.com           | Production smoke tests             |
+| NextPubli (dev)    | localhost:3000          | Local development testing          |
 | Squarespace        | squarespace.com         | If touching landing pages          |
 
 ### Browser testing workflow
