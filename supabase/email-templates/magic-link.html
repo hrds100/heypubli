@@ -24,7 +24,7 @@
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
                 <tr>
                   <td style="border-radius:10px; background-color:#E1306C; background-image:linear-gradient(90deg,#F56040,#E1306C,#C13584);">
-                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block; padding:14px 32px; font-size:16px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:10px;">Entrar no NextPubli</a>
+                    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink" target="_blank" style="display:inline-block; padding:14px 32px; font-size:16px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:10px;">Entrar no NextPubli</a>
                   </td>
                 </tr>
               </table>
@@ -32,7 +32,7 @@
                 Se o botão não funcionar, copie e cole este endereço no seu navegador:
               </p>
               <p style="margin:0 0 28px 0; font-size:13px; line-height:1.6; word-break:break-all;">
-                <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#E1306C; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink" target="_blank" style="color:#E1306C; text-decoration:underline;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink</a>
               </p>
               <p style="margin:0; font-size:13px; line-height:1.6; color:#9CA3AF;">
                 Você não pediu este link? Pode ignorar este e-mail com segurança.
