@@ -23,6 +23,11 @@ export {
   getSalesStats,
   getSalesByInfluencer,
 } from "./sales";
+export {
+  getClickCountByProfile,
+  getClickCountsByInfluencer,
+  getClicksTimeline,
+} from "./clicks";
 export { getMessagesByProfile, getAllMessages } from "./messages";
 export {
   getConversations,
