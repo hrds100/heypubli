@@ -9,6 +9,7 @@ const baseProps = {
   lastPublishedAt: null,
   affiliateClicks: 42,
   availableBalance: 0,
+  pendingReleases: [],
   pixKeyType: null,
   pixKey: null,
 };
@@ -33,5 +34,16 @@ describe("DashboardAnalytics", () => {
     expect(
       screen.getByRole("button", { name: "Solicitar pagamento" }),
     ).toBeInTheDocument();
+  });
+
+  it("shows upcoming commission releases with their dates", () => {
+    render(
+      <DashboardAnalytics
+        {...baseProps}
+        pendingReleases={[{ availableOn: "2026-06-24", amount: 12, count: 2 }]}
+      />,
+    );
+    expect(screen.getByText("24/06/2026")).toBeInTheDocument();
+    expect(screen.getByText(/A liberar/)).toBeInTheDocument();
   });
 });

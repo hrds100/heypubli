@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { availableBalance, type ClearableSale } from "@/lib/payouts";
+import { availableBalance, pendingReleases, type ClearableSale } from "@/lib/payouts";
 import type { Payout } from "@/types/database";
 
 type SaleRow = ClearableSale & { id: string; commission_amount: number };
@@ -17,6 +17,25 @@ export async function getAvailableBalance(profileId: string) {
     .eq("status", "confirmed")
     .is("payout_id", null);
   return availableBalance((data as SaleRow[] | null) ?? []);
+}
+
+/**
+ * One query → both the withdrawable balance AND the upcoming releases (commissions
+ * still in the 21-day hold, grouped by the date each unlocks).
+ */
+export async function getPayoutSummary(profileId: string): Promise<{
+  available: ReturnType<typeof availableBalance>;
+  pending: ReturnType<typeof pendingReleases>;
+}> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("hotmart_sales")
+    .select(CLEARABLE_COLUMNS)
+    .eq("profile_id", profileId)
+    .eq("status", "confirmed")
+    .is("payout_id", null);
+  const rows = (data as SaleRow[] | null) ?? [];
+  return { available: availableBalance(rows), pending: pendingReleases(rows) };
 }
 
 export async function getPayoutsByProfile(profileId: string): Promise<Payout[]> {

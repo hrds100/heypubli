@@ -11,6 +11,12 @@ interface MonthlySale {
   commission: number;
 }
 
+interface PendingRelease {
+  availableOn: string;
+  amount: number;
+  count: number;
+}
+
 interface DashboardAnalyticsProps {
   totalSales: number;
   totalCommission: number;
@@ -18,12 +24,46 @@ interface DashboardAnalyticsProps {
   lastPublishedAt: string | null;
   affiliateClicks: number;
   availableBalance: number;
+  pendingReleases: PendingRelease[];
   pixKeyType: string | null;
   pixKey: string | null;
 }
 
 function brl(amount: number): string {
   return `R$ ${amount.toFixed(2).replace(".", ",")}`;
+}
+
+function fmtDay(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function PendingReleasesCard({ pending }: { pending: PendingRelease[] }) {
+  if (pending.length === 0) return null;
+  const total = pending.reduce((s, p) => s + p.amount, 0);
+
+  return (
+    <div className="rounded-xl border border-border p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-foreground-secondary">
+          A liberar (período de garantia)
+        </p>
+        <p className="text-lg font-bold text-warning">{brl(total)}</p>
+      </div>
+      <div className="mt-3 space-y-1.5">
+        {pending.map((p) => (
+          <div key={p.availableOn} className="flex items-center justify-between text-sm">
+            <span className="text-foreground-secondary">
+              Libera em{" "}
+              <strong className="text-foreground">{fmtDay(p.availableOn)}</strong> ·{" "}
+              {p.count} venda{p.count > 1 ? "s" : ""}
+            </span>
+            <span className="font-medium">{brl(p.amount)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function AvailableBalanceCard({ amount, hasPix }: { amount: number; hasPix: boolean }) {
@@ -211,6 +251,7 @@ export function DashboardAnalytics({
   lastPublishedAt,
   affiliateClicks,
   availableBalance,
+  pendingReleases,
   pixKeyType,
   pixKey,
 }: DashboardAnalyticsProps) {
@@ -262,6 +303,8 @@ export function DashboardAnalytics({
       </div>
 
       <AvailableBalanceCard amount={availableBalance} hasPix={!!pixKey} />
+
+      <PendingReleasesCard pending={pendingReleases} />
 
       <PixCard pixKeyType={pixKeyType} pixKey={pixKey} />
     </div>
