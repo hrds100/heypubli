@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { contactSchema, hotmartLinkSchema } from "@/schemas";
+import { extractAffiliateCode, cleanAffiliateUrl } from "@/lib/integrations/hotmart";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -67,6 +68,11 @@ export async function saveHotmartUrl(formData: FormData): Promise<void> {
 
   if (!parsed.success) return;
 
+  // Pull the affiliate code out of the pasted link (it's what the sales webhook
+  // matches on) and store a clean link with the tracking junk stripped.
+  const affiliateCode = extractAffiliateCode(parsed.data.hotmart_url);
+  const cleanUrl = cleanAffiliateUrl(parsed.data.hotmart_url) ?? parsed.data.hotmart_url;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -74,10 +80,13 @@ export async function saveHotmartUrl(formData: FormData): Promise<void> {
 
   if (!user) redirect("/login");
 
+  const update: { hotmart_url: string; hotmart_affiliate_code?: string } = {
+    hotmart_url: cleanUrl,
+  };
+  if (affiliateCode) update.hotmart_affiliate_code = affiliateCode;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from("profiles") as any)
-    .update({ hotmart_url: parsed.data.hotmart_url })
-    .eq("id", user.id);
+  await (supabase.from("profiles") as any).update(update).eq("id", user.id);
 
   revalidatePath("/dashboard");
 }
