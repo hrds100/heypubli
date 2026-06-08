@@ -22,6 +22,7 @@ export type AiQueueStatus =
 export type SaleStatus = "confirmed" | "refunded" | "cancelled";
 export type PostingProvider = "heypubli" | "outstand";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
+export type RegistrationMethod = "instagram" | "email" | "admin_manual";
 
 export interface Profile {
   id: string;
@@ -41,6 +42,8 @@ export interface Profile {
   pix_key: string | null;
   hotmart_url: string | null;
   hotmart_affiliate_code: string | null;
+  referral_tag: string | null;
+  registration_method: RegistrationMethod;
   ig_username: string | null;
   auth_provider: "email" | "instagram";
   needs_contact: boolean;
@@ -87,6 +90,8 @@ export interface Brand {
   description: string | null;
   hotmart_product_id: string | null;
   hotmart_product_url: string | null;
+  share_base_url: string | null;
+  commission_rate: number;
   target_sectors: string[];
   is_active: boolean;
   created_at: string;
@@ -140,6 +145,18 @@ export interface HotmartSale {
   commission_amount: number;
   status: SaleStatus;
   sold_at: string;
+}
+
+export interface LinkClick {
+  id: string;
+  profile_id: string | null;
+  referral_tag: string;
+  brand_id: string | null;
+  referer: string | null;
+  user_agent: string | null;
+  ip_hash: string | null;
+  is_bot: boolean;
+  clicked_at: string;
 }
 
 export interface Channel {
@@ -292,6 +309,12 @@ export interface Database {
         Row: HotmartSale;
         Insert: Omit<HotmartSale, "id">;
         Update: Partial<Omit<HotmartSale, "id">>;
+        Relationships: [];
+      };
+      link_clicks: {
+        Row: LinkClick;
+        Insert: Omit<LinkClick, "id" | "clicked_at">;
+        Update: Partial<Omit<LinkClick, "id" | "clicked_at">>;
         Relationships: [];
       };
       admin_sessions: {
