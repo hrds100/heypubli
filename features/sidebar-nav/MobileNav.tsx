@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Tag,
   ShoppingCart,
+  Wallet,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -35,6 +36,7 @@ const adminItems = [
   { label: "Mensagens", href: "/admin/mensagens", icon: MessageSquare },
   { label: "Marcas", href: "/admin/marcas", icon: Tag },
   { label: "Hotmart", href: "/admin/hotmart", icon: ShoppingCart },
+  { label: "Pagamentos", href: "/admin/pagamentos", icon: Wallet },
   { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
 ];
 

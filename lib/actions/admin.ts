@@ -223,6 +223,43 @@ export async function deletePost(postId: string) {
   revalidatePath("/admin/agendador");
 }
 
+/** Admin manually creates an influencer account (the trigger mints their referral tag). */
+export async function createInfluencer(
+  formData: FormData,
+): Promise<{ error: string } | { success: true }> {
+  await requireAdmin();
+  const firstName = ((formData.get("first_name") as string) || "").trim();
+  const lastName = ((formData.get("last_name") as string) || "").trim();
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const whatsapp = ((formData.get("whatsapp") as string) || "").trim() || null;
+
+  if (!firstName || !email.includes("@")) {
+    return { error: "Nome e um email válido são obrigatórios." };
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: {
+      first_name: firstName,
+      last_name: lastName,
+      auth_provider: "email",
+      registration_method: "admin_manual",
+    },
+  });
+  if (error) return { error: error.message };
+
+  // Trigger created the profile + referral tag; attach the WhatsApp if given.
+  if (whatsapp && data.user) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (admin.from("profiles") as any).update({ whatsapp }).eq("id", data.user.id);
+  }
+
+  revalidatePath("/admin/influenciadores");
+  return { success: true };
+}
+
 export async function updateInfluencerProfile(profileId: string, formData: FormData) {
   await requireAdmin();
   const admin = createAdminClient();

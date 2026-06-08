@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Search, ExternalLink, Mail, MessageSquare } from "lucide-react";
+import {
+  Search,
+  ExternalLink,
+  Mail,
+  MessageSquare,
+  Plus,
+  MousePointerClick,
+  X,
+} from "lucide-react";
+import { createInfluencer } from "@/lib/actions/admin";
 import type { Profile, InstagramConnection } from "@/types/database";
 
 interface InfluencerRow {
@@ -10,14 +19,83 @@ interface InfluencerRow {
   instagram: InstagramConnection | null;
   totalSales: number;
   commission: number;
+  clicks: number;
 }
 
 interface AdminInfluencersProps {
   influencers: InfluencerRow[];
 }
 
+function AddInfluencerModal({ onClose }: { onClose: () => void }) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setError(null);
+    startTransition(async () => {
+      const r = await createInfluencer(formData);
+      if (r && "error" in r) setError(r.error);
+      else onClose();
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold">Adicionar influenciador</h2>
+          <button
+            onClick={onClose}
+            className="text-foreground-secondary hover:text-foreground"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              name="first_name"
+              required
+              placeholder="Nome"
+              className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            />
+            <input
+              name="last_name"
+              placeholder="Sobrenome"
+              className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            />
+          </div>
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="email@exemplo.com"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          />
+          <input
+            name="whatsapp"
+            placeholder="WhatsApp (opcional)"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          />
+          {error && <p className="text-sm text-error">{error}</p>}
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+          >
+            {isPending ? "Criando..." : "Criar influenciador"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
   const [search, setSearch] = useState("");
+  const [showAdd, setShowAdd] = useState(false);
 
   const filtered = influencers.filter(
     (i) =>
@@ -30,10 +108,19 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Influenciadores</h1>
-        <span className="text-sm text-foreground-secondary">
-          {influencers.length} total
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-foreground-secondary">
+            {influencers.length} total
+          </span>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90"
+          >
+            <Plus size={16} /> Adicionar
+          </button>
+        </div>
       </div>
+      {showAdd && <AddInfluencerModal onClose={() => setShowAdd(false)} />}
 
       <div className="relative">
         <Search
@@ -69,6 +156,9 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                 Comissão
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
+                Cliques
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
                 Ações
               </th>
             </tr>
@@ -99,6 +189,12 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                 <td className="px-4 py-3">{row.totalSales}</td>
                 <td className="px-4 py-3">
                   R$ {row.commission.toFixed(2).replace(".", ",")}
+                </td>
+                <td className="px-4 py-3">
+                  <span className="inline-flex items-center gap-1 text-foreground-secondary">
+                    <MousePointerClick size={14} />
+                    {row.clicks}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -138,7 +234,7 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-8 text-center text-foreground-secondary"
                 >
                   Nenhum influenciador encontrado.

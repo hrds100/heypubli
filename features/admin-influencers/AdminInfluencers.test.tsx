@@ -20,6 +20,7 @@ const MOCK_ROWS = [
     },
     totalSales: 12,
     commission: 359.4,
+    clicks: 84,
   },
 ];
 

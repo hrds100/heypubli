@@ -1,6 +1,6 @@
 import Image from "next/image";
-import type { Profile, Brand } from "@/types/database";
-import { saveHotmartUrl } from "@/lib/actions/profile";
+import type { Profile } from "@/types/database";
+import { CopyLinkButton } from "./CopyLinkButton";
 
 const TIERS = [
   {
@@ -56,9 +56,12 @@ export interface InstagramData {
 
 interface DashboardHomeProps {
   profile: Profile;
-  activeBrands: Brand[];
   instagram: InstagramData | null;
   connectUrl?: string;
+  shareLink: string | null;
+  clicks: number;
+  sales: number;
+  earnings: number;
 }
 
 function InstagramCard({ ig }: { ig: InstagramData }) {
@@ -189,110 +192,66 @@ function ConnectFirstCard({ connectUrl }: { connectUrl: string }) {
   );
 }
 
-function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }) {
-  const firstBrand = brands[0];
+function LinkStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-border p-5">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
-        Comece a ganhar
-      </h2>
+    <div className="text-center">
+      <div className="text-lg font-bold text-foreground">{value}</div>
+      <div className="text-xs text-foreground-secondary">{label}</div>
+    </div>
+  );
+}
 
-      <div className="mt-4 space-y-0">
-        <div className="flex items-start gap-3">
-          <div className="flex flex-col items-center">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-              1
-            </div>
-            <div className="mt-1 h-8 w-0.5 bg-border" />
-          </div>
-          <div className="flex-1 min-w-0 pb-4">
-            <p className="text-sm font-semibold text-foreground">Visite o Hotmart</p>
-            <p className="mt-0.5 text-xs text-foreground-secondary">
-              Cadastre-se como afiliado de{" "}
-              {firstBrand?.hotmart_product_url ? (
-                <a
-                  href={firstBrand.hotmart_product_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 font-medium text-accent underline-offset-2 hover:underline"
-                >
-                  {firstBrand.name}
-                  <svg
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-                    />
-                  </svg>
-                </a>
-              ) : (
-                <span className="font-medium text-foreground">
-                  {firstBrand?.name ?? "sua marca"}
-                </span>
-              )}
-            </p>
-            {!firstBrand?.hotmart_product_url && (
-              <p className="mt-1 text-xs text-foreground-secondary/70">
-                Link disponível em breve
-              </p>
-            )}
-          </div>
-        </div>
+function TrackingLinkCard({
+  shareLink,
+  clicks,
+  sales,
+  earnings,
+}: {
+  shareLink: string | null;
+  clicks: number;
+  sales: number;
+  earnings: number;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border">
+      <div className="bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#C13584] px-5 py-3">
+        <h2 className="text-sm font-semibold text-white">Seu link de divulgação</h2>
+      </div>
 
-        <div className="flex items-start gap-3">
-          <div className="flex flex-col items-center">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-              2
-            </div>
-            <div className="mt-1 h-8 w-0.5 bg-border" />
-          </div>
-          <div className="flex-1 min-w-0 pb-4">
-            <p className="text-sm font-semibold text-foreground">
-              Pegue seu link de afiliado
-            </p>
-            <p className="mt-0.5 text-xs text-foreground-secondary">
-              Copie o link que o Hotmart gerar para você
-            </p>
-          </div>
-        </div>
+      <div className="space-y-4 p-5">
+        <p className="text-sm text-foreground-secondary">
+          Compartilhe este link nos seus stories e posts. Cada venda te dá comissão — o
+          valor fica disponível para saque 21 dias após a venda confirmada.
+        </p>
 
-        <div className="flex items-start gap-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-            3
+        {shareLink ? (
+          <div className="flex items-center gap-2 rounded-lg border border-success/40 bg-success/5 p-2 pl-3">
+            <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+              {shareLink}
+            </span>
+            <CopyLinkButton url={shareLink} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Cole seu link aqui</p>
-            <form action={saveHotmartUrl} className="mt-2 flex gap-2">
-              <input
-                type="url"
-                name="hotmart_url"
-                required
-                placeholder="https://hotmart.com/affiliate/seu-link"
-                defaultValue={profile.hotmart_url ?? ""}
-                className="flex-1 rounded-lg border border-border bg-background-secondary/50 px-3 py-2 text-sm focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent/20"
-              />
-              <button
-                type="submit"
-                className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90"
-              >
-                Salvar
-              </button>
-            </form>
-          </div>
+        ) : (
+          <p className="rounded-lg border border-dashed border-border p-3 text-sm text-foreground-secondary">
+            Seu link estará disponível em instantes.
+          </p>
+        )}
+
+        <div className="grid grid-cols-3 gap-3 border-t border-border pt-4">
+          <LinkStat label="Cliques" value={clicks.toLocaleString("pt-BR")} />
+          <LinkStat label="Vendas" value={sales.toLocaleString("pt-BR")} />
+          <LinkStat
+            label="Ganhos"
+            value={`R$ ${earnings.toFixed(2).replace(".", ",")}`}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function TiersSection() {
-  const currentSales = 7;
+function TiersSection({ sales }: { sales: number }) {
+  const currentSales = sales;
 
   const nextLocked = TIERS.find((t) => currentSales < t.threshold);
   const nextThreshold = nextLocked?.threshold ?? 200;
@@ -421,9 +380,12 @@ function TiersSection() {
 
 export function DashboardHome({
   profile,
-  activeBrands,
   instagram,
   connectUrl = "/api/instagram/connect",
+  shareLink,
+  clicks,
+  sales,
+  earnings,
 }: DashboardHomeProps) {
   return (
     <div className="space-y-5 p-6">
@@ -443,12 +405,17 @@ export function DashboardHome({
             <ConnectFirstCard connectUrl={connectUrl} />
           )}
 
-          <HotmartSteps profile={profile} brands={activeBrands} />
+          <TrackingLinkCard
+            shareLink={shareLink}
+            clicks={clicks}
+            sales={sales}
+            earnings={earnings}
+          />
         </div>
 
         {/* Right column — Gamification */}
         <div>
-          <TiersSection />
+          <TiersSection sales={sales} />
         </div>
       </div>
     </div>
