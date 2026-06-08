@@ -4,8 +4,11 @@ const mockInsert = vi.fn().mockReturnValue({ error: null });
 const mockUpdate = vi.fn().mockReturnValue({
   eq: vi.fn().mockReturnValue({ error: null }),
 });
-const mockSelectSingle = vi.fn();
-const mockSelectEq = vi.fn();
+const mockDupCheck = vi.fn();
+const mockMatchSck = vi.fn();
+const mockMatchAffiliate = vi.fn();
+const mockMatchEmail = vi.fn();
+const mockBrandRate = vi.fn();
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
@@ -14,26 +17,23 @@ vi.mock("@/lib/supabase/admin", () => ({
         return {
           insert: mockInsert,
           update: mockUpdate,
-          select: () => ({
-            eq: () => ({
-              single: mockSelectSingle,
-            }),
-          }),
+          select: () => ({ eq: () => ({ single: mockDupCheck }) }),
         };
       }
       if (table === "profiles") {
         return {
           select: () => ({
-            eq: (field: string, value: string) => {
-              if (field === "hotmart_affiliate_code") {
-                return { single: mockSelectEq };
-              }
-              return {
-                eq: () => ({ single: mockSelectEq }),
-              };
+            eq: (field: string) => {
+              if (field === "referral_tag") return { single: mockMatchSck };
+              if (field === "hotmart_affiliate_code")
+                return { single: mockMatchAffiliate };
+              return { eq: () => ({ single: mockMatchEmail }) };
             },
           }),
         };
+      }
+      if (table === "brands") {
+        return { select: () => ({ eq: () => ({ single: mockBrandRate }) }) };
       }
       return {};
     },
@@ -53,8 +53,11 @@ function makeRequest(body: Record<string, unknown>): Request {
 describe("Hotmart webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSelectSingle.mockResolvedValue({ data: null });
-    mockSelectEq.mockResolvedValue({ data: null });
+    mockDupCheck.mockResolvedValue({ data: null });
+    mockMatchSck.mockResolvedValue({ data: null });
+    mockMatchAffiliate.mockResolvedValue({ data: null });
+    mockMatchEmail.mockResolvedValue({ data: null });
+    mockBrandRate.mockResolvedValue({ data: { commission_rate: 0.2 } });
     delete process.env.HOTMART_HOTTOK;
   });
 
@@ -84,22 +87,50 @@ describe("Hotmart webhook", () => {
     expect(res.status).toBe(400);
   });
 
-  it("inserts sale on PURCHASE_APPROVED with affiliate match", async () => {
-    mockSelectEq.mockResolvedValue({ data: { id: "profile-123" } });
+  it("matches by sck → referral_tag and computes 20% commission", async () => {
+    mockMatchSck.mockResolvedValue({ data: { id: "profile-sck" } });
 
     const res = await POST(
       makeRequest({
         event: "PURCHASE_APPROVED",
         data: {
           purchase: {
-            transaction: "TX-001",
+            transaction: "TX-SCK",
             approved_date: 1700000000000,
-            price: { value: 59.99, currency_value: "BRL" },
+            price: { value: 100 },
+            tracking: { source: "ana4k2p9" },
           },
+          product: { id: 999, name: "ScanPlates" },
+          buyer: { email: "buyer@test.com" },
+        },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockMatchSck).toHaveBeenCalled();
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profile_id: "profile-sck",
+        transaction_id: "TX-SCK",
+        sale_amount: 100,
+        commission_amount: 20,
+        status: "confirmed",
+      }),
+    );
+  });
+
+  it("falls back to affiliate_code and still computes our commission", async () => {
+    mockMatchAffiliate.mockResolvedValue({ data: { id: "profile-123" } });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_APPROVED",
+        data: {
+          purchase: { transaction: "TX-AFF", price: { value: 59.99 } },
           product: { id: 999, name: "ScanPlates Pro" },
-          buyer: { name: "João", email: "joao@test.com" },
-          affiliates: [{ affiliate_code: "AFF-001", name: "Maria" }],
-          commissions: [{ value: 17.99, source: "AFFILIATE", currency_value: "BRL" }],
+          buyer: { email: "joao@test.com" },
+          affiliates: [{ affiliate_code: "AFF-001" }],
+          commissions: [{ value: 17.99, source: "AFFILIATE" }],
         },
       }),
     );
@@ -108,17 +139,13 @@ describe("Hotmart webhook", () => {
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         profile_id: "profile-123",
-        transaction_id: "TX-001",
-        product_name: "ScanPlates Pro",
-        sale_amount: 59.99,
-        commission_amount: 17.99,
-        status: "confirmed",
+        commission_amount: 12, // 59.99 × 0.20, NOT Hotmart's 17.99
       }),
     );
   });
 
   it("skips duplicate transactions", async () => {
-    mockSelectSingle.mockResolvedValue({ data: { id: "existing-sale" } });
+    mockDupCheck.mockResolvedValue({ data: { id: "existing-sale" } });
 
     const res = await POST(
       makeRequest({
@@ -139,12 +166,9 @@ describe("Hotmart webhook", () => {
     const res = await POST(
       makeRequest({
         event: "PURCHASE_REFUNDED",
-        data: {
-          purchase: { transaction: "TX-002" },
-        },
+        data: { purchase: { transaction: "TX-002" } },
       }),
     );
-
     expect(res.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
   });
@@ -153,26 +177,18 @@ describe("Hotmart webhook", () => {
     const res = await POST(
       makeRequest({
         event: "PURCHASE_CHARGEBACK",
-        data: {
-          purchase: { transaction: "TX-003" },
-        },
+        data: { purchase: { transaction: "TX-003" } },
       }),
     );
-
     expect(res.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith({ status: "cancelled" });
   });
 
   it("handles unknown events gracefully", async () => {
     const res = await POST(
-      makeRequest({
-        event: "SUBSCRIPTION_CANCELED",
-        data: { some: "payload" },
-      }),
+      makeRequest({ event: "SUBSCRIPTION_CANCELED", data: { some: "payload" } }),
     );
-
     expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.received).toBe(true);
+    expect((await res.json()).received).toBe(true);
   });
 });

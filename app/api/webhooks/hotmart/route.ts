@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { extractSck, computeCommission } from "@/lib/integrations/hotmart";
 import type { SaleStatus } from "@/types/database";
 
 export async function POST(request: Request) {
@@ -66,12 +67,14 @@ async function handlePurchase(data: Record<string, unknown>, status: SaleStatus)
   if (existing) return;
 
   const affiliates = data.affiliates as Array<Record<string, unknown>> | undefined;
-  const commissions = data.commissions as Array<Record<string, unknown>> | undefined;
 
+  // PIX model: the influencer's referral_tag rides along as Hotmart's `sck`.
+  const sck = extractSck(data)?.toLowerCase() ?? null;
   const affiliateCode = (affiliates?.[0]?.affiliate_code as string) ?? null;
 
-  const profileId = await matchAffiliateToProfile(
+  const profileId = await matchSaleToProfile(
     supabase,
+    sck,
     affiliateCode,
     buyer?.email as string | undefined,
   );
@@ -89,10 +92,10 @@ async function handlePurchase(data: Record<string, unknown>, status: SaleStatus)
   const price = purchase?.price as Record<string, unknown> | undefined;
   const saleAmount = (price?.value as number) ?? 0;
 
-  const affiliateCommission = commissions?.find(
-    (c) => (c.source as string) === "AFFILIATE",
-  );
-  const commissionAmount = (affiliateCommission?.value as number) ?? 0;
+  // We compute the influencer's commission ourselves (the producer is the only Hotmart
+  // affiliate in the PIX model, so Hotmart's affiliate-commission value doesn't apply).
+  const rate = await getBrandCommissionRate(supabase, product?.id);
+  const commissionAmount = computeCommission(saleAmount, rate);
 
   const soldAt = purchase?.approved_date
     ? new Date(purchase.approved_date as number).toISOString()
@@ -125,12 +128,41 @@ async function handleStatusUpdate(data: Record<string, unknown>, status: SaleSta
     .eq("transaction_id", transactionId);
 }
 
-async function matchAffiliateToProfile(
+const DEFAULT_COMMISSION_RATE = 0.2;
+
+async function getBrandCommissionRate(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
+  productId: unknown,
+): Promise<number> {
+  if (productId == null) return DEFAULT_COMMISSION_RATE;
+  const { data: brand } = await supabase
+    .from("brands")
+    .select("commission_rate")
+    .eq("hotmart_product_id", String(productId))
+    .single();
+  const rate = Number(brand?.commission_rate);
+  return rate > 0 ? rate : DEFAULT_COMMISSION_RATE;
+}
+
+async function matchSaleToProfile(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  sck: string | null,
   affiliateCode: string | null,
   buyerEmail: string | undefined,
 ): Promise<string | null> {
+  // Primary (PIX model): the influencer's referral_tag carried as `sck`.
+  if (sck) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("referral_tag", sck)
+      .single();
+
+    if (profile) return (profile as { id: string }).id;
+  }
+
   if (affiliateCode) {
     const { data: profile } = await supabase
       .from("profiles")
