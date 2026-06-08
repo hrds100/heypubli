@@ -28,6 +28,12 @@ export {
   getClickCountsByInfluencer,
   getClicksTimeline,
 } from "./clicks";
+export {
+  getAvailableBalance,
+  getPayoutsByProfile,
+  getAllPayouts,
+  getPendingPayoutRequests,
+} from "./payouts";
 export { getMessagesByProfile, getAllMessages } from "./messages";
 export {
   getConversations,

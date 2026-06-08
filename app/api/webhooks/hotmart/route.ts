@@ -31,8 +31,11 @@ export async function POST(request: Request) {
 
   switch (event) {
     case "PURCHASE_APPROVED":
+      await handlePurchase(data, "confirmed", false);
+      break;
     case "PURCHASE_COMPLETE":
-      await handlePurchase(data, "confirmed");
+      // Refund window closed → mark the sale as cleared for payout.
+      await handlePurchase(data, "confirmed", true);
       break;
     case "PURCHASE_REFUNDED":
       await handleStatusUpdate(data, "refunded");
@@ -48,7 +51,11 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 
-async function handlePurchase(data: Record<string, unknown>, status: SaleStatus) {
+async function handlePurchase(
+  data: Record<string, unknown>,
+  status: SaleStatus,
+  markComplete: boolean,
+) {
   const purchase = data.purchase as Record<string, unknown> | undefined;
   const product = data.product as Record<string, unknown> | undefined;
   const buyer = data.buyer as Record<string, unknown> | undefined;
@@ -64,7 +71,16 @@ async function handlePurchase(data: Record<string, unknown>, status: SaleStatus)
     .eq("transaction_id", transactionId)
     .single();
 
-  if (existing) return;
+  if (existing) {
+    // PURCHASE_COMPLETE for a sale we already recorded → stamp the refund window closed.
+    if (markComplete) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("hotmart_sales") as any)
+        .update({ purchase_complete_at: new Date().toISOString() })
+        .eq("transaction_id", transactionId);
+    }
+    return;
+  }
 
   const affiliates = data.affiliates as Array<Record<string, unknown>> | undefined;
 
@@ -114,6 +130,7 @@ async function handlePurchase(data: Record<string, unknown>, status: SaleStatus)
     commission_amount: commissionAmount,
     status,
     sold_at: soldAt,
+    purchase_complete_at: markComplete ? new Date().toISOString() : null,
   });
 }
 

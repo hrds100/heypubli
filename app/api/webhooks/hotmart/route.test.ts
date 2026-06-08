@@ -189,6 +189,23 @@ describe("Hotmart webhook", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
+  it("stamps purchase_complete_at on PURCHASE_COMPLETE for an existing sale", async () => {
+    mockDupCheck.mockResolvedValue({ data: { id: "existing-sale" } });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_COMPLETE",
+        data: { purchase: { transaction: "TX-DONE" } },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ purchase_complete_at: expect.any(String) }),
+    );
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
   it("updates status on PURCHASE_REFUNDED", async () => {
     const res = await POST(
       makeRequest({

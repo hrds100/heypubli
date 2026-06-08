@@ -275,6 +275,38 @@ export async function updateInfluencerProfile(profileId: string, formData: FormD
   return { success: true };
 }
 
+/** Admin confirms a PIX payout was sent. */
+export async function markPayoutPaid(payoutId: string) {
+  const adminId = await requireAdmin();
+  const admin = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from("payouts") as any)
+    .update({ status: "paid", paid_at: new Date().toISOString(), paid_by: adminId })
+    .eq("id", payoutId)
+    .eq("status", "requested");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pagamentos");
+  return { success: true };
+}
+
+/** Admin cancels an open request, releasing its sales back to the available pool. */
+export async function cancelPayout(payoutId: string) {
+  await requireAdmin();
+  const admin = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (admin.from("hotmart_sales") as any)
+    .update({ payout_id: null })
+    .eq("payout_id", payoutId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from("payouts") as any)
+    .update({ status: "cancelled" })
+    .eq("id", payoutId)
+    .eq("status", "requested");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pagamentos");
+  return { success: true };
+}
+
 export async function updateInfluencerAuth(profileId: string, formData: FormData) {
   await requireAdmin();
   const admin = createAdminClient();
