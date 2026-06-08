@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { isSaleCleared, availableBalance, PAYOUT_HOLD_DAYS } from "./payouts";
+import {
+  isSaleCleared,
+  availableBalance,
+  pendingReleases,
+  PAYOUT_HOLD_DAYS,
+} from "./payouts";
 
 const NOW = new Date("2026-06-08T00:00:00Z").getTime();
 const daysAgo = (n: number) => new Date(NOW - n * 86400000).toISOString();
@@ -59,5 +64,32 @@ describe("availableBalance", () => {
     expect(r.amount).toBe(20);
     expect(r.count).toBe(2);
     expect(r.saleIds.sort()).toEqual(["a", "b"]);
+  });
+});
+
+describe("pendingReleases", () => {
+  it("groups not-yet-cleared sales by release date (sold_at + 21 days), excluding cleared/refunded", () => {
+    const sales = [
+      { ...base, id: "a", commission_amount: 5, sold_at: daysAgo(5) }, // → 2026-06-24
+      { ...base, id: "b", commission_amount: 7, sold_at: daysAgo(5) }, // same date as a
+      { ...base, id: "c", commission_amount: 9, sold_at: daysAgo(10) }, // → 2026-06-19
+      { ...base, id: "d", commission_amount: 99, sold_at: daysAgo(30) }, // cleared → excluded
+      {
+        ...base,
+        id: "e",
+        commission_amount: 50,
+        status: "refunded",
+        sold_at: daysAgo(2),
+      }, // excluded
+    ];
+    expect(pendingReleases(sales, NOW)).toEqual([
+      { availableOn: "2026-06-19", amount: 9, count: 1 },
+      { availableOn: "2026-06-24", amount: 12, count: 2 },
+    ]);
+  });
+
+  it("returns nothing when all sales are already cleared", () => {
+    const sales = [{ ...base, commission_amount: 5, sold_at: daysAgo(40) }];
+    expect(pendingReleases(sales, NOW)).toEqual([]);
   });
 });

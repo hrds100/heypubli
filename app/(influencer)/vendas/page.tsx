@@ -5,7 +5,7 @@ import {
   getSalesByProfile,
   getPostsByProfile,
   getClickCountByProfile,
-  getAvailableBalance,
+  getPayoutSummary,
 } from "@/lib/data";
 import type { HotmartSale } from "@/types/database";
 import { format } from "date-fns";
@@ -41,7 +41,7 @@ export default async function VendasPage() {
 
   if (!user) redirect("/login");
 
-  const [sales, posts, profileResult, affiliateClicks, balance] = await Promise.all([
+  const [sales, posts, profileResult, affiliateClicks, payout] = await Promise.all([
     getSalesByProfile(user.id),
     getPostsByProfile(user.id),
     supabase
@@ -50,7 +50,7 @@ export default async function VendasPage() {
       .eq("id", user.id)
       .single<{ pix_key_type: string | null; pix_key: string | null }>(),
     getClickCountByProfile(user.id),
-    getAvailableBalance(user.id),
+    getPayoutSummary(user.id),
   ]);
 
   const totalSales = sales.length;
@@ -68,7 +68,8 @@ export default async function VendasPage() {
       totalSales={totalSales}
       totalCommission={totalCommission}
       affiliateClicks={affiliateClicks}
-      availableBalance={balance.amount}
+      availableBalance={payout.available.amount}
+      pendingReleases={payout.pending}
       lastPublishedAt={lastPublishedAt}
       monthlySales={monthlySales}
       pixKeyType={profileResult.data?.pix_key_type ?? null}

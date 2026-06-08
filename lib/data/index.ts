@@ -30,6 +30,7 @@ export {
 } from "./clicks";
 export {
   getAvailableBalance,
+  getPayoutSummary,
   getPayoutsByProfile,
   getAllPayouts,
   getPendingPayoutRequests,

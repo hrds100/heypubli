@@ -38,3 +38,32 @@ export function availableBalance(
     count: cleared.length,
   };
 }
+
+/**
+ * Commissions not yet cleared, grouped by the date they unlock (sold_at + 21 days).
+ * Lets the influencer see "R$ X libera em DD/MM" for each pending batch. (A sale may
+ * clear earlier if Hotmart sends PURCHASE_COMPLETE; this shows the guaranteed date.)
+ */
+export function pendingReleases(
+  sales: (ClearableSale & { commission_amount: number })[],
+  now: number = Date.now(),
+): { availableOn: string; amount: number; count: number }[] {
+  const byDate = new Map<string, { amount: number; count: number }>();
+  for (const s of sales) {
+    if (s.status !== "confirmed" || s.payout_id || isSaleCleared(s, now)) continue;
+    const availableOn = new Date(new Date(s.sold_at).getTime() + HOLD_MS)
+      .toISOString()
+      .slice(0, 10);
+    const entry = byDate.get(availableOn) ?? { amount: 0, count: 0 };
+    entry.amount += Number(s.commission_amount);
+    entry.count += 1;
+    byDate.set(availableOn, entry);
+  }
+  return [...byDate.entries()]
+    .map(([availableOn, v]) => ({
+      availableOn,
+      amount: Math.round(v.amount * 100) / 100,
+      count: v.count,
+    }))
+    .sort((a, b) => a.availableOn.localeCompare(b.availableOn));
+}
