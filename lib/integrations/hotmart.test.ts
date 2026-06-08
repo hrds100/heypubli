@@ -23,6 +23,18 @@ describe("extractAffiliateCode", () => {
     );
   });
 
+  it("reads the code from a go.hotmart.com short link (code in the path)", () => {
+    expect(extractAffiliateCode("https://go.hotmart.com/R106197159S")).toBe(
+      "R106197159S",
+    );
+  });
+
+  it("reads the go.hotmart.com code even with extra query params", () => {
+    expect(extractAffiliateCode("https://go.hotmart.com/R106197159S?src=instagram")).toBe(
+      "R106197159S",
+    );
+  });
+
   it("trims surrounding whitespace from a pasted link", () => {
     expect(extractAffiliateCode("  https://www.scanplates.com/?ref=ABC123  ")).toBe(
       "ABC123",
@@ -54,6 +66,12 @@ describe("cleanAffiliateUrl", () => {
   it("preserves the original param name (ap) when cleaning", () => {
     expect(cleanAffiliateUrl("https://pay.hotmart.com/B123?ap=ABCD1234&x=1")).toBe(
       "https://pay.hotmart.com/B123?ap=ABCD1234",
+    );
+  });
+
+  it("keeps a go.hotmart.com short link clean (drops extra params)", () => {
+    expect(cleanAffiliateUrl("https://go.hotmart.com/R106197159S?src=ig")).toBe(
+      "https://go.hotmart.com/R106197159S",
     );
   });
 

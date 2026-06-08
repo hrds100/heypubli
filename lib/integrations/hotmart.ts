@@ -25,6 +25,11 @@ function findAffiliate(input: string): { code: string; param: string } | null {
     const code = url.searchParams.get(param)?.trim();
     if (code) return { code, param };
   }
+  // Hotmart's short links carry the code in the path: go.hotmart.com/<CODE>.
+  if (url.hostname === "go.hotmart.com") {
+    const code = url.pathname.split("/").filter(Boolean)[0]?.trim();
+    if (code) return { code, param: "path" };
+  }
   return null;
 }
 
@@ -41,5 +46,7 @@ export function cleanAffiliateUrl(input: string): string | null {
   const url = parseUrl(input);
   const affiliate = findAffiliate(input);
   if (!url || !affiliate) return null;
+  // Short link: the code is the path, so the clean link is just origin + code.
+  if (affiliate.param === "path") return `${url.origin}/${affiliate.code}`;
   return `${url.origin}${url.pathname}?${affiliate.param}=${affiliate.code}`;
 }
