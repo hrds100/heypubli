@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Profile, Brand } from "@/types/database";
 import { saveHotmartUrl } from "@/lib/actions/profile";
+import { CopyLinkButton } from "./CopyLinkButton";
 
 const TIERS = [
   {
@@ -267,7 +268,19 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
             3
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Cole seu link aqui</p>
+            <p className="text-sm font-semibold text-foreground">
+              {profile.hotmart_url ? "Seu link de divulgação" : "Cole seu link aqui"}
+            </p>
+
+            {profile.hotmart_url && (
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-success/40 bg-success/5 p-2 pl-3">
+                <span className="flex-1 min-w-0 truncate text-sm text-foreground">
+                  {profile.hotmart_url}
+                </span>
+                <CopyLinkButton url={profile.hotmart_url} />
+              </div>
+            )}
+
             <form action={saveHotmartUrl} className="mt-2 flex gap-2">
               <input
                 type="url"
@@ -275,6 +288,7 @@ function HotmartSteps({ profile, brands }: { profile: Profile; brands: Brand[] }
                 required
                 placeholder="https://hotmart.com/affiliate/seu-link"
                 defaultValue={profile.hotmart_url ?? ""}
+                aria-label={profile.hotmart_url ? "Trocar link" : "Cole seu link"}
                 className="flex-1 rounded-lg border border-border bg-background-secondary/50 px-3 py-2 text-sm focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <button

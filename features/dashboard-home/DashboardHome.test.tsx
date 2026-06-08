@@ -76,4 +76,21 @@ describe("DashboardHome", () => {
     expect(screen.getByDisplayValue("https://hotmart.com/meu-link")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Salvar" })).toBeInTheDocument();
   });
+
+  it("shows the saved link with a copy button", () => {
+    render(
+      <DashboardHome
+        profile={{
+          ...MOCK_INFLUENCER,
+          hotmart_url: "https://www.scanplates.com/?ref=ABC123",
+        }}
+        activeBrands={BRANDS}
+        instagram={mockInstagram}
+      />,
+    );
+    expect(
+      screen.getByText("https://www.scanplates.com/?ref=ABC123"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copiar" })).toBeInTheDocument();
+  });
 });
