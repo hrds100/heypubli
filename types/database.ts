@@ -40,6 +40,7 @@ export interface Profile {
   timezone: string;
   pix_key_type: PixKeyType | null;
   pix_key: string | null;
+  commission_rate: number | null;
   hotmart_url: string | null;
   hotmart_affiliate_code: string | null;
   referral_tag: string | null;

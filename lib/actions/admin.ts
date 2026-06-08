@@ -240,6 +240,15 @@ export async function updateInfluencerProfile(profileId: string, formData: FormD
   const hotmartUrl = (formData.get("hotmart_url") as string) || null;
   const hotmartAffiliateCode = (formData.get("hotmart_affiliate_code") as string) || null;
 
+  // Commission is entered as a percentage (e.g. "20"); store as a 0–1 rate, or null to
+  // inherit the brand rate. Empty/invalid → null.
+  const commissionPct = ((formData.get("commission_rate_pct") as string) || "").trim();
+  let commissionRate: number | null = null;
+  if (commissionPct !== "") {
+    const pct = Number(commissionPct);
+    if (!Number.isNaN(pct)) commissionRate = Math.max(0, Math.min(1, pct / 100));
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from("profiles") as any)
     .update({
@@ -253,6 +262,7 @@ export async function updateInfluencerProfile(profileId: string, formData: FormD
       address_postal_code: addressPostalCode,
       pix_key_type: pixKeyType,
       pix_key: pixKey,
+      commission_rate: commissionRate,
       hotmart_url: hotmartUrl,
       hotmart_affiliate_code: hotmartAffiliateCode,
     })

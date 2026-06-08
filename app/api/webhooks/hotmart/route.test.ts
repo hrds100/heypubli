@@ -119,6 +119,33 @@ describe("Hotmart webhook", () => {
     );
   });
 
+  it("uses the influencer's own commission rate when set", async () => {
+    mockMatchSck.mockResolvedValue({ data: { id: "profile-vip", commission_rate: 0.3 } });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_APPROVED",
+        data: {
+          purchase: {
+            transaction: "TX-VIP",
+            price: { value: 100 },
+            tracking: { source: "vip12345" },
+          },
+          product: { id: 999, name: "ScanPlates" },
+          buyer: { email: "b@test.com" },
+        },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profile_id: "profile-vip",
+        commission_amount: 30, // 100 × 0.30 (per-influencer rate), not brand 0.20
+      }),
+    );
+  });
+
   it("falls back to affiliate_code and still computes our commission", async () => {
     mockMatchAffiliate.mockResolvedValue({ data: { id: "profile-123" } });
 
