@@ -31,7 +31,7 @@ export function availableBalance(
   now: number = Date.now(),
 ): { amount: number; saleIds: string[]; count: number } {
   const cleared = sales.filter((s) => isSaleCleared(s, now));
-  const amount = cleared.reduce((sum, s) => sum + s.commission_amount, 0);
+  const amount = cleared.reduce((sum, s) => sum + Number(s.commission_amount), 0);
   return {
     amount: Math.round(amount * 100) / 100,
     saleIds: cleared.map((s) => (s as { id?: string }).id ?? ""),

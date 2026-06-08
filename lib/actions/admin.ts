@@ -312,16 +312,18 @@ export async function updateInfluencerProfile(profileId: string, formData: FormD
   return { success: true };
 }
 
-/** Admin confirms a PIX payout was sent. */
+/** Admin confirms a PIX payout was sent. No-op (already paid/cancelled) is reported. */
 export async function markPayoutPaid(payoutId: string) {
   const adminId = await requireAdmin();
   const admin = createAdminClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin.from("payouts") as any)
+  const { data, error } = await (admin.from("payouts") as any)
     .update({ status: "paid", paid_at: new Date().toISOString(), paid_by: adminId })
     .eq("id", payoutId)
-    .eq("status", "requested");
+    .eq("status", "requested")
+    .select("id");
   if (error) return { error: error.message };
+  if (!data || data.length === 0) return { error: "Pagamento já processado." };
   revalidatePath("/admin/pagamentos");
   return { success: true };
 }
@@ -330,16 +332,21 @@ export async function markPayoutPaid(payoutId: string) {
 export async function cancelPayout(payoutId: string) {
   await requireAdmin();
   const admin = createAdminClient();
+  // Cancel FIRST, guarded on status='requested', so a concurrent mark-paid can't
+  // leave a paid payout with its sales released (double-pay).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (admin.from("payouts") as any)
+    .update({ status: "cancelled" })
+    .eq("id", payoutId)
+    .eq("status", "requested")
+    .select("id");
+  if (error) return { error: error.message };
+  if (!data || data.length === 0) return { error: "Pagamento já processado." };
+  // Only now release its sales back to the available pool.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (admin.from("hotmart_sales") as any)
     .update({ payout_id: null })
     .eq("payout_id", payoutId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin.from("payouts") as any)
-    .update({ status: "cancelled" })
-    .eq("id", payoutId)
-    .eq("status", "requested");
-  if (error) return { error: error.message };
   revalidatePath("/admin/pagamentos");
   return { success: true };
 }

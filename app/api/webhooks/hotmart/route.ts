@@ -77,7 +77,8 @@ async function handlePurchase(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from("hotmart_sales") as any)
         .update({ purchase_complete_at: new Date().toISOString() })
-        .eq("transaction_id", transactionId);
+        .eq("transaction_id", transactionId)
+        .eq("status", "confirmed"); // don't "clear" a refunded/cancelled sale
     }
     return;
   }
@@ -141,10 +142,49 @@ async function handleStatusUpdate(data: Record<string, unknown>, status: SaleSta
 
   const supabase = createAdminClient();
 
+  const { data: sale } = await supabase
+    .from("hotmart_sales")
+    .select("commission_amount, payout_id")
+    .eq("transaction_id", transactionId)
+    .single<{ commission_amount: number; payout_id: string | null }>();
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from("hotmart_sales") as any)
     .update({ status })
     .eq("transaction_id", transactionId);
+
+  // If the refunded sale was sitting in an UNPAID payout request, take it out of that
+  // request and reduce the request total so the admin never pays for a refunded sale.
+  if (sale?.payout_id) {
+    const { data: payout } = await supabase
+      .from("payouts")
+      .select("status, commission_amount, sales_count")
+      .eq("id", sale.payout_id)
+      .single<{ status: string; commission_amount: number; sales_count: number }>();
+
+    if (payout?.status === "requested") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("hotmart_sales") as any)
+        .update({ payout_id: null })
+        .eq("transaction_id", transactionId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("payouts") as any)
+        .update({
+          commission_amount: Math.max(
+            0,
+            Number(payout.commission_amount) - Number(sale.commission_amount),
+          ),
+          sales_count: Math.max(0, payout.sales_count - 1),
+        })
+        .eq("id", sale.payout_id);
+    } else if (payout?.status === "paid") {
+      // Already paid out → needs a manual clawback (net against future earnings).
+      console.log(
+        "[hotmart-webhook] refund on an already-PAID payout — clawback needed:",
+        { transactionId, payoutId: sale.payout_id },
+      );
+    }
+  }
 }
 
 const DEFAULT_COMMISSION_RATE = 0.2;

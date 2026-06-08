@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockInsert = vi.fn().mockReturnValue({ error: null });
-const mockUpdate = vi.fn().mockReturnValue({
-  eq: vi.fn().mockReturnValue({ error: null }),
-});
+// Chainable update().eq().eq()... — the route ignores the result, so each .eq returns
+// the same object (and awaiting it resolves to itself).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const updateChain: any = { eq: vi.fn(() => updateChain) };
+const mockUpdate = vi.fn(() => updateChain);
 const mockDupCheck = vi.fn();
 const mockMatchSck = vi.fn();
 const mockMatchAffiliate = vi.fn();

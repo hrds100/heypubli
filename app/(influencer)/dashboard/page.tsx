@@ -111,6 +111,9 @@ export default async function DashboardPage() {
       pix_key: null,
       hotmart_url: null,
       hotmart_affiliate_code: null,
+      referral_tag: null,
+      registration_method: "instagram",
+      commission_rate: null,
       last_accessed_at: null,
     } as Profile);
 
@@ -146,7 +149,10 @@ export default async function DashboardPage() {
     getSalesByProfile(user.id),
   ]);
   const confirmedSales = sales.filter((s) => s.status === "confirmed");
-  const earnings = confirmedSales.reduce((sum, s) => sum + s.commission_amount, 0);
+  const earnings = confirmedSales.reduce(
+    (sum, s) => sum + Number(s.commission_amount),
+    0,
+  );
 
   const connectUrl =
     postingSettings?.active_provider === "outstand"
