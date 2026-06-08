@@ -11,6 +11,7 @@ const mockMatchSck = vi.fn();
 const mockMatchAffiliate = vi.fn();
 const mockMatchEmail = vi.fn();
 const mockBrandRate = vi.fn();
+const mockPayoutSel = vi.fn();
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
@@ -37,6 +38,12 @@ vi.mock("@/lib/supabase/admin", () => ({
       if (table === "brands") {
         return { select: () => ({ eq: () => ({ single: mockBrandRate }) }) };
       }
+      if (table === "payouts") {
+        return {
+          update: mockUpdate,
+          select: () => ({ eq: () => ({ single: mockPayoutSel }) }),
+        };
+      }
       return {};
     },
   }),
@@ -60,6 +67,7 @@ describe("Hotmart webhook", () => {
     mockMatchAffiliate.mockResolvedValue({ data: null });
     mockMatchEmail.mockResolvedValue({ data: null });
     mockBrandRate.mockResolvedValue({ data: { commission_rate: 0.2 } });
+    mockPayoutSel.mockResolvedValue({ data: null });
     delete process.env.HOTMART_HOTTOK;
   });
 
@@ -217,6 +225,44 @@ describe("Hotmart webhook", () => {
     );
     expect(res.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
+  });
+
+  it("removes a refunded sale from an UNPAID (requested) payout and reduces its total", async () => {
+    mockDupCheck.mockResolvedValue({ data: { commission_amount: 12, payout_id: "po1" } });
+    mockPayoutSel.mockResolvedValue({
+      data: { status: "requested", commission_amount: 20, sales_count: 2 },
+    });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_REFUNDED",
+        data: { purchase: { transaction: "TX-R" } },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
+    expect(mockUpdate).toHaveBeenCalledWith({ payout_id: null }); // pulled from the request
+    expect(mockUpdate).toHaveBeenCalledWith({ commission_amount: 8, sales_count: 1 }); // 20-12, 2-1
+  });
+
+  it("does NOT alter an already-PAID payout on refund (logged for manual clawback)", async () => {
+    mockDupCheck.mockResolvedValue({ data: { commission_amount: 12, payout_id: "po1" } });
+    mockPayoutSel.mockResolvedValue({
+      data: { status: "paid", commission_amount: 12, sales_count: 1 },
+    });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_REFUNDED",
+        data: { purchase: { transaction: "TX-R2" } },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
+    // a paid payout is left untouched (no release, no reduction)
+    expect(mockUpdate).not.toHaveBeenCalledWith({ payout_id: null });
   });
 
   it("updates status on PURCHASE_CHARGEBACK", async () => {
