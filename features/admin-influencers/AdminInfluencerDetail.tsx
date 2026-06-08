@@ -415,6 +415,15 @@ export function AdminInfluencerDetail({
                 name="hotmart_affiliate_code"
                 defaultValue={profile.hotmart_affiliate_code ?? ""}
               />
+              <EditField
+                label="Comissão (%) — vazio = padrão 20%"
+                name="commission_rate_pct"
+                defaultValue={
+                  profile.commission_rate != null
+                    ? String(Math.round(profile.commission_rate * 100))
+                    : ""
+                }
+              />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

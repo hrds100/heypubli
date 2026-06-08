@@ -40,6 +40,7 @@ export interface Profile {
   timezone: string;
   pix_key_type: PixKeyType | null;
   pix_key: string | null;
+  commission_rate: number | null;
   hotmart_url: string | null;
   hotmart_affiliate_code: string | null;
   referral_tag: string | null;
@@ -145,6 +146,23 @@ export interface HotmartSale {
   commission_amount: number;
   status: SaleStatus;
   sold_at: string;
+  purchase_complete_at: string | null;
+  payout_id: string | null;
+}
+
+export type PayoutStatus = "requested" | "paid" | "cancelled";
+
+export interface Payout {
+  id: string;
+  profile_id: string;
+  commission_amount: number;
+  sales_count: number;
+  status: PayoutStatus;
+  pix_key: string | null;
+  pix_key_type: string | null;
+  requested_at: string;
+  paid_at: string | null;
+  paid_by: string | null;
 }
 
 export interface LinkClick {
@@ -315,6 +333,12 @@ export interface Database {
         Row: LinkClick;
         Insert: Omit<LinkClick, "id" | "clicked_at">;
         Update: Partial<Omit<LinkClick, "id" | "clicked_at">>;
+        Relationships: [];
+      };
+      payouts: {
+        Row: Payout;
+        Insert: Omit<Payout, "id" | "requested_at">;
+        Update: Partial<Omit<Payout, "id" | "requested_at">>;
         Relationships: [];
       };
       admin_sessions: {

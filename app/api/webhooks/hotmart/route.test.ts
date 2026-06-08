@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockInsert = vi.fn().mockReturnValue({ error: null });
-const mockUpdate = vi.fn().mockReturnValue({
-  eq: vi.fn().mockReturnValue({ error: null }),
-});
+// Chainable update().eq().eq()... — the route ignores the result, so each .eq returns
+// the same object (and awaiting it resolves to itself).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const updateChain: any = { eq: vi.fn(() => updateChain) };
+const mockUpdate = vi.fn(() => updateChain);
 const mockDupCheck = vi.fn();
 const mockMatchSck = vi.fn();
 const mockMatchAffiliate = vi.fn();
@@ -119,6 +121,33 @@ describe("Hotmart webhook", () => {
     );
   });
 
+  it("uses the influencer's own commission rate when set", async () => {
+    mockMatchSck.mockResolvedValue({ data: { id: "profile-vip", commission_rate: 0.3 } });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_APPROVED",
+        data: {
+          purchase: {
+            transaction: "TX-VIP",
+            price: { value: 100 },
+            tracking: { source: "vip12345" },
+          },
+          product: { id: 999, name: "ScanPlates" },
+          buyer: { email: "b@test.com" },
+        },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profile_id: "profile-vip",
+        commission_amount: 30, // 100 × 0.30 (per-influencer rate), not brand 0.20
+      }),
+    );
+  });
+
   it("falls back to affiliate_code and still computes our commission", async () => {
     mockMatchAffiliate.mockResolvedValue({ data: { id: "profile-123" } });
 
@@ -159,6 +188,23 @@ describe("Hotmart webhook", () => {
     );
 
     expect(res.status).toBe(200);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("stamps purchase_complete_at on PURCHASE_COMPLETE for an existing sale", async () => {
+    mockDupCheck.mockResolvedValue({ data: { id: "existing-sale" } });
+
+    const res = await POST(
+      makeRequest({
+        event: "PURCHASE_COMPLETE",
+        data: { purchase: { transaction: "TX-DONE" } },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ purchase_complete_at: expect.any(String) }),
+    );
     expect(mockInsert).not.toHaveBeenCalled();
   });
 

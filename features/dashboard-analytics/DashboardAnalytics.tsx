@@ -3,6 +3,7 @@
 import { useTransition, useState } from "react";
 import { ShoppingCart, DollarSign, MousePointerClick, Clock, Wallet } from "lucide-react";
 import { savePixKey } from "@/lib/actions/settings";
+import { requestPayout } from "@/lib/actions/payouts";
 
 interface MonthlySale {
   month: string;
@@ -16,8 +17,70 @@ interface DashboardAnalyticsProps {
   monthlySales: MonthlySale[];
   lastPublishedAt: string | null;
   affiliateClicks: number;
+  availableBalance: number;
   pixKeyType: string | null;
   pixKey: string | null;
+}
+
+function brl(amount: number): string {
+  return `R$ ${amount.toFixed(2).replace(".", ",")}`;
+}
+
+function AvailableBalanceCard({ amount, hasPix }: { amount: number; hasPix: boolean }) {
+  const [isPending, startTransition] = useTransition();
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const canRequest = amount > 0 && hasPix && !isPending;
+
+  const request = () => {
+    setResult(null);
+    startTransition(async () => {
+      const r = await requestPayout();
+      if ("success" in r) {
+        setResult({ ok: true, msg: `Pagamento de ${brl(r.amount)} solicitado! 🎉` });
+      } else {
+        setResult({ ok: false, msg: r.error });
+      }
+    });
+  };
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <div className="flex items-center justify-between gap-4 p-5">
+        <div className="min-w-0">
+          <p className="text-sm text-foreground-secondary">Saldo disponível para saque</p>
+          <p className="text-2xl font-bold text-success">{brl(amount)}</p>
+          {!hasPix ? (
+            <p className="mt-1 text-xs text-foreground-secondary">
+              Cadastre sua chave PIX abaixo para poder sacar.
+            </p>
+          ) : amount <= 0 ? (
+            <p className="mt-1 text-xs text-foreground-secondary">
+              Suas comissões ficam disponíveis 21 dias após a venda confirmada.
+            </p>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={request}
+          disabled={!canRequest}
+          className="shrink-0 rounded-lg bg-success px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-success/90 disabled:opacity-50"
+        >
+          {isPending ? "Solicitando..." : "Solicitar pagamento"}
+        </button>
+      </div>
+      {result && (
+        <div
+          className={`border-t px-5 py-3 text-sm ${
+            result.ok
+              ? "border-success/10 bg-success/5 text-success"
+              : "border-error/10 bg-error/5 text-error"
+          }`}
+        >
+          {result.msg}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function StatCard({
@@ -147,10 +210,11 @@ export function DashboardAnalytics({
   monthlySales,
   lastPublishedAt,
   affiliateClicks,
+  availableBalance,
   pixKeyType,
   pixKey,
 }: DashboardAnalyticsProps) {
-  const formattedCommission = `R$ ${totalCommission.toFixed(2).replace(".", ",")}`;
+  const formattedCommission = brl(totalCommission);
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -196,6 +260,8 @@ export function DashboardAnalytics({
           </div>
         )}
       </div>
+
+      <AvailableBalanceCard amount={availableBalance} hasPix={!!pixKey} />
 
       <PixCard pixKeyType={pixKeyType} pixKey={pixKey} />
     </div>

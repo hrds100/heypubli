@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardHome } from "@/features/dashboard-home";
 import { getInstagramProfile } from "@/lib/integrations/instagram";
 import { getPostingSettingsAdmin, getOutstandInstagramData } from "@/lib/data/outstand";
+import { getClickCountByProfile, getSalesByProfile } from "@/lib/data";
+import { buildReferralLink } from "@/lib/referral";
 import type { InstagramData } from "@/features/dashboard-home";
 import type { Profile, Brand } from "@/types/database";
 
@@ -109,6 +111,9 @@ export default async function DashboardPage() {
       pix_key: null,
       hotmart_url: null,
       hotmart_affiliate_code: null,
+      referral_tag: null,
+      registration_method: "instagram",
+      commission_rate: null,
       last_accessed_at: null,
     } as Profile);
 
@@ -127,7 +132,27 @@ export default async function DashboardPage() {
   const { data: brands } = await supabase
     .from("brands")
     .select("*")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .order("created_at", { ascending: true });
+
+  const activeBrands = (brands as Brand[]) ?? [];
+
+  // The influencer's share link: the active brand's base URL + their referral tag.
+  const baseUrl = activeBrands[0]?.share_base_url ?? null;
+  const shareLink =
+    baseUrl && fallbackProfile.referral_tag
+      ? buildReferralLink(baseUrl, fallbackProfile.referral_tag)
+      : null;
+
+  const [clicks, sales] = await Promise.all([
+    getClickCountByProfile(user.id),
+    getSalesByProfile(user.id),
+  ]);
+  const confirmedSales = sales.filter((s) => s.status === "confirmed");
+  const earnings = confirmedSales.reduce(
+    (sum, s) => sum + Number(s.commission_amount),
+    0,
+  );
 
   const connectUrl =
     postingSettings?.active_provider === "outstand"
@@ -137,9 +162,12 @@ export default async function DashboardPage() {
   return (
     <DashboardHome
       profile={fallbackProfile}
-      activeBrands={(brands as Brand[]) ?? []}
       instagram={instagram}
       connectUrl={connectUrl}
+      shareLink={shareLink}
+      clicks={clicks}
+      sales={confirmedSales.length}
+      earnings={earnings}
     />
   );
 }
