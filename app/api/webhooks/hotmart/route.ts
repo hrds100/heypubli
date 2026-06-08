@@ -142,48 +142,30 @@ async function handleStatusUpdate(data: Record<string, unknown>, status: SaleSta
 
   const supabase = createAdminClient();
 
-  const { data: sale } = await supabase
-    .from("hotmart_sales")
-    .select("commission_amount, payout_id")
-    .eq("transaction_id", transactionId)
-    .single<{ commission_amount: number; payout_id: string | null }>();
-
+  // Idempotent status change — `.neq(status)` makes a duplicate/replayed delivery a
+  // clean no-op (the WHERE is re-evaluated under the row lock, so concurrent duplicates
+  // can't both flip it).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from("hotmart_sales") as any)
     .update({ status })
-    .eq("transaction_id", transactionId);
+    .eq("transaction_id", transactionId)
+    .neq("status", status);
 
-  // If the refunded sale was sitting in an UNPAID payout request, take it out of that
-  // request and reduce the request total so the admin never pays for a refunded sale.
-  if (sale?.payout_id) {
-    const { data: payout } = await supabase
-      .from("payouts")
-      .select("status, commission_amount, sales_count")
-      .eq("id", sale.payout_id)
-      .single<{ status: string; commission_amount: number; sales_count: number }>();
+  // Atomically pull the refunded/cancelled sale out of any UNPAID payout request and
+  // reduce that request's total. The work runs inside a single row-locked Postgres
+  // function (migration 011) so it can't race an admin "Marcar como pago" or a duplicate
+  // refund: an already-paid payout keeps the sale attached and returns 'clawback_needed'.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: outcome } = await (supabase as any).rpc("release_refunded_sale", {
+    p_transaction_id: transactionId,
+  });
 
-    if (payout?.status === "requested") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("hotmart_sales") as any)
-        .update({ payout_id: null })
-        .eq("transaction_id", transactionId);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("payouts") as any)
-        .update({
-          commission_amount: Math.max(
-            0,
-            Number(payout.commission_amount) - Number(sale.commission_amount),
-          ),
-          sales_count: Math.max(0, payout.sales_count - 1),
-        })
-        .eq("id", sale.payout_id);
-    } else if (payout?.status === "paid") {
-      // Already paid out → needs a manual clawback (net against future earnings).
-      console.log(
-        "[hotmart-webhook] refund on an already-PAID payout — clawback needed:",
-        { transactionId, payoutId: sale.payout_id },
-      );
-    }
+  if (outcome === "clawback_needed") {
+    // The money already left via PIX — net it against the influencer's future earnings.
+    console.log(
+      "[hotmart-webhook] refund on an already-PAID payout — manual clawback needed:",
+      { transactionId },
+    );
   }
 }
 

@@ -1,17 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockInsert = vi.fn().mockReturnValue({ error: null });
-// Chainable update().eq().eq()... — the route ignores the result, so each .eq returns
+// Chainable update().eq().neq()... — the route ignores the result, so each guard returns
 // the same object (and awaiting it resolves to itself).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const updateChain: any = { eq: vi.fn(() => updateChain) };
+const updateChain: any = {
+  eq: vi.fn(() => updateChain),
+  neq: vi.fn(() => updateChain),
+};
 const mockUpdate = vi.fn(() => updateChain);
+const mockRpc = vi.fn();
 const mockDupCheck = vi.fn();
 const mockMatchSck = vi.fn();
 const mockMatchAffiliate = vi.fn();
 const mockMatchEmail = vi.fn();
 const mockBrandRate = vi.fn();
-const mockPayoutSel = vi.fn();
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
@@ -38,14 +41,9 @@ vi.mock("@/lib/supabase/admin", () => ({
       if (table === "brands") {
         return { select: () => ({ eq: () => ({ single: mockBrandRate }) }) };
       }
-      if (table === "payouts") {
-        return {
-          update: mockUpdate,
-          select: () => ({ eq: () => ({ single: mockPayoutSel }) }),
-        };
-      }
       return {};
     },
+    rpc: mockRpc,
   }),
 }));
 
@@ -67,7 +65,7 @@ describe("Hotmart webhook", () => {
     mockMatchAffiliate.mockResolvedValue({ data: null });
     mockMatchEmail.mockResolvedValue({ data: null });
     mockBrandRate.mockResolvedValue({ data: { commission_rate: 0.2 } });
-    mockPayoutSel.mockResolvedValue({ data: null });
+    mockRpc.mockResolvedValue({ data: "released" });
     delete process.env.HOTMART_HOTTOK;
   });
 
@@ -216,7 +214,7 @@ describe("Hotmart webhook", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
-  it("updates status on PURCHASE_REFUNDED", async () => {
+  it("flips status idempotently and delegates the payout release to the atomic RPC", async () => {
     const res = await POST(
       makeRequest({
         event: "PURCHASE_REFUNDED",
@@ -225,47 +223,53 @@ describe("Hotmart webhook", () => {
     );
     expect(res.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
+    // .neq("status","refunded") is the idempotency guard — a replayed delivery is a no-op
+    expect(updateChain.neq).toHaveBeenCalledWith("status", "refunded");
+    // the unpaid-request release + decrement runs as ONE row-locked DB function, not an
+    // in-app read-then-write, so it can't race a mark-paid or a duplicate refund
+    expect(mockRpc).toHaveBeenCalledWith("release_refunded_sale", {
+      p_transaction_id: "TX-002",
+    });
   });
 
-  it("removes a refunded sale from an UNPAID (requested) payout and reduces its total", async () => {
-    mockDupCheck.mockResolvedValue({ data: { commission_amount: 12, payout_id: "po1" } });
-    mockPayoutSel.mockResolvedValue({
-      data: { status: "requested", commission_amount: 20, sales_count: 2 },
-    });
+  it("logs a manual clawback when the RPC reports the payout was already PAID", async () => {
+    mockRpc.mockResolvedValue({ data: "clawback_needed" });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     const res = await POST(
       makeRequest({
         event: "PURCHASE_REFUNDED",
-        data: { purchase: { transaction: "TX-R" } },
+        data: { purchase: { transaction: "TX-PAID" } },
       }),
     );
 
     expect(res.status).toBe(200);
-    expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
-    expect(mockUpdate).toHaveBeenCalledWith({ payout_id: null }); // pulled from the request
-    expect(mockUpdate).toHaveBeenCalledWith({ commission_amount: 8, sales_count: 1 }); // 20-12, 2-1
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("clawback"),
+      expect.objectContaining({ transactionId: "TX-PAID" }),
+    );
+    logSpy.mockRestore();
   });
 
-  it("does NOT alter an already-PAID payout on refund (logged for manual clawback)", async () => {
-    mockDupCheck.mockResolvedValue({ data: { commission_amount: 12, payout_id: "po1" } });
-    mockPayoutSel.mockResolvedValue({
-      data: { status: "paid", commission_amount: 12, sales_count: 1 },
-    });
+  it("does NOT log a clawback when the RPC reports a clean release/noop", async () => {
+    mockRpc.mockResolvedValue({ data: "released" });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    const res = await POST(
+    await POST(
       makeRequest({
         event: "PURCHASE_REFUNDED",
-        data: { purchase: { transaction: "TX-R2" } },
+        data: { purchase: { transaction: "TX-CLEAN" } },
       }),
     );
 
-    expect(res.status).toBe(200);
-    expect(mockUpdate).toHaveBeenCalledWith({ status: "refunded" });
-    // a paid payout is left untouched (no release, no reduction)
-    expect(mockUpdate).not.toHaveBeenCalledWith({ payout_id: null });
+    expect(logSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("clawback"),
+      expect.anything(),
+    );
+    logSpy.mockRestore();
   });
 
-  it("updates status on PURCHASE_CHARGEBACK", async () => {
+  it("also releases the sale via the RPC on PURCHASE_CHARGEBACK (cancelled)", async () => {
     const res = await POST(
       makeRequest({
         event: "PURCHASE_CHARGEBACK",
@@ -274,6 +278,10 @@ describe("Hotmart webhook", () => {
     );
     expect(res.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith({ status: "cancelled" });
+    expect(updateChain.neq).toHaveBeenCalledWith("status", "cancelled");
+    expect(mockRpc).toHaveBeenCalledWith("release_refunded_sale", {
+      p_transaction_id: "TX-003",
+    });
   });
 
   it("handles unknown events gracefully", async () => {
