@@ -4,6 +4,7 @@ import { DashboardHome } from "@/features/dashboard-home";
 import { getInstagramProfile } from "@/lib/integrations/instagram";
 import { getPostingSettingsAdmin, getOutstandInstagramData } from "@/lib/data/outstand";
 import { getClickCountByProfile, getSalesByProfile } from "@/lib/data";
+import { getMyCampaignStatus } from "@/lib/data/campaigns";
 import { buildReferralLink } from "@/lib/referral";
 import type { InstagramData } from "@/features/dashboard-home";
 import type { Profile, Brand } from "@/types/database";
@@ -61,7 +62,9 @@ async function getInstagramData(
       accountType: igProfile.account_type,
       isConnected: true,
     };
-  } catch {
+  } catch (err) {
+    // Token expired / API down — show cached basics, but leave a trace for debugging.
+    console.error("[dashboard] getInstagramProfile failed:", err);
     return {
       username: connection.ig_username,
       followersCount: connection.followers_count ?? 0,
@@ -144,9 +147,10 @@ export default async function DashboardPage() {
       ? buildReferralLink(baseUrl, fallbackProfile.referral_tag)
       : null;
 
-  const [clicks, sales] = await Promise.all([
+  const [clicks, sales, campaignStatus] = await Promise.all([
     getClickCountByProfile(user.id),
     getSalesByProfile(user.id),
+    getMyCampaignStatus(user.id),
   ]);
   const confirmedSales = sales.filter((s) => s.status === "confirmed");
   const earnings = confirmedSales.reduce(
@@ -168,6 +172,7 @@ export default async function DashboardPage() {
       clicks={clicks}
       sales={confirmedSales.length}
       earnings={earnings}
+      campaignStatus={campaignStatus}
     />
   );
 }

@@ -19,6 +19,11 @@ import {
 } from "@/lib/data/outstand";
 import type { PostMediaType, ScheduledPost } from "@/types/database";
 
+// Publishing many accounts in one run can exceed the default function duration
+// (Outstand processing is polled per post). Unfinished posts stay pending and are
+// picked up by the next 15-min run without duplicating (see publishViaOutstand).
+export const maxDuration = 300;
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -109,6 +114,21 @@ async function publishViaMeta(
 async function publishViaOutstand(post: ScheduledPost, apiKey: string | null) {
   if (!apiKey) {
     throw new Error("Outstand API key não configurada");
+  }
+
+  // A previous run may have created the Outstand post but died before recording the
+  // result (timeout/crash). Never create a duplicate — resolve the existing one.
+  if (post.outstand_post_id) {
+    const status = await waitForOutstandPost(apiKey, post.outstand_post_id);
+    const accountStatus = status.socialAccounts[0];
+    if (accountStatus?.status === "failed") {
+      throw new Error(accountStatus.error || "Outstand publish failed");
+    }
+    await markPostPublished(
+      post.id,
+      accountStatus?.platformPostId || post.outstand_post_id,
+    );
+    return;
   }
 
   const connection = await getOutstandConnection(post.profile_id);

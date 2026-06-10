@@ -12,6 +12,8 @@ import {
   X,
 } from "lucide-react";
 import { createInfluencer } from "@/lib/actions/admin";
+import { addMembersToCampaign } from "@/lib/actions/campaigns";
+import { formatSaoPaulo } from "@/lib/timezone";
 import type { Profile, InstagramConnection } from "@/types/database";
 
 interface InfluencerRow {
@@ -24,6 +26,55 @@ interface InfluencerRow {
 
 interface AdminInfluencersProps {
   influencers: InfluencerRow[];
+  campaignId: string | null;
+  campaignMemberIds: string[];
+}
+
+type CampaignFilter = "Todas" | "Na campanha" | "Fora da campanha";
+
+function CampaignCell({
+  profileId,
+  campaignId,
+  isMember,
+}: {
+  profileId: string;
+  campaignId: string | null;
+  isMember: boolean;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  if (isMember) {
+    return (
+      <span className="inline-flex rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+        Na campanha
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="inline-flex rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning">
+        Fora da campanha
+      </span>
+      {campaignId && (
+        <button
+          onClick={() => {
+            setError(null);
+            startTransition(async () => {
+              const r = await addMembersToCampaign(campaignId, [profileId], false);
+              if (r && "error" in r) setError(r.error);
+            });
+          }}
+          disabled={isPending}
+          className="rounded-lg border border-accent px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-50"
+        >
+          {isPending ? "Adicionando..." : "Adicionar"}
+        </button>
+      )}
+      {error && <span className="text-xs text-error">{error}</span>}
+    </div>
+  );
 }
 
 function AddInfluencerModal({ onClose }: { onClose: () => void }) {
@@ -93,16 +144,28 @@ function AddInfluencerModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
+export function AdminInfluencers({
+  influencers,
+  campaignId,
+  campaignMemberIds,
+}: AdminInfluencersProps) {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [campaignFilter, setCampaignFilter] = useState<CampaignFilter>("Todas");
 
-  const filtered = influencers.filter(
-    (i) =>
+  const memberIdSet = new Set(campaignMemberIds);
+
+  const filtered = influencers.filter((i) => {
+    const matchesSearch =
       i.profile.first_name.toLowerCase().includes(search.toLowerCase()) ||
       i.profile.last_name.toLowerCase().includes(search.toLowerCase()) ||
-      i.profile.email.toLowerCase().includes(search.toLowerCase()),
-  );
+      i.profile.email.toLowerCase().includes(search.toLowerCase());
+    const isMember = memberIdSet.has(i.profile.id);
+    const matchesCampaign =
+      campaignFilter === "Todas" ||
+      (campaignFilter === "Na campanha" ? isMember : !isMember);
+    return matchesSearch && matchesCampaign;
+  });
 
   return (
     <div className="space-y-6 p-6">
@@ -122,18 +185,30 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
       </div>
       {showAdd && <AddInfluencerModal onClose={() => setShowAdd(false)} />}
 
-      <div className="relative">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-secondary"
-        />
-        <input
-          type="text"
-          placeholder="Buscar por nome ou email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-border py-2.5 pl-10 pr-4 focus:border-accent focus:outline-none"
-        />
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-secondary"
+          />
+          <input
+            type="text"
+            placeholder="Buscar por nome ou email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-border py-2.5 pl-10 pr-4 focus:border-accent focus:outline-none"
+          />
+        </div>
+        <select
+          aria-label="Filtrar por campanha"
+          value={campaignFilter}
+          onChange={(e) => setCampaignFilter(e.target.value as CampaignFilter)}
+          className="rounded-lg border border-border bg-white px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
+        >
+          <option value="Todas">Todas</option>
+          <option value="Na campanha">Na campanha</option>
+          <option value="Fora da campanha">Fora da campanha</option>
+        </select>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border">
@@ -150,6 +225,9 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                 Instagram
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
+                Campanha
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
                 Vendas
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
@@ -157,6 +235,9 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
                 Cliques
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
+                Cadastro
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
                 Ações
@@ -186,6 +267,13 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                     <span className="text-foreground-secondary">-</span>
                   )}
                 </td>
+                <td className="px-4 py-3">
+                  <CampaignCell
+                    profileId={row.profile.id}
+                    campaignId={campaignId}
+                    isMember={memberIdSet.has(row.profile.id)}
+                  />
+                </td>
                 <td className="px-4 py-3">{row.totalSales}</td>
                 <td className="px-4 py-3">
                   R$ {row.commission.toFixed(2).replace(".", ",")}
@@ -195,6 +283,9 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
                     <MousePointerClick size={14} />
                     {row.clicks}
                   </span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-foreground-secondary">
+                  {formatSaoPaulo(row.profile.created_at)}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -234,7 +325,7 @@ export function AdminInfluencers({ influencers }: AdminInfluencersProps) {
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="px-4 py-8 text-center text-foreground-secondary"
                 >
                   Nenhum influenciador encontrado.

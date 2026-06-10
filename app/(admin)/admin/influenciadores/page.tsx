@@ -5,17 +5,23 @@ import {
   getSalesByInfluencer,
   getClickCountsByInfluencer,
 } from "@/lib/data";
+import { getDefaultCampaign, getCampaignMemberIdSet } from "@/lib/data/campaigns";
 
 export const dynamic = "force-dynamic";
 
 export default async function InfluenciadoresPage() {
-  const [profiles, connections, salesByInfluencer, clicksByInfluencer] =
+  const [profiles, connections, salesByInfluencer, clicksByInfluencer, campaign] =
     await Promise.all([
       getAllProfiles(),
       getAllInstagramConnections(),
       getSalesByInfluencer(),
       getClickCountsByInfluencer(),
+      getDefaultCampaign(),
     ]);
+
+  const campaignMemberIds = campaign
+    ? await getCampaignMemberIdSet(campaign.id)
+    : new Set<string>();
 
   const connectionMap = new Map(connections.map((c) => [c.profile_id, c]));
   const salesMap = new Map(salesByInfluencer.map((s) => [s.profileId, s]));
@@ -28,5 +34,11 @@ export default async function InfluenciadoresPage() {
     clicks: clicksByInfluencer.get(profile.id) ?? 0,
   }));
 
-  return <AdminInfluencers influencers={rows} />;
+  return (
+    <AdminInfluencers
+      influencers={rows}
+      campaignId={campaign?.id ?? null}
+      campaignMemberIds={[...campaignMemberIds]}
+    />
+  );
 }

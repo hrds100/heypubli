@@ -7,7 +7,9 @@ import {
   Home,
   Calendar,
   BarChart3,
+  Bell,
   DollarSign,
+  Megaphone,
   Settings,
   Users,
   Clock,
@@ -34,6 +36,8 @@ const influencerBottom = [
 
 const adminMain = [
   { label: "Visão Geral", href: "/admin", icon: LayoutDashboard },
+  { label: "Notificações", href: "/admin/notificacoes", icon: Bell },
+  { label: "Campanha", href: "/admin/campanha", icon: Megaphone },
   { label: "Influenciadores", href: "/admin/influenciadores", icon: Users },
   { label: "Agendador", href: "/admin/agendador", icon: Clock },
   { label: "Mensagens", href: "/admin/mensagens", icon: MessageSquare },
@@ -46,11 +50,14 @@ const adminBottom = [
   { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
 ];
 
+const NOTIFICATIONS_HREF = "/admin/notificacoes";
+
 interface SidebarNavProps {
   variant: "influencer" | "admin";
+  notificationCount?: number;
 }
 
-export function SidebarNav({ variant }: SidebarNavProps) {
+export function SidebarNav({ variant, notificationCount = 0 }: SidebarNavProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const mainItems = variant === "admin" ? adminMain : influencerMain;
@@ -99,8 +106,24 @@ export function SidebarNav({ variant }: SidebarNavProps) {
                   : "text-foreground-secondary hover:bg-background-secondary hover:text-foreground active:bg-background-secondary"
               } ${collapsed ? "justify-center" : ""}`}
             >
-              <Icon size={18} />
-              {!collapsed && item.label}
+              <span className="relative">
+                <Icon size={18} />
+                {item.href === NOTIFICATIONS_HREF &&
+                  notificationCount > 0 &&
+                  collapsed && (
+                    <span className="absolute -right-1.5 -top-1.5 h-2 w-2 rounded-full bg-accent" />
+                  )}
+              </span>
+              {!collapsed && (
+                <span className="flex flex-1 items-center justify-between">
+                  {item.label}
+                  {item.href === NOTIFICATIONS_HREF && notificationCount > 0 && (
+                    <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                      {notificationCount}
+                    </span>
+                  )}
+                </span>
+              )}
             </Link>
           );
         })}

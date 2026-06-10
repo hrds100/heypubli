@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSocialAccountByTenant } from "@/lib/integrations/outstand";
 import { saveOutstandConnection, getPostingSettingsAdmin } from "@/lib/data/outstand";
 import { findOrCreateInfluencerByOutstand, type IgSignupData } from "@/lib/data/auth-ig";
+import { notifyAccountConnected } from "@/lib/data/notifications";
 
 const STATE_COOKIE = "ig_login_state";
 const SIGNUP_COOKIE = "ig_signup_data";
@@ -85,7 +86,24 @@ export async function GET(request: Request) {
 
     // --- Connect flow (user already authenticated) ---
     if (user) {
-      await saveOutstandConnection(user.id, account.id, account.username);
+      const { isNew } = await saveOutstandConnection(
+        user.id,
+        account.id,
+        account.username,
+      );
+      if (isNew) {
+        const admin = createAdminClient();
+        const { data: prof } = await admin
+          .from("profiles")
+          .select("first_name, last_name")
+          .eq("id", user.id)
+          .maybeSingle<{ first_name: string; last_name: string }>();
+        await notifyAccountConnected({
+          profileId: user.id,
+          igUsername: account.username,
+          name: prof ? `${prof.first_name} ${prof.last_name}`.trim() : account.username,
+        });
+      }
       return NextResponse.redirect(`${origin}/onboarding?ig_connected=true`);
     }
 

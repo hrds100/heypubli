@@ -1,5 +1,8 @@
 import Image from "next/image";
-import type { Profile } from "@/types/database";
+import { CalendarClock, Megaphone } from "lucide-react";
+import { formatSaoPaulo } from "@/lib/timezone";
+import type { MyCampaignStatus } from "@/lib/data/campaigns";
+import type { PostMediaType, Profile } from "@/types/database";
 import { CopyLinkButton } from "./CopyLinkButton";
 
 const TIERS = [
@@ -62,6 +65,58 @@ interface DashboardHomeProps {
   clicks: number;
   sales: number;
   earnings: number;
+  campaignStatus: MyCampaignStatus | null;
+}
+
+const MEDIA_TYPE_LABELS: Record<PostMediaType, string> = {
+  feed: "Feed",
+  story_image: "Story",
+  story_video: "Story",
+  reel: "Reel",
+  carousel: "Carrossel",
+};
+
+function CampaignStatusCard({ status }: { status: MyCampaignStatus | null }) {
+  if (!status) {
+    return (
+      <div className="flex items-start gap-4 rounded-2xl border border-border p-5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10">
+          <Megaphone className="h-5 w-5 text-warning" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold text-foreground">Campanha</h2>
+          <p className="mt-1 text-sm text-foreground-secondary">
+            Sua conta ainda não está na campanha. Você entra automaticamente assim que o
+            administrador adicionar sua conta.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start gap-4 rounded-2xl border border-border p-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success/10">
+        <Megaphone className="h-5 w-5 text-success" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-sm font-semibold text-foreground">{status.campaign.name}</h2>
+        <p className="mt-1 text-sm text-foreground-secondary">
+          {`Você está na campanha desde ${formatSaoPaulo(status.added_at)}`}
+        </p>
+        {status.next_post ? (
+          <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <CalendarClock className="h-4 w-4 shrink-0 text-success" />
+            {`Próxima publicação: ${MEDIA_TYPE_LABELS[status.next_post.media_type]} em ${formatSaoPaulo(status.next_post.scheduled_at)}`}
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-foreground-secondary">
+            Nenhuma publicação agendada no momento.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function InstagramCard({ ig }: { ig: InstagramData }) {
@@ -386,6 +441,7 @@ export function DashboardHome({
   clicks,
   sales,
   earnings,
+  campaignStatus,
 }: DashboardHomeProps) {
   return (
     <div className="space-y-5 p-6">
@@ -396,6 +452,8 @@ export function DashboardHome({
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left column */}
         <div className="space-y-5">
+          <CampaignStatusCard status={campaignStatus} />
+
           {instagram?.isConnected ? (
             <>
               <InstagramCard ig={instagram} />

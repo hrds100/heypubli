@@ -69,11 +69,11 @@ async function track(request: Request): Promise<void> {
     userAgent,
     ipHash: hashIp(request),
     isBot: userAgent ? BOT_UA.test(userAgent) : false,
-  }).catch(() => {});
+  }).catch((err) => console.error("[click-api] logClick failed:", err));
 }
 
 export async function GET(request: Request): Promise<Response> {
-  await track(request).catch(() => {});
+  await track(request).catch((err) => console.error("[click-api] track failed:", err));
   return new Response(new Uint8Array(PIXEL), {
     status: 200,
     headers: { ...CORS, "Content-Type": "image/gif", "Cache-Control": "no-store" },
@@ -81,7 +81,7 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  await track(request).catch(() => {});
+  await track(request).catch((err) => console.error("[click-api] track failed:", err));
   return new NextResponse(null, { status: 204, headers: CORS });
 }
 

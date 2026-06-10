@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saveOutstandConnection } from "./outstand";
+import { notifyAccountConnected } from "./notifications";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Instagram never returns an email, so each influencer gets a deterministic,
@@ -114,6 +115,14 @@ export async function findOrCreateInfluencerByOutstand(
       ? err
       : new Error("Falha ao vincular a conta do Instagram");
   }
+
+  // New account connected → tell the admin (in-app + email). Best-effort: must
+  // never break the signup flow.
+  await notifyAccountConnected({
+    profileId: userId,
+    igUsername: account.username,
+    name: signup ? `${signup.firstName} ${signup.lastName}`.trim() : account.username,
+  });
 
   // 4. Signup flow: we already have their real email + WhatsApp, so store them now and
   //    clear needs_contact (no /bem-vindo step). Best-effort — a failure just falls back

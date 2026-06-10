@@ -66,16 +66,19 @@ Project: `lmzttpfckdknrmeaecce` | Region: `eu-west-1`
 
 ### brands
 
-| Column             | Type        | Description                    |
-| ------------------ | ----------- | ------------------------------ |
-| id                 | uuid (PK)   | ID                             |
-| name               | text        | Nome da marca                  |
-| logo_url           | text        | URL do logo (Supabase Storage) |
-| description        | text        | Descrição curta                |
-| hotmart_product_id | text        | ID do produto no Hotmart       |
-| target_sectors     | text[]      | Setores alvo (array de slugs)  |
-| is_active          | boolean     | Marca ativa ou futura          |
-| created_at         | timestamptz | Data de criação                |
+| Column              | Type        | Description                              |
+| ------------------- | ----------- | ---------------------------------------- |
+| id                  | uuid (PK)   | ID                                       |
+| name                | text        | Nome da marca                            |
+| logo_url            | text        | URL do logo (Supabase Storage)           |
+| description         | text        | Descrição curta                          |
+| hotmart_product_id  | text        | ID do produto no Hotmart                 |
+| hotmart_product_url | text        | URL do produto no Hotmart                |
+| share_base_url      | text        | URL base do link de divulgação           |
+| commission_rate     | numeric     | Comissão paga pela marca (0–1, ex: 0.20) |
+| target_sectors      | text[]      | Setores alvo (array de slugs)            |
+| is_active           | boolean     | Marca ativa ou futura                    |
+| created_at          | timestamptz | Data de criação                          |
 
 ### brand_assignments
 
@@ -139,3 +142,65 @@ Project: `lmzttpfckdknrmeaecce` | Region: `eu-west-1`
 | started_at      | timestamptz | Início da sessão           |
 | ended_at        | timestamptz | Fim da sessão              |
 | actions_taken   | jsonb       | Log de ações               |
+
+### campaigns (migração 012)
+
+Campanha fixa: linha do tempo de stories/reels que as contas recebem.
+Uma campanha padrão ("Campanha Principal", `is_default=true`) é criada pela migração.
+
+| Column      | Type        | Description                          |
+| ----------- | ----------- | ------------------------------------ |
+| id          | uuid (PK)   | ID                                   |
+| name        | text        | Nome da campanha                     |
+| description | text        | Descrição                            |
+| brand_id    | uuid (FK)   | → brands.id (marca padrão dos itens) |
+| is_default  | boolean     | Campanha padrão (sempre existe)      |
+| is_active   | boolean     | Ativa                                |
+| created_at  | timestamptz | Criação                              |
+| updated_at  | timestamptz | Última edição                        |
+
+### campaign_items (migração 012)
+
+| Column       | Type        | Description                                |
+| ------------ | ----------- | ------------------------------------------ |
+| id           | uuid (PK)   | ID                                         |
+| campaign_id  | uuid (FK)   | → campaigns.id                             |
+| brand_id     | uuid (FK)   | → brands.id (null = marca da campanha)     |
+| media_type   | text        | feed/story_image/story_video/reel/carousel |
+| media_url    | text        | URL da mídia                               |
+| caption      | text        | Legenda                                    |
+| scheduled_at | timestamptz | Quando publicar (UTC)                      |
+| created_at   | timestamptz | Criação                                    |
+| updated_at   | timestamptz | Última edição                              |
+
+### campaign_members (migração 012)
+
+| Column      | Type        | Description                                       |
+| ----------- | ----------- | ------------------------------------------------- |
+| id          | uuid (PK)   | ID                                                |
+| campaign_id | uuid (FK)   | → campaigns.id                                    |
+| profile_id  | uuid (FK)   | → profiles.id (único por campanha)                |
+| start_mode  | text        | schedule (cronograma) / immediate (começar agora) |
+| added_by    | uuid (FK)   | → profiles.id (admin que adicionou)               |
+| added_at    | timestamptz | Quando entrou na campanha                         |
+
+### notifications (migração 012)
+
+Alertas internos do admin (ex.: nova conta conectada). Escritos via service role.
+
+| Column     | Type        | Description                   |
+| ---------- | ----------- | ----------------------------- |
+| id         | uuid (PK)   | ID                            |
+| type       | text        | account_connected/generic     |
+| profile_id | uuid (FK)   | → profiles.id (quem conectou) |
+| title      | text        | Título                        |
+| body       | text        | Detalhe                       |
+| read_at    | timestamptz | null = não lida               |
+| created_at | timestamptz | Quando aconteceu              |
+
+### scheduled_posts — colunas adicionadas (migração 012)
+
+| Column           | Type      | Description                                 |
+| ---------------- | --------- | ------------------------------------------- |
+| campaign_id      | uuid (FK) | → campaigns.id (post derivado de campanha)  |
+| campaign_item_id | uuid (FK) | → campaign_items.id (único por perfil+item) |

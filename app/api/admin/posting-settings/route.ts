@@ -20,13 +20,21 @@ async function requireAdmin() {
   }
 }
 
+function errorResponse(err: unknown) {
+  if (err instanceof Error && err.message === "Não autorizado") {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+  console.error("[posting-settings]", err);
+  return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+}
+
 export async function GET() {
   try {
     await requireAdmin();
     const settings = await getPostingSettings();
     return NextResponse.json({ settings });
-  } catch {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  } catch (err) {
+    return errorResponse(err);
   }
 }
 
@@ -50,7 +58,7 @@ export async function POST(request: Request) {
     await savePostingSettings(params);
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  } catch (err) {
+    return errorResponse(err);
   }
 }

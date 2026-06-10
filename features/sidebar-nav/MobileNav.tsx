@@ -7,7 +7,9 @@ import {
   Home,
   Calendar,
   BarChart3,
+  Bell,
   DollarSign,
+  Megaphone,
   Settings,
   Users,
   Clock,
@@ -31,6 +33,8 @@ const influencerItems = [
 
 const adminItems = [
   { label: "Visão Geral", href: "/admin", icon: LayoutDashboard },
+  { label: "Notificações", href: "/admin/notificacoes", icon: Bell },
+  { label: "Campanha", href: "/admin/campanha", icon: Megaphone },
   { label: "Influenciadores", href: "/admin/influenciadores", icon: Users },
   { label: "Agendador", href: "/admin/agendador", icon: Clock },
   { label: "Mensagens", href: "/admin/mensagens", icon: MessageSquare },
@@ -40,11 +44,14 @@ const adminItems = [
   { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
 ];
 
+const NOTIFICATIONS_HREF = "/admin/notificacoes";
+
 interface MobileNavProps {
   variant: "influencer" | "admin";
+  notificationCount?: number;
 }
 
-export function MobileNav({ variant }: MobileNavProps) {
+export function MobileNav({ variant, notificationCount = 0 }: MobileNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const items = variant === "admin" ? adminItems : influencerItems;
@@ -119,7 +126,14 @@ export function MobileNav({ variant }: MobileNavProps) {
                     }`}
                   >
                     <Icon size={18} />
-                    {item.label}
+                    <span className="flex flex-1 items-center justify-between">
+                      {item.label}
+                      {item.href === NOTIFICATIONS_HREF && notificationCount > 0 && (
+                        <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                          {notificationCount}
+                        </span>
+                      )}
+                    </span>
                   </Link>
                 );
               })}

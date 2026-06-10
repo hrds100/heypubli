@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import type { PostMediaType } from "@/types/database";
 import { getPostingSettingsAdmin } from "@/lib/data/outstand";
+import { spLocalToUtcIso } from "@/lib/timezone";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -192,7 +193,8 @@ export async function schedulePost(formData: FormData) {
     media_type: mediaType,
     media_url: mediaUrl,
     caption,
-    scheduled_at: new Date(scheduledAt).toISOString(),
+    // The datetime-local input is admin (São Paulo) wall time — NOT server time.
+    scheduled_at: spLocalToUtcIso(scheduledAt),
     status: "pending" as const,
     provider,
     ig_media_id: null,
@@ -203,6 +205,8 @@ export async function schedulePost(formData: FormData) {
     likes: null,
     comments: null,
     shares: null,
+    campaign_id: null,
+    campaign_item_id: null,
   }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

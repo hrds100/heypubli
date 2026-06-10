@@ -23,6 +23,8 @@ export type SaleStatus = "confirmed" | "refunded" | "cancelled";
 export type PostingProvider = "heypubli" | "outstand";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 export type RegistrationMethod = "instagram" | "email" | "admin_manual";
+export type CampaignStartMode = "schedule" | "immediate";
+export type NotificationType = "account_connected" | "generic";
 
 export interface Profile {
   id: string;
@@ -123,6 +125,50 @@ export interface ScheduledPost {
   likes: number | null;
   comments: number | null;
   shares: number | null;
+  campaign_id: string | null;
+  campaign_item_id: string | null;
+  created_at: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string | null;
+  brand_id: string | null;
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignItem {
+  id: string;
+  campaign_id: string;
+  brand_id: string | null;
+  media_type: PostMediaType;
+  media_url: string;
+  caption: string;
+  scheduled_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignMember {
+  id: string;
+  campaign_id: string;
+  profile_id: string;
+  start_mode: CampaignStartMode;
+  added_by: string | null;
+  added_at: string;
+}
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  profile_id: string | null;
+  title: string;
+  body: string | null;
+  read_at: string | null;
   created_at: string;
 }
 
@@ -387,6 +433,30 @@ export interface Database {
         Row: OutstandConnection;
         Insert: Omit<OutstandConnection, "id" | "created_at">;
         Update: Partial<Omit<OutstandConnection, "id" | "created_at">>;
+        Relationships: [];
+      };
+      campaigns: {
+        Row: Campaign;
+        Insert: Omit<Campaign, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Campaign, "id" | "created_at">>;
+        Relationships: [];
+      };
+      campaign_items: {
+        Row: CampaignItem;
+        Insert: Omit<CampaignItem, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<CampaignItem, "id" | "created_at">>;
+        Relationships: [];
+      };
+      campaign_members: {
+        Row: CampaignMember;
+        Insert: Omit<CampaignMember, "id" | "added_at">;
+        Update: Partial<Omit<CampaignMember, "id" | "added_at">>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: AppNotification;
+        Insert: Omit<AppNotification, "id" | "created_at">;
+        Update: Partial<Omit<AppNotification, "id" | "created_at">>;
         Relationships: [];
       };
     };

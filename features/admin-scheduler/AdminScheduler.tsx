@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Upload, Calendar, Send, CheckCircle } from "lucide-react";
+import { Upload, Send, CheckCircle } from "lucide-react";
 import { schedulePost } from "@/lib/actions/admin";
 import type { Profile, PostingProvider } from "@/types/database";
 
@@ -68,6 +68,10 @@ export function AdminScheduler({
     }
     if (!scheduledAt) {
       setError("Selecione data e hora");
+      return;
+    }
+    if (!mediaUrl.trim()) {
+      setError("Informe a URL da mídia — o post não pode ser publicado sem mídia");
       return;
     }
 
@@ -245,13 +249,6 @@ export function AdminScheduler({
       )}
 
       <div className="flex items-center gap-4">
-        <button
-          disabled
-          className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground-secondary cursor-not-allowed opacity-50"
-        >
-          <Calendar size={16} />
-          Agendar recorrente (72h)
-        </button>
         <button
           onClick={handleSchedule}
           disabled={isPending}

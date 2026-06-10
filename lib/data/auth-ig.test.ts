@@ -65,6 +65,11 @@ vi.mock("@/lib/supabase/admin", () => {
   };
 });
 
+const notifySpy = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("./notifications", () => ({
+  notifyAccountConnected: notifySpy,
+}));
+
 import { findOrCreateInfluencerByOutstand, syntheticIgEmail } from "./auth-ig";
 
 beforeEach(() => {
@@ -79,6 +84,7 @@ beforeEach(() => {
   mocks.deleteUserSpy.mockClear();
   mocks.updateUserByIdSpy.mockClear();
   mocks.fromSpy.mockClear();
+  notifySpy.mockClear();
 });
 
 describe("syntheticIgEmail", () => {
@@ -109,6 +115,8 @@ describe("findOrCreateInfluencerByOutstand", () => {
     });
     expect(mocks.getUserByIdSpy).toHaveBeenCalledWith("existing-id");
     expect(mocks.createUserSpy).not.toHaveBeenCalled();
+    // returning influencer → admin is NOT re-notified
+    expect(notifySpy).not.toHaveBeenCalled();
     // the existing connection is refreshed with the latest Outstand account id
     expect(mocks.upsertSpy).toHaveBeenCalledWith(
       expect.objectContaining({ profile_id: "existing-id", ig_username: "joe" }),
@@ -149,6 +157,10 @@ describe("findOrCreateInfluencerByOutstand", () => {
       isNew: true,
     });
     expect(mocks.deleteUserSpy).not.toHaveBeenCalled();
+    // admin is told a brand-new account connected
+    expect(notifySpy).toHaveBeenCalledWith(
+      expect.objectContaining({ profileId: "new-1", igUsername: "maria" }),
+    );
   });
 
   it("passes the pre-collected name to createUser and saves email + WhatsApp", async () => {

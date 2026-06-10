@@ -104,12 +104,20 @@ export async function getAllOutstandConnections(): Promise<OutstandConnection[]>
   return (data as OutstandConnection[] | null) ?? [];
 }
 
+/** Upserts the connection; isNew=true when this profile had no connection row yet. */
 export async function saveOutstandConnection(
   profileId: string,
   socialAccountId: string,
   igUsername: string | null,
-): Promise<void> {
+): Promise<{ isNew: boolean }> {
   const admin = createAdminClient();
+
+  const { data: existing } = await admin
+    .from("outstand_connections")
+    .select("id")
+    .eq("profile_id", profileId)
+    .maybeSingle();
+
   const row = {
     profile_id: profileId,
     outstand_social_account_id: socialAccountId,
@@ -118,9 +126,12 @@ export async function saveOutstandConnection(
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (admin.from("outstand_connections") as any).upsert(row, {
+  const { error } = await (admin.from("outstand_connections") as any).upsert(row, {
     onConflict: "profile_id",
   });
+  if (error) throw new Error(`Falha ao salvar conexão do Instagram: ${error.message}`);
+
+  return { isNew: !existing };
 }
 
 export async function disconnectOutstand(connectionId: string): Promise<void> {
