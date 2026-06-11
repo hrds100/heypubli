@@ -62,7 +62,9 @@ export async function POST(req: Request) {
     .select("id, unipile_account_id")
     .eq("type", "whatsapp")
     .eq("status", "connected")
-    .single();
+    .order("connected_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   const accountId = (channel as { unipile_account_id: string | null } | null)
     ?.unipile_account_id;

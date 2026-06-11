@@ -30,12 +30,23 @@ export async function POST() {
     });
 
     const admin = createAdminClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (admin.from("channels") as any).insert({
-      type: "whatsapp",
-      status: "disconnected",
-      label: "Aguardando scan...",
-    });
+    // Reuse an existing placeholder instead of stacking one per modal open.
+    const { data: pending } = await admin
+      .from("channels")
+      .select("id")
+      .eq("type", "whatsapp")
+      .eq("status", "disconnected")
+      .is("unipile_account_id", null)
+      .limit(1)
+      .maybeSingle();
+    if (!pending) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (admin.from("channels") as any).insert({
+        type: "whatsapp",
+        status: "disconnected",
+        label: "Aguardando scan...",
+      });
+    }
 
     return NextResponse.json({ url });
   } catch (err) {

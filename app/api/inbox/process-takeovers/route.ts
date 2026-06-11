@@ -99,7 +99,9 @@ export async function GET(req: Request) {
       .select("id, unipile_account_id, draft_mode")
       .eq("type", "whatsapp")
       .eq("status", "connected")
-      .single();
+      .order("connected_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (!channel) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

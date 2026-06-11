@@ -36,12 +36,16 @@ export async function POST(req: Request) {
   if (
     payload.status === "CREATION_SUCCESS" ||
     payload.status === "OK" ||
-    (payload.account_id && payload.name && !payload.event)
+    payload.status === "RECONNECTED" ||
+    (payload.account_id && payload.name && !payload.event && !payload.AccountStatus)
   ) {
     const accountId = payload.account_id;
     if (!accountId) return ok("no account_id");
 
+    // Never trust the callback alone: a QR session that died mid-scan can fire
+    // a notify for an account that no longer exists. Verify against Unipile.
     const acct = await fetchAccount(accountId);
+    if (!acct) return ok("account not found at unipile — ignored");
     const phone = toE164(acct?.phone ?? "");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,13 +96,21 @@ export async function POST(req: Request) {
   }
 
   // ── Branch 2: Account status change ──
-  if (payload.event === "account_status" || payload.account_status) {
-    const statusData = payload.account_status || payload;
+  // Unipile's real payload is {"AccountStatus":{account_id, account_type, message}};
+  // the legacy event/account_status shapes are kept for compatibility.
+  if (
+    payload.AccountStatus ||
+    payload.event === "account_status" ||
+    payload.account_status
+  ) {
+    const statusData = payload.AccountStatus || payload.account_status || payload;
     const accountId = statusData.account_id || payload.account_id;
-    const newStatus = statusData.status || "";
+    const newStatus = statusData.message || statusData.status || "";
 
     if (accountId) {
-      const isOk = newStatus === "OK" || newStatus === "CREATION_SUCCESS";
+      const isOk = ["OK", "CREATION_SUCCESS", "RECONNECTED", "SYNC_SUCCESS"].includes(
+        newStatus,
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (admin.from("channels") as any)
         .update({

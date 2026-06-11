@@ -2,7 +2,14 @@ function getConfig() {
   const token = process.env.UNIPILE_TOKEN;
   const dsn = process.env.UNIPILE_DSN;
   if (!token || !dsn) throw new Error("UNIPILE_TOKEN and UNIPILE_DSN must be set");
-  return { token, baseUrl: `https://${dsn}/api/v1` };
+  // serverUrl = root WITHOUT /api/v1 — the hosted-auth wizard requires it bare.
+  return { token, baseUrl: `https://${dsn}/api/v1`, serverUrl: `https://${dsn}` };
+}
+
+// Unipile account statuses that mean "working". Anything else (CREDENTIALS,
+// ERROR, STOPPED, DELETED, CONNECTING...) is not usable for sending.
+export function isAccountStatusOk(status: string | undefined | null): boolean {
+  return ["OK", "CREATION_SUCCESS", "RECONNECTED", "SYNC_SUCCESS"].includes(status ?? "");
 }
 
 function getHeaders(): Record<string, string> {
@@ -23,14 +30,16 @@ export async function createHostedLink(opts: {
   notifyUrl: string;
   label: string;
 }): Promise<{ url: string }> {
-  const { baseUrl } = getConfig();
+  const { baseUrl, serverUrl } = getConfig();
   const res = await fetch(`${baseUrl}/hosted/accounts/link`, {
     method: "POST",
     headers: { ...getHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify({
       type: "create",
       providers: ["WHATSAPP"],
-      api_url: baseUrl,
+      // Docs: "https://{subdomain}.unipile.com:{port}" — the bare server root.
+      // Passing the /api/v1 URL here breaks the hosted wizard.
+      api_url: serverUrl,
       expiresOn: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       success_redirect_url: opts.successUrl,
       failure_redirect_url: opts.failureUrl,
@@ -52,9 +61,11 @@ export async function fetchAccount(accountId: string): Promise<UnipileAccount | 
   const j: any = await res.json();
   return {
     phone:
+      j?.connection_params?.im?.phone_number ??
       j?.connection_params?.im?.phone ??
       j?.params?.phone_number ??
       j?.phone_number ??
+      j?.name ?? // WhatsApp accounts carry the number in `name`
       null,
     email: j?.connection_params?.imap?.email ?? j?.email ?? j?.identifier ?? null,
     type: j?.type ?? j?.provider,

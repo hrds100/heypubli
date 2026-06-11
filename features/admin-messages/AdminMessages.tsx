@@ -83,6 +83,8 @@ function ConnectWhatsAppModal({
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [opened, setOpened] = useState(false);
+  const [connected, setConnected] = useState(false);
   const mountedRef = useRef(false);
 
   useEffect(() => {
@@ -100,13 +102,28 @@ function ConnectWhatsAppModal({
     })();
   }, []);
 
+  // Once the wizard tab is open, poll until a WhatsApp channel turns up
+  // connected (the QR page lives in another tab — auth pages don't iframe).
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("whatsapp") === "connected") {
-      onConnected();
-      onClose();
-    }
-  }, [onClose, onConnected]);
+    if (!opened || connected) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/unipile/status");
+        const data = await res.json();
+        if (data.connected) {
+          setConnected(true);
+          clearInterval(interval);
+          setTimeout(() => {
+            onConnected();
+            onClose();
+          }, 1500);
+        }
+      } catch {
+        // keep polling
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [opened, connected, onClose, onConnected]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -123,15 +140,39 @@ function ConnectWhatsAppModal({
           <h2 className="text-lg font-semibold">Conectar WhatsApp</h2>
         </div>
         {loading ? (
-          <div className="flex h-[400px] items-center justify-center">
+          <div className="flex h-[200px] items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-[#E1306C]" />
           </div>
+        ) : connected ? (
+          <div className="py-10 text-center">
+            <p className="text-lg font-semibold text-success">WhatsApp conectado! ✅</p>
+          </div>
         ) : url ? (
-          <iframe
-            src={url}
-            className="h-[500px] w-full rounded-lg border-0"
-            title="Conectar WhatsApp"
-          />
+          <div className="space-y-4 py-2">
+            <ol className="list-decimal space-y-2 pl-5 text-sm text-foreground-secondary">
+              <li>Clique no botão abaixo — o QR code abre em uma nova aba.</li>
+              <li>
+                No celular, abra o WhatsApp → Configurações → Dispositivos conectados →
+                Conectar dispositivo.
+              </li>
+              <li>Escaneie o QR code. Depois volte para esta aba.</li>
+            </ol>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpened(true)}
+              className="block w-full rounded-lg bg-accent px-6 py-3 text-center text-sm font-medium text-white hover:bg-accent/90"
+            >
+              Abrir QR code em nova aba
+            </a>
+            {opened && (
+              <p className="flex items-center justify-center gap-2 text-sm text-foreground-secondary">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Aguardando o scan... esta janela atualiza sozinha.
+              </p>
+            )}
+          </div>
         ) : (
           <p className="py-12 text-center text-gray-500">Erro ao gerar link de conexão</p>
         )}

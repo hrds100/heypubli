@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAccountStatus, toE164 } from "@/lib/integrations/unipile";
+import { syncWhatsAppChannelStatuses } from "@/lib/data/inbox";
 
 export async function GET(req: Request) {
   const supabase = await createClient();
@@ -22,8 +23,17 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const accountId = searchParams.get("accountId");
 
+  // No accountId → reconcile every channel against Unipile and report whether
+  // ANY WhatsApp is connected (used by the connect modal's polling).
   if (!accountId) {
-    return NextResponse.json({ error: "accountId obrigatório" }, { status: 400 });
+    const channels = await syncWhatsAppChannelStatuses();
+    const connected = channels.find(
+      (c) => c.type === "whatsapp" && c.status === "connected",
+    );
+    return NextResponse.json({
+      connected: Boolean(connected),
+      phone: connected?.label ?? null,
+    });
   }
 
   try {
