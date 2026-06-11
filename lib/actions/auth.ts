@@ -35,6 +35,51 @@ export async function sendLoginLink(
   return { sent: true, email };
 }
 
+// Fallback login path: the user types the 6-digit code from the magic-link email.
+// Survives everything that kills the link — scanners consuming it, broken email
+// clients, opening on another device. Same one-time token, typed by a human.
+export async function verifyLoginCode(
+  formData: FormData,
+): Promise<{ error?: string } | undefined> {
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
+  const code = (formData.get("code") as string)?.trim().replace(/\s+/g, "");
+
+  if (!email || !email.includes("@")) {
+    return { error: "Informe um email válido" };
+  }
+  // GoTrue is the authority on the exact code — we only sanity-check the shape.
+  // Lenient range so a future mailer_otp_length change can't lock anyone out.
+  if (!code || !/^\d{6,10}$/.test(code)) {
+    return { error: "Informe o código de 8 dígitos do email" };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token: code,
+    type: "email",
+  });
+
+  if (error) {
+    return {
+      error:
+        "Código inválido ou expirado. Use o código do email mais recente ou peça um novo.",
+    };
+  }
+
+  let isAdmin = false;
+  if (data.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", data.user.id)
+      .single<{ is_admin: boolean }>();
+    isAdmin = profile?.is_admin ?? false;
+  }
+
+  redirect(isAdmin ? "/admin" : "/dashboard");
+}
+
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
 
@@ -73,7 +118,7 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: "Email ou senha incorretos." };
   }
 
   const { data: profile } = await supabase

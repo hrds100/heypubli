@@ -10,4 +10,11 @@ describe("EmailLoginForm", () => {
       screen.getByRole("button", { name: /receber link de acesso/i }),
     ).toBeInTheDocument();
   });
+
+  it("offers a path for people who already have a 6-digit code", () => {
+    render(<EmailLoginForm />);
+    expect(
+      screen.getByRole("button", { name: /já recebeu um código/i }),
+    ).toBeInTheDocument();
+  });
 });

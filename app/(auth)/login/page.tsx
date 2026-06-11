@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { EmailLoginForm } from "@/features/email-login";
+import { EmailLoginForm, PasswordLoginForm } from "@/features/email-login";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ erro?: string }>;
+  searchParams: Promise<{ erro?: string; modo?: string }>;
 }) {
-  const { erro } = await searchParams;
+  const { erro, modo } = await searchParams;
+  const passwordMode = modo === "senha";
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -25,7 +26,9 @@ export default async function LoginPage({
         </Link>
         <h1 className="text-3xl font-bold text-foreground">Bem-vindo de volta</h1>
         <p className="mt-2 text-foreground-secondary">
-          Digite seu email e enviamos um link de acesso — sem senha.
+          {passwordMode
+            ? "Entre com seu email e senha."
+            : "Digite seu email e enviamos um link de acesso — sem senha."}
         </p>
       </div>
 
@@ -33,14 +36,30 @@ export default async function LoginPage({
         <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{erro}</div>
       )}
 
-      <EmailLoginForm />
+      {passwordMode ? <PasswordLoginForm /> : <EmailLoginForm />}
 
-      <p className="text-sm text-foreground-secondary">
-        Ainda não tem conta?{" "}
-        <Link href="/cadastro" className="font-medium text-accent hover:underline">
-          Cadastre-se com Instagram
-        </Link>
-      </p>
+      <div className="space-y-2 text-sm text-foreground-secondary">
+        <p>
+          {passwordMode ? (
+            <Link href="/login" className="font-medium text-accent hover:underline">
+              Entrar com link por email
+            </Link>
+          ) : (
+            <Link
+              href="/login?modo=senha"
+              className="font-medium text-accent hover:underline"
+            >
+              Entrar com senha
+            </Link>
+          )}
+        </p>
+        <p>
+          Ainda não tem conta?{" "}
+          <Link href="/cadastro" className="font-medium text-accent hover:underline">
+            Cadastre-se com Instagram
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
