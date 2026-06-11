@@ -92,4 +92,15 @@ describe("DashboardHome", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("nudges the influencer when their link is missing from the bio", () => {
+    render(<DashboardHome {...baseProps} bioLinkMissing />);
+    expect(screen.getByText("Falta seu link na bio!")).toBeInTheDocument();
+    expect(screen.getByText(/campo "Site" do seu perfil/)).toBeInTheDocument();
+  });
+
+  it("hides the bio nudge when the link is already there", () => {
+    render(<DashboardHome {...baseProps} bioLinkMissing={false} />);
+    expect(screen.queryByText("Falta seu link na bio!")).not.toBeInTheDocument();
+  });
 });

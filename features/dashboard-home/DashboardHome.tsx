@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CalendarClock, Megaphone } from "lucide-react";
+import { CalendarClock, Megaphone, TriangleAlert } from "lucide-react";
 import { formatSaoPaulo } from "@/lib/timezone";
 import type { MyCampaignStatus } from "@/lib/data/campaigns";
 import type { PostMediaType, Profile } from "@/types/database";
@@ -47,6 +47,7 @@ export interface InstagramData {
   username: string;
   name?: string;
   biography?: string;
+  website?: string;
   profilePictureUrl?: string;
   followersCount: number;
   followsCount: number;
@@ -66,6 +67,8 @@ interface DashboardHomeProps {
   sales: number;
   earnings: number;
   campaignStatus: MyCampaignStatus | null;
+  // Their referral link isn't in the Instagram bio yet (checked via the API).
+  bioLinkMissing?: boolean;
 }
 
 const MEDIA_TYPE_LABELS: Record<PostMediaType, string> = {
@@ -256,6 +259,32 @@ function LinkStat({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+// Shown while the influencer's referral link is missing from their IG bio.
+// The bio can only be edited by the person in the Instagram app, so the best
+// we can do is hand them the link ready to paste.
+function BioLinkReminderCard({ shareLink }: { shareLink: string | null }) {
+  return (
+    <div className="rounded-2xl border border-warning/40 bg-warning/5 p-5">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <TriangleAlert size={16} className="shrink-0 text-warning" />
+        <span>Falta seu link na bio!</span>
+      </h2>
+      <p className="mt-1 text-sm text-foreground-secondary">
+        Suas vendas só contam quando as pessoas clicam no seu link. Copie e cole no campo
+        &quot;Site&quot; do seu perfil do Instagram (Editar perfil → Site).
+      </p>
+      {shareLink && (
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-warning/40 bg-white p-2 pl-3">
+          <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+            {shareLink}
+          </span>
+          <CopyLinkButton url={shareLink} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TrackingLinkCard({
   shareLink,
   clicks,
@@ -442,12 +471,15 @@ export function DashboardHome({
   sales,
   earnings,
   campaignStatus,
+  bioLinkMissing = false,
 }: DashboardHomeProps) {
   return (
     <div className="space-y-5 p-6">
       <h1 className="text-2xl font-bold">
         Olá, {profile.first_name}! Bem-vindo à NextPubli
       </h1>
+
+      {bioLinkMissing && <BioLinkReminderCard shareLink={shareLink} />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left column */}

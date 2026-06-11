@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getInstagramMetrics, type OutstandIgMetrics } from "@/lib/integrations/outstand";
+import { hasLinkInBio } from "@/lib/bio-check";
 import type { PostingSettings, OutstandConnection } from "@/types/database";
 
 // --- Posting Settings ---
@@ -77,6 +78,7 @@ export async function getOutstandInstagramData(
     username: conn.ig_username ?? "",
     name: null,
     biography: null,
+    website: null,
     profilePictureUrl: null,
     accountType: "BUSINESS",
     followersCount: 0,
@@ -102,6 +104,44 @@ export async function getAllOutstandConnections(): Promise<OutstandConnection[]>
     .select("*")
     .eq("is_connected", true);
   return (data as OutstandConnection[] | null) ?? [];
+}
+
+export type BioLinkStatus = "ok" | "missing" | "unknown";
+
+/**
+ * Checks, per connected influencer, whether their referral tag shows up in the
+ * Instagram bio or the clickable website field. One metrics call per account,
+ * in parallel; any failure degrades to "unknown" instead of breaking the page.
+ */
+export async function getBioLinkStatuses(
+  targets: { profileId: string; socialAccountId: string; tag: string | null }[],
+): Promise<Map<string, BioLinkStatus>> {
+  const result = new Map<string, BioLinkStatus>();
+  if (targets.length === 0) return result;
+
+  const settings = await getPostingSettingsAdmin();
+  const apiKey = settings?.outstand_api_key;
+  if (!apiKey) {
+    for (const t of targets) result.set(t.profileId, "unknown");
+    return result;
+  }
+
+  await Promise.all(
+    targets.map(async (t) => {
+      try {
+        const metrics = await getInstagramMetrics(apiKey, t.socialAccountId);
+        const found = hasLinkInBio({
+          tag: t.tag,
+          biography: metrics?.biography ?? null,
+          website: metrics?.website ?? null,
+        });
+        result.set(t.profileId, found === null ? "unknown" : found ? "ok" : "missing");
+      } catch {
+        result.set(t.profileId, "unknown");
+      }
+    }),
+  );
+  return result;
 }
 
 /** Upserts the connection; isNew=true when this profile had no connection row yet. */

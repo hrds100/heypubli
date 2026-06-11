@@ -93,6 +93,7 @@ export interface OutstandIgMetrics {
   username: string;
   name: string | null;
   biography: string | null;
+  website: string | null; // the clickable "link in bio"
   profilePictureUrl: string | null;
   accountType: string;
   followersCount: number;
@@ -130,6 +131,7 @@ export async function getInstagramMetrics(
     username: ps.username ?? "",
     name: ps.name ?? null,
     biography: ps.biography ?? null,
+    website: ps.website ?? null,
     profilePictureUrl: ps.profile_picture_url ?? null,
     accountType: ps.account_type ?? "BUSINESS",
     followersCount: d.followers_count ?? ps.followers_count ?? 0,

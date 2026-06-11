@@ -18,6 +18,8 @@ const MOCK_ROWS = [
   {
     profile: MOCK_INFLUENCER, // id "user-1", created_at 2026-05-01T00:00:00Z
     igUsername: "anasilva",
+    bioStatus: "ok" as const,
+    shareLink: "https://www.scanplates.com/?sck=ana4k2p9",
     totalSales: 12,
     commission: 359.4,
     clicks: 84,
@@ -32,6 +34,8 @@ const MOCK_ROWS = [
       created_at: "2026-06-09T18:30:00Z", // 15:30 em São Paulo
     },
     igUsername: null,
+    bioStatus: null,
+    shareLink: null,
     totalSales: 0,
     commission: 0,
     clicks: 0,
@@ -117,7 +121,39 @@ describe("AdminInfluencers", () => {
   it("shows the Instagram handle as a link, or a dash when not connected", () => {
     renderList();
     expect(within(rowOf("Ana Silva")).getByText("@anasilva")).toBeInTheDocument();
-    expect(within(rowOf("Bruno Costa")).getByText("-")).toBeInTheDocument();
+    // Bruno has no IG: both the Instagram and the bio-link cells show a dash.
+    expect(within(rowOf("Bruno Costa")).getAllByText("-").length).toBeGreaterThan(0);
+  });
+
+  it("shows bio-link status: ok badge, or 'Falta' + WhatsApp nudge", () => {
+    renderList({
+      influencers: [
+        MOCK_ROWS[0], // bioStatus ok
+        {
+          ...MOCK_ROWS[0],
+          profile: {
+            ...MOCK_INFLUENCER,
+            id: "user-3",
+            first_name: "Caio",
+            last_name: "Lima",
+            whatsapp: "+5511999998888",
+          },
+          igUsername: "caiolima",
+          bioStatus: "missing" as const,
+          shareLink: "https://www.scanplates.com/?sck=caio1234",
+        },
+      ],
+    });
+
+    expect(within(rowOf("Ana Silva")).getByText("Na bio ✓")).toBeInTheDocument();
+
+    const caioRow = rowOf("Caio Lima");
+    expect(within(caioRow).getByText("Falta")).toBeInTheDocument();
+    const nudge = within(caioRow).getByRole("link", { name: "Cobrar" });
+    expect(nudge.getAttribute("href")).toContain("wa.me/5511999998888");
+    expect(decodeURIComponent(nudge.getAttribute("href") ?? "")).toContain(
+      "sck=caio1234",
+    );
   });
 
   it("marks suspended influencers with a badge", () => {

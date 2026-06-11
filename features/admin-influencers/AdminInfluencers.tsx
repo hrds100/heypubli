@@ -19,9 +19,54 @@ import type { Profile } from "@/types/database";
 interface InfluencerRow {
   profile: Profile;
   igUsername: string | null;
+  bioStatus: "ok" | "missing" | "unknown" | null;
+  shareLink: string | null;
   totalSales: number;
   commission: number;
   clicks: number;
+}
+
+// Pill + one-click WhatsApp nudge for influencers missing their bio link.
+function BioLinkCell({ row }: { row: InfluencerRow }) {
+  if (!row.igUsername || row.bioStatus === null) {
+    return <span className="text-foreground-secondary">-</span>;
+  }
+  if (row.bioStatus === "ok") {
+    return (
+      <span className="inline-flex rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+        Na bio ✓
+      </span>
+    );
+  }
+  if (row.bioStatus === "unknown") {
+    return <span className="text-xs text-foreground-secondary">?</span>;
+  }
+
+  const nudge =
+    row.profile.whatsapp && row.shareLink
+      ? `https://wa.me/${row.profile.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+          `Oi ${row.profile.first_name}! Falta colocar seu link na bio do Instagram para suas vendas contarem. É só copiar e colar no campo "Site" do seu perfil:\n\n${row.shareLink}`,
+        )}`
+      : null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="inline-flex rounded-full bg-error/10 px-2.5 py-0.5 text-xs font-medium text-error">
+        Falta
+      </span>
+      {nudge && (
+        <a
+          href={nudge}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Cobrar pelo WhatsApp"
+          className="rounded-lg border border-success/40 px-2 py-1 text-xs font-medium text-success transition-colors hover:bg-success hover:text-white"
+        >
+          Cobrar
+        </a>
+      )}
+    </div>
+  );
 }
 
 interface AdminInfluencersProps {
@@ -226,6 +271,9 @@ export function AdminInfluencers({
                 Instagram
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
+                Link na bio
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
                 Campanha
               </th>
               <th className="px-4 py-3 text-left font-medium text-foreground-secondary">
@@ -273,6 +321,9 @@ export function AdminInfluencers({
                   ) : (
                     <span className="text-foreground-secondary">-</span>
                   )}
+                </td>
+                <td className="px-4 py-3">
+                  <BioLinkCell row={row} />
                 </td>
                 <td className="px-4 py-3">
                   <CampaignCell
@@ -332,7 +383,7 @@ export function AdminInfluencers({
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-4 py-8 text-center text-foreground-secondary"
                 >
                   Nenhum influenciador encontrado.

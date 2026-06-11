@@ -6,6 +6,7 @@ import { getPostingSettingsAdmin, getOutstandInstagramData } from "@/lib/data/ou
 import { getClickCountByProfile, getSalesByProfile } from "@/lib/data";
 import { getMyCampaignStatus } from "@/lib/data/campaigns";
 import { buildReferralLink } from "@/lib/referral";
+import { hasLinkInBio } from "@/lib/bio-check";
 import type { InstagramData } from "@/features/dashboard-home";
 import type { Profile, Brand } from "@/types/database";
 
@@ -29,6 +30,7 @@ async function getInstagramData(
       username: ig.username,
       name: ig.name ?? undefined,
       biography: ig.biography ?? undefined,
+      website: ig.website ?? undefined,
       profilePictureUrl: ig.profilePictureUrl ?? undefined,
       followersCount: ig.followersCount,
       followsCount: ig.followingCount,
@@ -164,6 +166,17 @@ export default async function DashboardPage() {
       ? "/api/outstand/connect"
       : "/api/instagram/connect";
 
+  // Nudge until their referral link shows up in the IG bio (false only when we
+  // could actually read the bio and the tag wasn't there).
+  const bioLinkMissing =
+    Boolean(instagram?.isConnected) &&
+    Boolean(shareLink) &&
+    hasLinkInBio({
+      tag: fallbackProfile.referral_tag,
+      biography: instagram?.biography ?? null,
+      website: instagram?.website ?? null,
+    }) === false;
+
   return (
     <DashboardHome
       profile={fallbackProfile}
@@ -174,6 +187,7 @@ export default async function DashboardPage() {
       sales={confirmedSales.length}
       earnings={earnings}
       campaignStatus={campaignStatus}
+      bioLinkMissing={bioLinkMissing}
     />
   );
 }
