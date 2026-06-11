@@ -17,18 +17,7 @@ import { addMembersToCampaign } from "@/lib/actions/campaigns";
 const MOCK_ROWS = [
   {
     profile: MOCK_INFLUENCER, // id "user-1", created_at 2026-05-01T00:00:00Z
-    instagram: {
-      id: "ig-1",
-      profile_id: "user-1",
-      ig_user_id: "123",
-      ig_username: "anasilva",
-      access_token: "token",
-      token_expires_at: "2026-07-19T00:00:00Z",
-      token_refreshed_at: null,
-      is_connected: true,
-      followers_count: 15000,
-      created_at: "2026-05-01T00:00:00Z",
-    },
+    igUsername: "anasilva",
     totalSales: 12,
     commission: 359.4,
     clicks: 84,
@@ -42,7 +31,7 @@ const MOCK_ROWS = [
       email: "bruno@example.com",
       created_at: "2026-06-09T18:30:00Z", // 15:30 em São Paulo
     },
-    instagram: null,
+    igUsername: null,
     totalSales: 0,
     commission: 0,
     clicks: 0,
@@ -123,5 +112,23 @@ describe("AdminInfluencers", () => {
     expect(
       within(rowOf("Bruno Costa")).getByText("09/06/2026, 15:30"),
     ).toBeInTheDocument();
+  });
+
+  it("shows the Instagram handle as a link, or a dash when not connected", () => {
+    renderList();
+    expect(within(rowOf("Ana Silva")).getByText("@anasilva")).toBeInTheDocument();
+    expect(within(rowOf("Bruno Costa")).getByText("-")).toBeInTheDocument();
+  });
+
+  it("marks suspended influencers with a badge", () => {
+    renderList({
+      influencers: [
+        {
+          ...MOCK_ROWS[0],
+          profile: { ...MOCK_INFLUENCER, suspended_at: "2026-06-11T00:00:00Z" },
+        },
+      ],
+    });
+    expect(screen.getByText("Suspensa")).toBeInTheDocument();
   });
 });

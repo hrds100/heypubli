@@ -24,6 +24,7 @@ import {
   updateCampaignItem,
 } from "@/lib/actions/campaigns";
 import { formatSaoPaulo, utcIsoToSpLocal } from "@/lib/timezone";
+import { MediaUpload } from "@/components/media-upload";
 import type { Campaign, CampaignItem, PostMediaType } from "@/types/database";
 import type { CampaignMemberRow, ConnectedAccountRow } from "@/lib/data/campaigns";
 import { copy } from "./copy";
@@ -55,6 +56,8 @@ function typeLabel(type: PostMediaType) {
 
 // --- Item add/edit modal ---
 
+const STORY_TYPES: PostMediaType[] = ["story_image", "story_video"];
+
 function ItemModal({
   campaign,
   brands,
@@ -68,6 +71,12 @@ function ItemModal({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<PostMediaType>(
+    item?.media_type ?? "story_image",
+  );
+  const [mediaUrl, setMediaUrl] = useState(item?.media_url ?? "");
+
+  const isStory = STORY_TYPES.includes(mediaType);
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -112,7 +121,8 @@ function ItemModal({
             <select
               id="item-media-type"
               name="media_type"
-              defaultValue={item?.media_type ?? "story_image"}
+              value={mediaType}
+              onChange={(e) => setMediaType(e.target.value as PostMediaType)}
               className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
             >
               {POST_TYPES.map((t) => (
@@ -145,39 +155,103 @@ function ItemModal({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label
-              htmlFor="item-media-url"
-              className="text-sm font-medium text-foreground-secondary"
-            >
-              {copy.itemModal.mediaUrl}
-            </label>
+            <span className="text-sm font-medium text-foreground-secondary">
+              {copy.itemModal.media}
+            </span>
+            <MediaUpload onUploaded={setMediaUrl} />
             <input
               id="item-media-url"
               name="media_url"
               type="url"
               required
-              defaultValue={item?.media_url ?? ""}
-              placeholder="https://..."
+              value={mediaUrl}
+              onChange={(e) => setMediaUrl(e.target.value)}
+              placeholder={copy.itemModal.mediaUrl}
               className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="item-caption"
-              className="text-sm font-medium text-foreground-secondary"
-            >
-              {copy.itemModal.caption}
-            </label>
-            <textarea
-              id="item-caption"
-              name="caption"
-              rows={3}
-              defaultValue={item?.caption ?? ""}
-              placeholder="Escreva a legenda do post..."
-              className="resize-none rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
-            />
-          </div>
+          {isStory ? (
+            <p className="rounded-lg bg-background-secondary px-3 py-2 text-xs text-foreground-secondary">
+              {copy.itemModal.storyNote}
+            </p>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="item-caption"
+                className="text-sm font-medium text-foreground-secondary"
+              >
+                {copy.itemModal.caption}
+              </label>
+              <textarea
+                id="item-caption"
+                name="caption"
+                rows={3}
+                defaultValue={item?.caption ?? ""}
+                placeholder="Escreva a legenda do post..."
+                className="resize-none rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+          )}
+
+          {!isStory && (
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="item-collaborators"
+                className="text-sm font-medium text-foreground-secondary"
+              >
+                {copy.itemModal.collaborators}
+              </label>
+              <input
+                id="item-collaborators"
+                name="collaborators"
+                type="text"
+                defaultValue={item?.instagram_options?.collaborators?.join(", ") ?? ""}
+                placeholder={copy.itemModal.collaboratorsPlaceholder}
+                className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+          )}
+
+          {!isStory && (
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="item-first-comment"
+                className="text-sm font-medium text-foreground-secondary"
+              >
+                {copy.itemModal.firstComment}
+              </label>
+              <textarea
+                id="item-first-comment"
+                name="first_comment"
+                rows={2}
+                defaultValue={item?.instagram_options?.first_comment ?? ""}
+                placeholder={copy.itemModal.firstCommentPlaceholder}
+                className="resize-none rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+          )}
+
+          {mediaType === "reel" && (
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="item-reel-cover"
+                className="text-sm font-medium text-foreground-secondary"
+              >
+                {copy.itemModal.reelCover}
+              </label>
+              <input
+                id="item-reel-cover"
+                name="reel_cover_seconds"
+                type="number"
+                min="0"
+                step="0.1"
+                defaultValue={item?.instagram_options?.reel_cover_seconds ?? ""}
+                placeholder="ex: 2.5"
+                className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-1">
             <label

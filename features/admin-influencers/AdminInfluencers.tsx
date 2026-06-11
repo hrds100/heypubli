@@ -14,11 +14,11 @@ import {
 import { createInfluencer } from "@/lib/actions/admin";
 import { addMembersToCampaign } from "@/lib/actions/campaigns";
 import { formatSaoPaulo } from "@/lib/timezone";
-import type { Profile, InstagramConnection } from "@/types/database";
+import type { Profile } from "@/types/database";
 
 interface InfluencerRow {
   profile: Profile;
-  instagram: InstagramConnection | null;
+  igUsername: string | null;
   totalSales: number;
   commission: number;
   clicks: number;
@@ -159,7 +159,8 @@ export function AdminInfluencers({
     const matchesSearch =
       i.profile.first_name.toLowerCase().includes(search.toLowerCase()) ||
       i.profile.last_name.toLowerCase().includes(search.toLowerCase()) ||
-      i.profile.email.toLowerCase().includes(search.toLowerCase());
+      i.profile.email.toLowerCase().includes(search.toLowerCase()) ||
+      (i.igUsername ?? "").toLowerCase().includes(search.toLowerCase().replace(/^@/, ""));
     const isMember = memberIdSet.has(i.profile.id);
     const matchesCampaign =
       campaignFilter === "Todas" ||
@@ -248,20 +249,26 @@ export function AdminInfluencers({
             {filtered.map((row) => (
               <tr key={row.profile.id} className="border-b border-border last:border-0">
                 <td className="px-4 py-3 font-medium">
-                  {row.profile.first_name} {row.profile.last_name}
+                  {`${row.profile.first_name} ${row.profile.last_name}`.trim() ||
+                    (row.igUsername ? `@${row.igUsername}` : "—")}
+                  {row.profile.suspended_at && (
+                    <span className="ml-2 inline-flex rounded-full bg-error/10 px-2 py-0.5 text-xs font-medium text-error">
+                      Suspensa
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-foreground-secondary">
                   {row.profile.email}
                 </td>
                 <td className="px-4 py-3">
-                  {row.instagram ? (
+                  {row.igUsername ? (
                     <a
-                      href={`https://instagram.com/${row.instagram.ig_username}`}
+                      href={`https://instagram.com/${row.igUsername}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-accent hover:underline"
                     >
-                      @{row.instagram.ig_username}
+                      @{row.igUsername}
                     </a>
                   ) : (
                     <span className="text-foreground-secondary">-</span>

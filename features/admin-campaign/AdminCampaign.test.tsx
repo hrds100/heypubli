@@ -13,6 +13,14 @@ vi.mock("@/lib/actions/campaigns", () => ({
   updateCampaign: vi.fn(),
 }));
 
+vi.mock("@/lib/actions/media", () => ({
+  createMediaUploadUrl: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({ storage: { from: () => ({ uploadToSignedUrl: vi.fn() }) } }),
+}));
+
 function renderAll(overrides?: Partial<Parameters<typeof AdminCampaign>[0]>) {
   return render(
     <AdminCampaign
@@ -61,15 +69,39 @@ describe("AdminCampaign", () => {
     expect(within(dialog).getByText(/começar agora/i)).toBeInTheDocument();
   });
 
-  it("opens the add-item modal with type, media, caption and datetime fields", async () => {
+  it("opens the add-item modal with type, upload, media URL and datetime fields", async () => {
     const user = userEvent.setup();
     renderAll();
     await user.click(screen.getByRole("button", { name: /adicionar publicação/i }));
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByLabelText(/tipo de post/i)).toBeInTheDocument();
-    expect(within(dialog).getByLabelText(/url da mídia/i)).toBeInTheDocument();
-    expect(within(dialog).getByLabelText(/legenda/i)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/arraste mídia ou clique para enviar/i),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByPlaceholderText(/cole a url da mídia/i),
+    ).toBeInTheDocument();
     expect(within(dialog).getByLabelText(/data e hora/i)).toBeInTheDocument();
+    // Default type is story — the official API allows media only, so no caption.
+    expect(within(dialog).queryByLabelText(/legenda/i)).not.toBeInTheDocument();
+    expect(within(dialog).getByText(/não são permitidos pela meta/i)).toBeInTheDocument();
+  });
+
+  it("reveals caption, collaborators and first comment when the type is feed", async () => {
+    const user = userEvent.setup();
+    renderAll();
+    await user.click(screen.getByRole("button", { name: /adicionar publicação/i }));
+    const dialog = screen.getByRole("dialog");
+
+    await user.selectOptions(within(dialog).getByLabelText(/tipo de post/i), "feed");
+
+    expect(within(dialog).getByLabelText(/legenda/i)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/colaboradores/i)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/primeiro comentário/i)).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText(/capa do reel/i)).not.toBeInTheDocument();
+
+    await user.selectOptions(within(dialog).getByLabelText(/tipo de post/i), "reel");
+    expect(within(dialog).getByLabelText(/capa do reel/i)).toBeInTheDocument();
   });
 
   it("shows empty states for timeline and members", () => {

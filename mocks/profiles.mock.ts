@@ -27,6 +27,7 @@ export const MOCK_INFLUENCER: Profile = {
   onboarding_step: 6,
   onboarding_complete: true,
   is_admin: false,
+  suspended_at: null,
   last_accessed_at: "2026-05-19T10:00:00Z",
   created_at: "2026-05-01T00:00:00Z",
 };
@@ -58,6 +59,7 @@ export const MOCK_ADMIN: Profile = {
   onboarding_step: 6,
   onboarding_complete: true,
   is_admin: true,
+  suspended_at: null,
   last_accessed_at: "2026-05-19T10:00:00Z",
   created_at: "2026-05-01T00:00:00Z",
 };

@@ -24,6 +24,7 @@ function item(overrides: Partial<CampaignItem>): CampaignItem {
     media_url: "https://cdn.example.com/story.jpg",
     caption: "Olha isso!",
     scheduled_at: "2026-06-12T17:00:00Z",
+    instagram_options: null,
     created_at: "2026-06-01T00:00:00Z",
     updated_at: "2026-06-01T00:00:00Z",
     ...overrides,

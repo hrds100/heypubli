@@ -53,6 +53,7 @@ export interface Profile {
   onboarding_step: number;
   onboarding_complete: boolean;
   is_admin: boolean;
+  suspended_at: string | null;
   last_accessed_at: string | null;
   created_at: string;
 }
@@ -107,6 +108,15 @@ export interface BrandAssignment {
   assigned_at: string;
 }
 
+// Optional Instagram publish options — only what the official API actually
+// supports (via Outstand). Stories support none of these; music/links/stickers
+// are not available to any API client.
+export interface InstagramPostOptions {
+  collaborators?: string[]; // up to 3 public IG usernames (feed/reel)
+  first_comment?: string; // auto-posted as the first comment after publish
+  reel_cover_seconds?: number; // cover frame offset for Reels
+}
+
 export interface ScheduledPost {
   id: string;
   profile_id: string;
@@ -117,6 +127,7 @@ export interface ScheduledPost {
   scheduled_at: string;
   status: PostStatus;
   provider: PostingProvider;
+  instagram_options: InstagramPostOptions | null;
   ig_media_id: string | null;
   outstand_post_id: string | null;
   published_at: string | null;
@@ -149,6 +160,7 @@ export interface CampaignItem {
   media_url: string;
   caption: string;
   scheduled_at: string;
+  instagram_options: InstagramPostOptions | null;
   created_at: string;
   updated_at: string;
 }

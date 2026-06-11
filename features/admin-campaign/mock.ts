@@ -21,6 +21,7 @@ export const mockItems: CampaignItem[] = [
     media_url: "https://cdn.example.com/story.jpg",
     caption: "Story de quinta-feira",
     scheduled_at: "2099-06-11T20:00:00Z", // 17:00 em São Paulo
+    instagram_options: null,
     created_at: "2026-06-01T00:00:00Z",
     updated_at: "2026-06-01T00:00:00Z",
   },
@@ -32,6 +33,7 @@ export const mockItems: CampaignItem[] = [
     media_url: "https://cdn.example.com/reel.mp4",
     caption: "Reel de lançamento",
     scheduled_at: "2099-06-15T21:00:00Z",
+    instagram_options: null,
     created_at: "2026-06-01T00:00:00Z",
     updated_at: "2026-06-01T00:00:00Z",
   },

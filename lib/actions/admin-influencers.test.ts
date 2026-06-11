@@ -26,7 +26,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { createInfluencer } from "./admin";
+import { createInfluencer, setInfluencerSuspended } from "./admin";
 
 function fd(obj: Record<string, string>): FormData {
   const f = new FormData();
@@ -88,5 +88,32 @@ describe("createInfluencer", () => {
     ).toEqual({
       error: "User already registered",
     });
+  });
+});
+
+describe("setInfluencerSuspended", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getUser.mockResolvedValue({ data: { user: { id: "admin1" } } });
+    profileUpdateEq.mockResolvedValue({ error: null });
+  });
+
+  it("suspends: stamps suspended_at with a timestamp", async () => {
+    const r = await setInfluencerSuspended("inf-1", true);
+    expect(r).toEqual({ success: true });
+    expect(profileUpdate).toHaveBeenCalledWith({ suspended_at: expect.any(String) });
+    expect(profileUpdateEq).toHaveBeenCalledWith("id", "inf-1");
+  });
+
+  it("reactivates: clears suspended_at back to null", async () => {
+    const r = await setInfluencerSuspended("inf-1", false);
+    expect(r).toEqual({ success: true });
+    expect(profileUpdate).toHaveBeenCalledWith({ suspended_at: null });
+  });
+
+  it("surfaces a database error in PT-BR shape", async () => {
+    profileUpdateEq.mockResolvedValue({ error: { message: "boom" } });
+    const r = await setInfluencerSuspended("inf-1", true);
+    expect(r).toEqual({ error: "boom" });
   });
 });

@@ -1,17 +1,26 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Upload, Send, CheckCircle } from "lucide-react";
+import { Send, CheckCircle, Info } from "lucide-react";
 import { schedulePost } from "@/lib/actions/admin";
-import type { Profile, PostingProvider } from "@/types/database";
+import { MediaUpload } from "@/components/media-upload";
+import type { PostingProvider } from "@/types/database";
 
 interface BrandOption {
   id: string;
   name: string;
 }
 
+// Only influencers with a connected Instagram can be scheduled.
+export interface SchedulerInfluencer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  ig_username: string | null;
+}
+
 interface AdminSchedulerProps {
-  influencers: Pick<Profile, "id" | "first_name" | "last_name">[];
+  influencers: SchedulerInfluencer[];
   brands: BrandOption[];
   activeProvider?: PostingProvider;
 }
@@ -24,6 +33,9 @@ const POST_TYPES = [
   { value: "carousel", label: "Carrossel" },
 ] as const;
 
+const STORY_TYPES = ["story_image", "story_video"];
+const COLLAB_TYPES = ["feed", "reel", "carousel"];
+
 export function AdminScheduler({
   influencers,
   brands,
@@ -35,9 +47,15 @@ export function AdminScheduler({
   const [caption, setCaption] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [collaborators, setCollaborators] = useState("");
+  const [firstComment, setFirstComment] = useState("");
+  const [reelCoverSeconds, setReelCoverSeconds] = useState("");
   const [isPending, startTransition] = useTransition();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isStory = STORY_TYPES.includes(postType);
+  const allowsCollabs = COLLAB_TYPES.includes(postType);
 
   const toggleInfluencer = (id: string) => {
     setSelectedInfluencers((prev) =>
@@ -62,7 +80,7 @@ export function AdminScheduler({
       setError("Selecione uma marca");
       return;
     }
-    if (!caption.trim()) {
+    if (!isStory && !caption.trim()) {
       setError("Escreva uma legenda");
       return;
     }
@@ -71,7 +89,9 @@ export function AdminScheduler({
       return;
     }
     if (!mediaUrl.trim()) {
-      setError("Informe a URL da mídia — o post não pode ser publicado sem mídia");
+      setError(
+        "Envie a mídia ou informe a URL — o post não pode ser publicado sem mídia",
+      );
       return;
     }
 
@@ -83,6 +103,15 @@ export function AdminScheduler({
     formData.set("media_url", mediaUrl);
     formData.set("caption", caption);
     formData.set("scheduled_at", scheduledAt);
+    if (allowsCollabs && collaborators.trim()) {
+      formData.set("collaborators", collaborators);
+    }
+    if (!isStory && firstComment.trim()) {
+      formData.set("first_comment", firstComment);
+    }
+    if (postType === "reel" && reelCoverSeconds.trim()) {
+      formData.set("reel_cover_seconds", reelCoverSeconds);
+    }
 
     startTransition(async () => {
       try {
@@ -92,6 +121,9 @@ export function AdminScheduler({
         setCaption("");
         setScheduledAt("");
         setMediaUrl("");
+        setCollaborators("");
+        setFirstComment("");
+        setReelCoverSeconds("");
         setTimeout(() => setSuccess(false), 3000);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao agendar");
@@ -133,18 +165,25 @@ export function AdminScheduler({
                   className="rounded border-border"
                 />
                 <span className="text-sm">
-                  {inf.first_name} {inf.last_name}
+                  {`${inf.first_name} ${inf.last_name}`.trim() || inf.ig_username}
                 </span>
+                {inf.ig_username && (
+                  <span className="text-xs text-foreground-secondary">
+                    @{inf.ig_username}
+                  </span>
+                )}
               </label>
             ))}
             {influencers.length === 0 && (
               <p className="text-sm text-foreground-secondary">
-                Nenhum influenciador cadastrado.
+                Nenhum influenciador com Instagram conectado. Só contas conectadas
+                aparecem aqui.
               </p>
             )}
           </div>
           <p className="mt-2 text-xs text-foreground-secondary">
-            {selectedInfluencers.length} selecionado(s)
+            {selectedInfluencers.length} selecionado(s) · só contas com Instagram
+            conectado aparecem nesta lista
           </p>
         </section>
 
@@ -188,16 +227,88 @@ export function AdminScheduler({
 
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-foreground-secondary">
-                Legenda
+                Mídia
               </label>
-              <textarea
-                rows={3}
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Escreva a legenda do post..."
-                className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none resize-none"
+              <MediaUpload onUploaded={setMediaUrl} />
+              <input
+                type="url"
+                value={mediaUrl}
+                onChange={(e) => setMediaUrl(e.target.value)}
+                placeholder="ou cole a URL da mídia: https://..."
+                className="mt-1 rounded-lg border border-border px-4 py-2.5 text-sm focus:border-accent focus:outline-none"
               />
             </div>
+
+            {isStory ? (
+              <div className="flex items-start gap-2 rounded-lg bg-background-secondary px-4 py-3 text-xs text-foreground-secondary">
+                <Info size={14} className="mt-0.5 shrink-0" />
+                <span>
+                  Stories pela API oficial do Instagram aceitam só a mídia (imagem ou
+                  vídeo 9:16). Legenda, links, stickers, enquetes e música não são
+                  permitidos pela Meta para nenhuma ferramenta.
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground-secondary">
+                  Legenda
+                </label>
+                <textarea
+                  rows={3}
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="Escreva a legenda do post..."
+                  className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none resize-none"
+                />
+              </div>
+            )}
+
+            {allowsCollabs && (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground-secondary">
+                  Colaboradores (até 3, separados por vírgula)
+                </label>
+                <input
+                  type="text"
+                  value={collaborators}
+                  onChange={(e) => setCollaborators(e.target.value)}
+                  placeholder="@marca, @perfil2"
+                  className="rounded-lg border border-border px-4 py-2.5 text-sm focus:border-accent focus:outline-none"
+                />
+              </div>
+            )}
+
+            {!isStory && (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground-secondary">
+                  Primeiro comentário (opcional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={firstComment}
+                  onChange={(e) => setFirstComment(e.target.value)}
+                  placeholder="Comentário publicado automaticamente após o post"
+                  className="rounded-lg border border-border px-4 py-2.5 text-sm focus:border-accent focus:outline-none resize-none"
+                />
+              </div>
+            )}
+
+            {postType === "reel" && (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground-secondary">
+                  Capa do Reel (segundo do vídeo, opcional)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={reelCoverSeconds}
+                  onChange={(e) => setReelCoverSeconds(e.target.value)}
+                  placeholder="ex: 2.5"
+                  className="rounded-lg border border-border px-4 py-2.5 text-sm focus:border-accent focus:outline-none"
+                />
+              </div>
+            )}
 
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-foreground-secondary">
@@ -209,29 +320,6 @@ export function AdminScheduler({
                 onChange={(e) => setScheduledAt(e.target.value)}
                 className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
               />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-foreground-secondary">
-                URL da mídia
-              </label>
-              <input
-                type="url"
-                value={mediaUrl}
-                onChange={(e) => setMediaUrl(e.target.value)}
-                placeholder="https://..."
-                className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
-              />
-            </div>
-
-            <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
-              <Upload size={24} className="mx-auto mb-2 text-foreground-secondary" />
-              <p className="text-sm text-foreground-secondary">
-                Arraste mídia ou clique para upload
-              </p>
-              <p className="mt-1 text-xs text-foreground-secondary">
-                (Upload via Supabase Storage em breve)
-              </p>
             </div>
           </div>
         </section>

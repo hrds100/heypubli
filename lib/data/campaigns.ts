@@ -4,6 +4,7 @@ import type {
   Campaign,
   CampaignItem,
   CampaignMember,
+  InstagramPostOptions,
   PostingProvider,
   PostMediaType,
   Profile,
@@ -20,6 +21,7 @@ export interface CampaignPostInsert {
   scheduled_at: string;
   status: "pending";
   provider: PostingProvider;
+  instagram_options: InstagramPostOptions | null;
   campaign_id: string;
   campaign_item_id: string;
   ig_media_id: null;
@@ -48,6 +50,7 @@ function toPostRow(
     scheduled_at: scheduledAt,
     status: "pending",
     provider,
+    instagram_options: item.instagram_options ?? null,
     campaign_id: item.campaign_id,
     campaign_item_id: item.id,
     ig_media_id: null,
@@ -167,6 +170,19 @@ export async function getCampaignMembers(campaignId: string): Promise<CampaignMe
     .eq("campaign_id", campaignId)
     .order("added_at", { ascending: false });
   return (data as CampaignMember[] | null) ?? [];
+}
+
+/** Drops suspended profiles from a list of ids — suspended accounts never get posts. */
+export async function filterActiveProfileIds(profileIds: string[]): Promise<string[]> {
+  if (profileIds.length === 0) return [];
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("id")
+    .in("id", profileIds)
+    .is("suspended_at", null);
+  const active = new Set(((data as { id: string }[] | null) ?? []).map((p) => p.id));
+  return profileIds.filter((id) => active.has(id));
 }
 
 export interface CampaignMemberRow extends CampaignMember {

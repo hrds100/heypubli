@@ -3,8 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import type { PostMediaType } from "@/types/database";
+import type { InstagramPostOptions, PostMediaType } from "@/types/database";
 import { getPostingSettingsAdmin } from "@/lib/data/outstand";
+import { readInstagramOptions } from "@/lib/instagram-options";
 import { spLocalToUtcIso } from "@/lib/timezone";
 
 async function requireAdmin() {
@@ -72,6 +73,28 @@ export async function deleteInfluencer(profileId: string) {
 
   revalidatePath("/admin/influenciadores");
   revalidatePath("/admin");
+}
+
+/**
+ * Suspends (or reactivates) an influencer without deleting anything: history,
+ * connections and payouts stay. Suspended accounts are locked out by the
+ * middleware and excluded from scheduling.
+ */
+export async function setInfluencerSuspended(profileId: string, suspended: boolean) {
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from("profiles") as any)
+    .update({ suspended_at: suspended ? new Date().toISOString() : null })
+    .eq("id", profileId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/influenciadores/${profileId}`);
+  revalidatePath("/admin/influenciadores");
+  revalidatePath("/admin/agendador");
+  return { success: true };
 }
 
 export async function disconnectInfluencerInstagram(connectionId: string) {
@@ -183,6 +206,7 @@ export async function schedulePost(formData: FormData) {
   const mediaUrl = (formData.get("media_url") as string) || "";
   const caption = formData.get("caption") as string;
   const scheduledAt = formData.get("scheduled_at") as string;
+  const instagramOptions: InstagramPostOptions | null = readInstagramOptions(formData);
 
   const settings = await getPostingSettingsAdmin();
   const provider = settings?.active_provider ?? "heypubli";
@@ -197,6 +221,7 @@ export async function schedulePost(formData: FormData) {
     scheduled_at: spLocalToUtcIso(scheduledAt),
     status: "pending" as const,
     provider,
+    instagram_options: instagramOptions,
     ig_media_id: null,
     outstand_post_id: null,
     published_at: null,

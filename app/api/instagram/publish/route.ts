@@ -48,9 +48,25 @@ export async function GET(request: Request) {
   const postingSettings = await getPostingSettingsAdmin();
   const results: { id: string; status: string }[] = [];
 
+  // Posts belonging to suspended influencers never publish.
+  const { data: suspendedProfiles } = await supabase
+    .from("profiles")
+    .select("id")
+    .in("id", [...new Set(posts.map((p) => p.profile_id))])
+    .not("suspended_at", "is", null);
+  const suspendedIds = new Set(
+    ((suspendedProfiles as { id: string }[] | null) ?? []).map((p) => p.id),
+  );
+
   for (const post of posts) {
     const provider =
       (post as ScheduledPost & { provider?: string }).provider ?? "heypubli";
+
+    if (suspendedIds.has(post.profile_id)) {
+      await markPostFailed(post.id, "Conta suspensa");
+      results.push({ id: post.id, status: "failed: conta suspensa" });
+      continue;
+    }
 
     try {
       if (provider === "outstand") {
@@ -138,16 +154,22 @@ async function publishViaOutstand(post: ScheduledPost, apiKey: string | null) {
 
   const mediaIds = await uploadMediaToOutstand(apiKey, post.media_url, post.media_type);
 
-  const instagram =
-    post.media_type === "story_image" || post.media_type === "story_video"
-      ? { publishAsStory: true }
-      : undefined;
+  const isStory = post.media_type === "story_image" || post.media_type === "story_video";
+  const options = isStory ? null : post.instagram_options; // stories take media only
+
+  const instagram: NonNullable<Parameters<typeof createPost>[1]["instagram"]> = {};
+  if (isStory) instagram.publishAsStory = true;
+  if (options?.collaborators?.length) instagram.collaborators = options.collaborators;
+  if (post.media_type === "reel" && options?.reel_cover_seconds != null) {
+    instagram.reelThumbOffset = Math.round(options.reel_cover_seconds * 1000);
+  }
 
   const outstandPost = await createPost(apiKey, {
     content: post.caption,
     mediaIds,
     socialAccountIds: [connection.outstand_social_account_id],
-    instagram,
+    instagram: Object.keys(instagram).length > 0 ? instagram : undefined,
+    firstComment: options?.first_comment,
   });
 
   await saveOutstandPostId(post.id, outstandPost.id);

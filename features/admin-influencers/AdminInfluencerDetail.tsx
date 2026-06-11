@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   AtSign,
+  Ban,
   Calendar,
   DollarSign,
   Eye,
@@ -26,12 +27,14 @@ import {
 import {
   deleteInfluencer,
   disconnectInfluencerInstagram,
+  setInfluencerSuspended,
   updateInfluencerProfile,
   updateInfluencerAuth,
 } from "@/lib/actions/admin";
 import type {
   Profile,
   InstagramConnection,
+  OutstandConnection,
   HotmartSale,
   ScheduledPost,
 } from "@/types/database";
@@ -39,6 +42,7 @@ import type {
 interface AdminInfluencerDetailProps {
   profile: Profile;
   instagram: InstagramConnection | null;
+  outstand: OutstandConnection | null;
   sales: HotmartSale[];
   posts: ScheduledPost[];
   sectors: string[];
@@ -92,6 +96,7 @@ function EditField({
 export function AdminInfluencerDetail({
   profile,
   instagram,
+  outstand,
   sales,
   posts,
   sectors,
@@ -100,6 +105,7 @@ export function AdminInfluencerDetail({
   const [isPending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [confirmSuspend, setConfirmSuspend] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editAuth, setEditAuth] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -127,6 +133,24 @@ export function AdminInfluencerDetail({
       await disconnectInfluencerInstagram(instagram.id);
       setConfirmDisconnect(false);
       router.refresh();
+    });
+  };
+
+  const isSuspended = Boolean(profile.suspended_at);
+
+  const handleToggleSuspend = () => {
+    startTransition(async () => {
+      const result = await setInfluencerSuspended(profile.id, !isSuspended);
+      setConfirmSuspend(false);
+      if (result && "error" in result) {
+        setFeedback({ type: "error", msg: result.error ?? "Erro" });
+      } else {
+        setFeedback({
+          type: "success",
+          msg: isSuspended ? "Conta reativada" : "Conta suspensa",
+        });
+        router.refresh();
+      }
     });
   };
 
@@ -176,6 +200,11 @@ export function AdminInfluencerDetail({
         <div>
           <h1 className="text-2xl font-bold">
             {profile.first_name} {profile.last_name}
+            {isSuspended && (
+              <span className="ml-3 inline-flex rounded-full bg-error/10 px-3 py-1 align-middle text-xs font-medium text-error">
+                Suspensa
+              </span>
+            )}
           </h1>
           <p className="text-sm text-foreground-secondary">{profile.email}</p>
         </div>
@@ -491,6 +520,22 @@ export function AdminInfluencerDetail({
 
           <section className="rounded-xl border border-border p-5">
             <h2 className="mb-4 text-base font-semibold">Instagram</h2>
+            {outstand?.is_connected && (
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#F56040] via-[#E1306C] to-[#C13584]">
+                  <AtSign size={18} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-medium">@{outstand.ig_username}</p>
+                  <p className="text-xs text-foreground-secondary">
+                    Conectado via Outstand (API oficial)
+                  </p>
+                </div>
+                <span className="ml-auto rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                  Conectado
+                </span>
+              </div>
+            )}
             {instagram ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -554,12 +599,12 @@ export function AdminInfluencerDetail({
                   )}
                 </div>
               </div>
-            ) : (
+            ) : !outstand?.is_connected ? (
               <div className="flex items-center gap-3 rounded-lg bg-error/5 px-4 py-3">
                 <AtSign size={18} className="text-error" />
                 <span className="text-sm text-error">Instagram não conectado</span>
               </div>
-            )}
+            ) : null}
           </section>
 
           <section className="rounded-xl border border-border p-5">
@@ -726,6 +771,52 @@ export function AdminInfluencerDetail({
           </div>
         </section>
       )}
+
+      <section className="rounded-xl border border-warning/30 p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/10">
+            <Ban size={16} className="text-warning" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-medium text-warning">
+              {isSuspended ? "Reativar conta" : "Suspender conta"}
+            </h2>
+            <p className="text-xs text-foreground-secondary">
+              {isSuspended
+                ? "A conta volta a acessar a plataforma e a receber agendamentos"
+                : "Bloqueia o acesso e os agendamentos sem apagar nada — dá para reativar depois"}
+            </p>
+          </div>
+          {confirmSuspend ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleToggleSuspend}
+                disabled={isPending}
+                className="rounded-lg bg-warning px-4 py-2 text-sm font-medium text-white hover:bg-warning/90 disabled:opacity-50"
+              >
+                {isPending
+                  ? "Salvando..."
+                  : isSuspended
+                    ? "Confirmar reativação"
+                    : "Confirmar suspensão"}
+              </button>
+              <button
+                onClick={() => setConfirmSuspend(false)}
+                className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-background-secondary"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmSuspend(true)}
+              className="shrink-0 rounded-lg border border-warning px-3 py-1.5 text-sm font-medium text-warning hover:bg-warning/10"
+            >
+              {isSuspended ? "Reativar" : "Suspender"}
+            </button>
+          )}
+        </div>
+      </section>
 
       <section className="rounded-xl border border-error/20 p-5">
         <div className="flex items-center gap-3">

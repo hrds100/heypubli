@@ -7,13 +7,15 @@ import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 import {
   buildPostsForItem,
   buildPostsForMember,
+  filterActiveProfileIds,
   getCampaignById,
   getCampaignItemById,
   getCampaignItems,
   getCampaignMembers,
 } from "@/lib/data/campaigns";
+import { readInstagramOptions } from "@/lib/instagram-options";
 import { spLocalToUtcIso } from "@/lib/timezone";
-import type { CampaignItem, PostMediaType } from "@/types/database";
+import type { CampaignItem, InstagramPostOptions, PostMediaType } from "@/types/database";
 
 type ActionResult = { error: string } | { success: true; postsCreated?: number };
 
@@ -47,6 +49,7 @@ interface ItemFields {
   caption: string;
   scheduledAtUtc: string;
   brandId: string | null;
+  instagramOptions: InstagramPostOptions | null;
 }
 
 function readItemFields(formData: FormData): ItemFields | { error: string } {
@@ -58,7 +61,7 @@ function readItemFields(formData: FormData): ItemFields | { error: string } {
 
   const validTypes = ["feed", "story_image", "story_video", "reel", "carousel"];
   if (!validTypes.includes(mediaType)) return { error: "Tipo de post inválido." };
-  if (!mediaUrl) return { error: "Informe a URL da mídia." };
+  if (!mediaUrl) return { error: "Envie a mídia ou informe a URL." };
   if (!scheduledLocal) return { error: "Informe data e hora." };
 
   return {
@@ -67,6 +70,7 @@ function readItemFields(formData: FormData): ItemFields | { error: string } {
     caption,
     scheduledAtUtc: spLocalToUtcIso(scheduledLocal),
     brandId,
+    instagramOptions: readInstagramOptions(formData),
   };
 }
 
@@ -95,20 +99,23 @@ export async function createCampaignItem(formData: FormData): Promise<ActionResu
       media_url: fields.mediaUrl,
       caption: fields.caption,
       scheduled_at: fields.scheduledAtUtc,
+      instagram_options: fields.instagramOptions,
     })
     .select("*")
     .single();
   if (error) return { error: error.message };
 
-  // Schedule the new item for everyone already in the campaign (future items only).
+  // Schedule the new item for everyone already in the campaign (future items
+  // only, suspended accounts excluded).
   const members = await getCampaignMembers(campaignId);
+  const activeIds = await filterActiveProfileIds(members.map((m) => m.profile_id));
   let postsCreated = 0;
-  if (members.length > 0) {
+  if (activeIds.length > 0) {
     const settings = await getPostingSettingsAdmin();
     const rows = buildPostsForItem({
       campaign,
       item: item as CampaignItem,
-      profileIds: members.map((m) => m.profile_id),
+      profileIds: activeIds,
       provider: settings?.active_provider ?? "heypubli",
       now: new Date(),
     });
@@ -155,6 +162,7 @@ export async function updateCampaignItem(
     media_url: fields.mediaUrl,
     caption: fields.caption,
     scheduled_at: fields.scheduledAtUtc,
+    instagram_options: fields.instagramOptions,
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from("campaign_items") as any)
@@ -172,14 +180,15 @@ export async function updateCampaignItem(
     return { error: `Item salvo, mas falhou ao reagendar: ${postsErr.message}` };
 
   // If the item moved into the future, members that never got it (it was in the
-  // past when they joined) get their post now.
+  // past when they joined) get their post now. Suspended accounts are skipped.
   const members = await getCampaignMembers(existing.campaign_id);
-  if (members.length > 0) {
+  const activeIds = await filterActiveProfileIds(members.map((m) => m.profile_id));
+  if (activeIds.length > 0) {
     const settings = await getPostingSettingsAdmin();
     const rows = buildPostsForItem({
       campaign,
       item: { ...existing, ...patch },
-      profileIds: members.map((m) => m.profile_id),
+      profileIds: activeIds,
       provider: settings?.active_provider ?? "heypubli",
       now: new Date(),
     });
@@ -226,8 +235,10 @@ export async function addMembersToCampaign(
   startNow: boolean,
 ): Promise<ActionResult> {
   const adminId = await requireAdmin();
-  const ids = profileIds.map((p) => p.trim()).filter(Boolean);
-  if (ids.length === 0) return { error: "Selecione pelo menos uma conta." };
+  const requestedIds = profileIds.map((p) => p.trim()).filter(Boolean);
+  if (requestedIds.length === 0) return { error: "Selecione pelo menos uma conta." };
+  const ids = await filterActiveProfileIds(requestedIds);
+  if (ids.length === 0) return { error: "Essas contas estão suspensas." };
 
   const campaign = await getCampaignById(campaignId);
   if (!campaign) return { error: "Campanha não encontrada." };

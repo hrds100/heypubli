@@ -14,9 +14,14 @@ export async function middleware(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_admin, needs_contact")
+    .select("is_admin, needs_contact, suspended_at")
     .eq("id", user.id)
-    .single<{ is_admin: boolean; needs_contact: boolean }>();
+    .single<{ is_admin: boolean; needs_contact: boolean; suspended_at: string | null }>();
+
+  // Suspended influencers are locked out of the whole app (admins are immune).
+  if (profile?.suspended_at && !profile.is_admin) {
+    return NextResponse.redirect(new URL("/suspenso", request.url));
+  }
 
   // New Instagram accounts must give us a real email + WhatsApp before anything else.
   if (profile?.needs_contact && !isContactRoute) {

@@ -124,6 +124,7 @@ describe("createCampaignItem", () => {
       campaign_members: {
         list: [{ id: "m1", campaign_id: "camp-1", profile_id: "user-1" }],
       },
+      profiles: { list: [{ id: "user-1" }] },
       posting_settings: { single: { active_provider: "outstand" } },
     };
     const r = await createCampaignItem(
@@ -147,6 +148,63 @@ describe("createCampaignItem", () => {
       profile_id: "user-1",
       campaign_item_id: "item-1",
       status: "pending",
+    });
+  });
+
+  it("skips suspended members when materializing posts", async () => {
+    cfg = {
+      campaigns: { maybeSingle: campaign },
+      campaign_items: { single: futureItem },
+      campaign_members: {
+        list: [
+          { id: "m1", campaign_id: "camp-1", profile_id: "user-1" },
+          { id: "m2", campaign_id: "camp-1", profile_id: "user-suspended" },
+        ],
+      },
+      // Only user-1 comes back from the suspended_at-is-null query.
+      profiles: { list: [{ id: "user-1" }] },
+      posting_settings: { single: { active_provider: "outstand" } },
+    };
+    const r = await createCampaignItem(
+      form({
+        campaign_id: "camp-1",
+        media_type: "story_image",
+        media_url: "https://cdn.example.com/s.jpg",
+        caption: "Oi",
+        scheduled_at: "2099-06-12T17:00",
+      }),
+    );
+    expect(r).toMatchObject({ success: true, postsCreated: 1 });
+  });
+
+  it("stores instagram options (collaborators, first comment) on the item", async () => {
+    cfg = {
+      campaigns: { maybeSingle: campaign },
+      campaign_items: { single: futureItem },
+      campaign_members: { list: [] },
+      posting_settings: { single: { active_provider: "outstand" } },
+    };
+    const r = await createCampaignItem(
+      form({
+        campaign_id: "camp-1",
+        media_type: "reel",
+        media_url: "https://cdn.example.com/r.mp4",
+        caption: "Oi",
+        scheduled_at: "2099-06-12T17:00",
+        collaborators: "@scanplates, @parceiro",
+        first_comment: "Garanta o seu!",
+        reel_cover_seconds: "2.5",
+      }),
+    );
+    expect(r).toMatchObject({ success: true });
+
+    const insert = ops.find((o) => o.table === "campaign_items" && o.op === "insert");
+    expect(insert?.payload).toMatchObject({
+      instagram_options: {
+        collaborators: ["scanplates", "parceiro"],
+        first_comment: "Garanta o seu!",
+        reel_cover_seconds: 2.5,
+      },
     });
   });
 });
@@ -204,6 +262,7 @@ describe("addMembersToCampaign", () => {
     cfg = {
       campaigns: { maybeSingle: campaign },
       campaign_items: { list: [futureItem] },
+      profiles: { list: [{ id: "user-1" }, { id: "user-2" }] },
       posting_settings: { single: { active_provider: "outstand" } },
     };
     const r = await addMembersToCampaign("camp-1", ["user-1", "user-2"], false);
@@ -231,6 +290,7 @@ describe("addMembersToCampaign", () => {
     cfg = {
       campaigns: { maybeSingle: campaign },
       campaign_items: { list: [futureItem] },
+      profiles: { list: [{ id: "user-1" }] },
       posting_settings: { single: { active_provider: "outstand" } },
     };
     const before = Date.now();

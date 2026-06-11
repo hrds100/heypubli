@@ -258,7 +258,14 @@ export interface CreatePostParams {
   mediaIds: string[];
   socialAccountIds: string[];
   scheduledAt?: string;
-  instagram?: { publishAsStory?: boolean };
+  instagram?: {
+    publishAsStory?: boolean;
+    collaborators?: string[]; // up to 3 public IG usernames (feed/reel only)
+    reelThumbOffset?: number; // Reel cover frame, in milliseconds
+  };
+  // Posted automatically as a reply once the post is live (Outstand publishes
+  // every container after the first as a comment).
+  firstComment?: string;
 }
 
 export async function createPost(
@@ -268,13 +275,16 @@ export async function createPost(
   id: string;
   socialAccounts: Array<{ id: string; status: string }>;
 }> {
+  const containers: Array<Record<string, unknown>> = [
+    {
+      content: params.content,
+      mediaIds: params.mediaIds,
+    },
+  ];
+  if (params.firstComment) containers.push({ content: params.firstComment });
+
   const body: Record<string, unknown> = {
-    containers: [
-      {
-        content: params.content,
-        mediaIds: params.mediaIds,
-      },
-    ],
+    containers,
     accounts: params.socialAccountIds,
   };
 

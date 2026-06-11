@@ -98,6 +98,7 @@ export default async function DashboardPage() {
       last_name: user.user_metadata?.last_name ?? "",
       email: user.email ?? "",
       is_admin: false,
+      suspended_at: null,
       onboarding_complete: false,
       onboarding_step: 1,
       created_at: new Date().toISOString(),

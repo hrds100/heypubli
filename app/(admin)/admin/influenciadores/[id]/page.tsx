@@ -8,6 +8,7 @@ import {
   getInfluencerSectors,
   getAllSectors,
 } from "@/lib/data";
+import { getOutstandConnection } from "@/lib/data/outstand";
 
 export default async function InfluencerDetailPage({
   params,
@@ -19,13 +20,15 @@ export default async function InfluencerDetailPage({
   const profile = await getProfileById(id);
   if (!profile) notFound();
 
-  const [instagram, sales, posts, influencerSectors, allSectors] = await Promise.all([
-    getInstagramConnection(id),
-    getSalesByProfile(id),
-    getPostsByProfile(id),
-    getInfluencerSectors(id),
-    getAllSectors(),
-  ]);
+  const [instagram, outstand, sales, posts, influencerSectors, allSectors] =
+    await Promise.all([
+      getInstagramConnection(id),
+      getOutstandConnection(id),
+      getSalesByProfile(id),
+      getPostsByProfile(id),
+      getInfluencerSectors(id),
+      getAllSectors(),
+    ]);
 
   const sectorMap = new Map(allSectors.map((s) => [s.id, s.name]));
   const sectorNames = influencerSectors.map(
@@ -36,6 +39,7 @@ export default async function InfluencerDetailPage({
     <AdminInfluencerDetail
       profile={profile}
       instagram={instagram}
+      outstand={outstand}
       sales={sales}
       posts={posts}
       sectors={sectorNames}
