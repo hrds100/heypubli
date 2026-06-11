@@ -6,9 +6,7 @@ import { getSocialAccountByTenant } from "@/lib/integrations/outstand";
 import { saveOutstandConnection, getPostingSettingsAdmin } from "@/lib/data/outstand";
 import { findOrCreateInfluencerByOutstand, type IgSignupData } from "@/lib/data/auth-ig";
 import { notifyAccountConnected } from "@/lib/data/notifications";
-
-const STATE_COOKIE = "ig_login_state";
-const SIGNUP_COOKIE = "ig_signup_data";
+import { STATE_COOKIE, SIGNUP_COOKIE, authCookieClearAttrs } from "@/lib/ig-auth-cookies";
 
 function readSignupData(raw: string | undefined): IgSignupData | undefined {
   if (!raw) return undefined;
@@ -38,14 +36,29 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   const cookieStore = await cookies();
 
+  // Deletions must repeat the Domain/Path the cookies were set with, or the
+  // browser treats them as different cookies and keeps the originals.
+  const clearAttrs = authCookieClearAttrs(origin);
+  const clearStateCookie = () =>
+    cookieStore.delete({ name: STATE_COOKIE, ...clearAttrs });
+  const clearSignupCookie = () =>
+    cookieStore.delete({ name: SIGNUP_COOKIE, ...clearAttrs });
+
+  const hadSignupData = Boolean(cookieStore.get(SIGNUP_COOKIE)?.value);
+
   // Already signed in → connecting from inside the app (errors → onboarding).
-  // Not signed in → signing up with Instagram (errors → login page).
-  const errBase = user ? `${origin}/onboarding` : `${origin}/login`;
+  // Mid-SIGNUP (form data present) → back to /cadastro so they can retry there.
+  // Otherwise → login page.
+  const errBase = user
+    ? `${origin}/onboarding`
+    : hadSignupData
+      ? `${origin}/cadastro`
+      : `${origin}/login`;
   const errKey = user ? "ig_error" : "erro";
   const fail = (msg: string) => {
     if (!user) {
-      cookieStore.delete(STATE_COOKIE);
-      cookieStore.delete(SIGNUP_COOKIE);
+      // Keep the signup-data cookie so /cadastro can prefill the form on retry.
+      clearStateCookie();
     }
     return NextResponse.redirect(`${errBase}?${errKey}=${encodeURIComponent(msg)}`);
   };
@@ -59,7 +72,9 @@ export async function GET(request: Request) {
   //  - sign-up (not logged in): the random state nonce stored in the cookie
   const expectedState = cookieStore.get(STATE_COOKIE)?.value;
   if (!user) {
-    const returnedState = searchParams.get("tenant_id") ?? searchParams.get("state");
+    // NOTE: only tenant_id can echo our nonce — Outstand uses `state` for its
+    // own org id, so comparing against it would reject every signup.
+    const returnedState = searchParams.get("tenant_id");
     if (!expectedState || (returnedState && returnedState !== expectedState)) {
       return fail("Sua sessão de login expirou. Tente novamente.");
     }
@@ -90,6 +105,7 @@ export async function GET(request: Request) {
         user.id,
         account.id,
         account.username,
+        account.igUserId,
       );
       if (isNew) {
         const admin = createAdminClient();
@@ -110,7 +126,11 @@ export async function GET(request: Request) {
     // --- Sign-up flow ---
     const signup = readSignupData(cookieStore.get(SIGNUP_COOKIE)?.value);
     const { email, isNew } = await findOrCreateInfluencerByOutstand(
-      { socialAccountId: account.id, username: account.username },
+      {
+        socialAccountId: account.id,
+        username: account.username,
+        igUserId: account.igUserId,
+      },
       signup,
     );
 
@@ -130,14 +150,16 @@ export async function GET(request: Request) {
     });
     if (otpErr) throw new Error(otpErr.message);
 
-    cookieStore.delete(STATE_COOKIE);
-    cookieStore.delete(SIGNUP_COOKIE);
+    clearStateCookie();
+    clearSignupCookie();
     // Sign-up (data already collected) → onboarding. Returning influencer → dashboard.
     // New influencer via the login button (no data) → /bem-vindo to capture contact.
     const dest = !isNew ? "/dashboard" : signup ? "/onboarding" : "/bem-vindo";
     return NextResponse.redirect(`${origin}${dest}`);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Erro ao entrar com o Instagram";
-    return fail(message);
+    // Log the real cause for debugging; the user gets actionable PT-BR, never
+    // a raw English database/API message.
+    console.error("[outstand/callback]", err);
+    return fail("Não foi possível entrar com o Instagram. Tente novamente.");
   }
 }

@@ -152,30 +152,45 @@ export async function getInstagramMetrics(
 
 // Outstand's managed OAuth auto-connects the Instagram account against the tenant_id
 // we passed when building the auth URL, then redirects back WITHOUT a session token.
-// So after the OAuth we look the account up by that tenant_id. Retries briefly to
-// absorb any propagation delay right after the redirect.
+// So after the OAuth we look the account up by that tenant_id. The window is generous
+// (~15s) because Outstand's token exchange with Meta can lag behind its own redirect,
+// and a transient fetch failure must not abort the remaining attempts.
 export async function getSocialAccountByTenant(
   apiKey: string,
   tenantId: string,
-  attempts = 4,
-): Promise<{ id: string; username: string } | null> {
+  attempts = 10,
+): Promise<{ id: string; username: string; igUserId: string | null } | null> {
   for (let i = 0; i < attempts; i++) {
-    const res = await fetch(
-      `${BASE}/social-accounts?network=instagram&tenant_id=${encodeURIComponent(tenantId)}`,
-      { method: "GET", headers: headers(apiKey) },
-    );
-    const json = await handleResponse<{
-      data: Array<{ id: string; username: string; createdAt?: string }>;
-    }>(res);
-    const accounts = json.data ?? [];
-    if (accounts.length > 0) {
-      // most recently connected account for this tenant
-      const latest = [...accounts].sort((a, b) =>
-        (b.createdAt ?? "").localeCompare(a.createdAt ?? ""),
-      )[0];
-      return { id: latest.id, username: latest.username };
+    try {
+      const res = await fetch(
+        `${BASE}/social-accounts?network=instagram&tenant_id=${encodeURIComponent(tenantId)}`,
+        { method: "GET", headers: headers(apiKey) },
+      );
+      const json = await handleResponse<{
+        data: Array<{
+          id: string;
+          username: string;
+          createdAt?: string;
+          network_unique_id?: string;
+        }>;
+      }>(res);
+      const accounts = json.data ?? [];
+      if (accounts.length > 0) {
+        // most recently connected account for this tenant
+        const latest = [...accounts].sort((a, b) =>
+          (b.createdAt ?? "").localeCompare(a.createdAt ?? ""),
+        )[0];
+        return {
+          id: latest.id,
+          username: latest.username,
+          // The STABLE Instagram user id — survives username changes.
+          igUserId: latest.network_unique_id ?? null,
+        };
+      }
+    } catch {
+      // transient Outstand error — keep trying until the window closes
     }
-    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1000));
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1500));
   }
   return null;
 }

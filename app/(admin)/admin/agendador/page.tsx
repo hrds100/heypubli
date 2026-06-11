@@ -37,6 +37,7 @@ export default async function AgendadorPage() {
       influencers={influencers}
       brands={brandOptions}
       activeProvider={postingSettings?.active_provider}
+      defaultTimezone={postingSettings?.default_timezone}
     />
   );
 }

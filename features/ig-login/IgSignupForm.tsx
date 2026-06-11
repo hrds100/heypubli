@@ -9,11 +9,20 @@ import { TermsContent } from "./TermsContent";
 const inputClass =
   "w-full rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none";
 
+export interface IgSignupDefaults {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  whatsapp?: string;
+}
+
 // Sign-up: collect name, surname, email and WhatsApp FIRST, then send the influencer to
 // Instagram. The form POSTs to /api/auth/instagram/start, which stashes the data and
-// redirects to Instagram; the callback creates the account with it.
-export function IgSignupForm() {
-  const [whatsapp, setWhatsapp] = useState("");
+// redirects to Instagram; the callback creates the account with it. After a failed
+// Instagram round-trip the typed values come back via `defaults` (read from the
+// signup cookie) so nobody retypes the whole form.
+export function IgSignupForm({ defaults }: { defaults?: IgSignupDefaults } = {}) {
+  const [whatsapp, setWhatsapp] = useState(defaults?.whatsapp ?? "");
   const [accepted, setAccepted] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
 
@@ -31,6 +40,7 @@ export function IgSignupForm() {
             id="first_name"
             name="first_name"
             required
+            defaultValue={defaults?.first_name}
             placeholder="Maria"
             className={inputClass}
           />
@@ -43,6 +53,7 @@ export function IgSignupForm() {
             id="last_name"
             name="last_name"
             required
+            defaultValue={defaults?.last_name}
             placeholder="Silva"
             className={inputClass}
           />
@@ -58,6 +69,7 @@ export function IgSignupForm() {
           name="email"
           type="email"
           required
+          defaultValue={defaults?.email}
           placeholder="seu@email.com"
           className={inputClass}
         />

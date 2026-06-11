@@ -276,7 +276,7 @@ describe("getSocialAccountByTenant", () => {
     const result = await getSocialAccountByTenant(API_KEY, "T1");
 
     expect(spy.mock.calls[0][0]).toContain("tenant_id=T1");
-    expect(result).toEqual({ id: "acc_t", username: "joe" });
+    expect(result).toEqual({ id: "acc_t", username: "joe", igUserId: null });
   });
 
   it("returns null when no account is connected for the tenant", async () => {

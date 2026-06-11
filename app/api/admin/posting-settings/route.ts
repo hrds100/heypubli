@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { savePostingSettings, getPostingSettings } from "@/lib/data/outstand";
+import { isSchedulingTimezone } from "@/lib/timezone";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       active_provider: string;
       outstand_social_network_id: string | null;
       outstand_api_key?: string;
+      default_timezone?: string;
     } = {
       active_provider: body.active_provider,
       outstand_social_network_id: body.outstand_social_network_id ?? null,
@@ -54,6 +56,12 @@ export async function POST(request: Request) {
     // Only overwrite the stored key when a new one was actually submitted.
     if (typeof body.outstand_api_key === "string" && body.outstand_api_key.trim()) {
       params.outstand_api_key = body.outstand_api_key.trim();
+    }
+    if (
+      typeof body.default_timezone === "string" &&
+      isSchedulingTimezone(body.default_timezone)
+    ) {
+      params.default_timezone = body.default_timezone;
     }
     await savePostingSettings(params);
 

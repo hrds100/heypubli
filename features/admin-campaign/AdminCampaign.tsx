@@ -23,7 +23,12 @@ import {
   updateCampaign,
   updateCampaignItem,
 } from "@/lib/actions/campaigns";
-import { formatSaoPaulo, utcIsoToSpLocal } from "@/lib/timezone";
+import {
+  formatSaoPaulo,
+  utcIsoToLocal,
+  SCHEDULING_TIMEZONES,
+  DEFAULT_TIMEZONE,
+} from "@/lib/timezone";
 import { MediaUpload } from "@/components/media-upload";
 import type { Campaign, CampaignItem, PostMediaType } from "@/types/database";
 import type { CampaignMemberRow, ConnectedAccountRow } from "@/lib/data/campaigns";
@@ -40,6 +45,7 @@ interface AdminCampaignProps {
   members: CampaignMemberRow[];
   candidates: ConnectedAccountRow[];
   brands: BrandOption[];
+  defaultTimezone?: string;
 }
 
 const POST_TYPES: { value: PostMediaType; label: string }[] = [
@@ -62,11 +68,13 @@ function ItemModal({
   campaign,
   brands,
   item,
+  defaultTimezone,
   onClose,
 }: {
   campaign: Campaign;
   brands: BrandOption[];
   item: CampaignItem | null;
+  defaultTimezone: string;
   onClose: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -253,21 +261,45 @@ function ItemModal({
             </div>
           )}
 
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="item-scheduled-at"
-              className="text-sm font-medium text-foreground-secondary"
-            >
-              {copy.itemModal.scheduledAt}
-            </label>
-            <input
-              id="item-scheduled-at"
-              name="scheduled_at"
-              type="datetime-local"
-              required
-              defaultValue={item ? utcIsoToSpLocal(item.scheduled_at) : ""}
-              className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
-            />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="item-scheduled-at"
+                className="text-sm font-medium text-foreground-secondary"
+              >
+                {copy.itemModal.scheduledAt}
+              </label>
+              <input
+                id="item-scheduled-at"
+                name="scheduled_at"
+                type="datetime-local"
+                required
+                defaultValue={
+                  item ? utcIsoToLocal(item.scheduled_at, defaultTimezone) : ""
+                }
+                className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="item-timezone"
+                className="text-sm font-medium text-foreground-secondary"
+              >
+                {copy.itemModal.timezone}
+              </label>
+              <select
+                id="item-timezone"
+                name="timezone"
+                defaultValue={defaultTimezone}
+                className="rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              >
+                {SCHEDULING_TIMEZONES.map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {error && <p className="text-sm text-error">{error}</p>}
@@ -553,6 +585,7 @@ export function AdminCampaign({
   members,
   candidates,
   brands,
+  defaultTimezone = DEFAULT_TIMEZONE,
 }: AdminCampaignProps) {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<string>("upcoming");
@@ -891,6 +924,7 @@ export function AdminCampaign({
           campaign={campaign}
           brands={brands}
           item={editingItem}
+          defaultTimezone={defaultTimezone}
           onClose={() => {
             setShowItemModal(false);
             setEditingItem(null);

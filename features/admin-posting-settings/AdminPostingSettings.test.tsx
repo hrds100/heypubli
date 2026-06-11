@@ -32,6 +32,7 @@ describe("AdminPostingSettings", () => {
           active_provider: "outstand",
           outstand_social_network_id: "net_abc",
           hasApiKey: true,
+          default_timezone: "America/Sao_Paulo",
         }}
       />,
     );
@@ -47,6 +48,7 @@ describe("AdminPostingSettings", () => {
           active_provider: "outstand",
           outstand_social_network_id: "net_abc",
           hasApiKey: true,
+          default_timezone: "America/Sao_Paulo",
         }}
       />,
     );

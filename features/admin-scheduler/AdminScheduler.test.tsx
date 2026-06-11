@@ -80,6 +80,19 @@ describe("AdminScheduler", () => {
     expect(screen.getByText(/capa do reel/i)).toBeInTheDocument();
   });
 
+  it("offers a timezone picker, defaulting to the app default", () => {
+    render(
+      <AdminScheduler
+        influencers={MOCK_INFLUENCERS}
+        brands={MOCK_BRANDS}
+        defaultTimezone="Europe/London"
+      />,
+    );
+    const tz = screen.getByLabelText("Fuso horário") as HTMLSelectElement;
+    expect(tz.value).toBe("Europe/London");
+    expect(screen.getByText("Brasília (GMT-3)")).toBeInTheDocument();
+  });
+
   it("requires media before scheduling", async () => {
     const user = userEvent.setup();
     render(<AdminScheduler influencers={MOCK_INFLUENCERS} brands={MOCK_BRANDS} />);

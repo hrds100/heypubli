@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 import { getAuthUrl } from "@/lib/integrations/outstand";
+import { STATE_COOKIE, SIGNUP_COOKIE, authCookieOptions } from "@/lib/ig-auth-cookies";
 import { igSignupSchema } from "@/schemas";
-
-const STATE_COOKIE = "ig_login_state";
-const SIGNUP_COOKIE = "ig_signup_data";
 
 async function outstandAuthUrl(origin: string, state: string): Promise<string | null> {
   const settings = await getPostingSettingsAdmin();
@@ -21,38 +19,6 @@ async function outstandAuthUrl(origin: string, state: string): Promise<string | 
   } catch {
     return null;
   }
-}
-
-// Short-lived, single-use CSRF nonce. We bind it to the browser via the cookie and
-// reject mismatches if Outstand echoes the state back (tenant_id/state) on the
-// callback. NOTE: if Outstand does NOT echo it, this degrades to cookie-presence —
-// the short TTL limits the login-CSRF window. To fully bind, confirm via one real
-// callback whether Outstand echoes tenant_id, then make the callback check require it.
-const STATE_TTL_SECONDS = 300;
-
-// Share the auth cookies across apex + www so they survive the nextpubli.com → www
-// redirect that happens mid-flow — otherwise the sign-up data (incl. the name) is lost.
-function cookieDomain(origin: string): string | undefined {
-  try {
-    const host = new URL(origin).hostname;
-    if (host === "nextpubli.com" || host.endsWith(".nextpubli.com")) {
-      return ".nextpubli.com";
-    }
-  } catch {
-    // ignore
-  }
-  return undefined;
-}
-
-function authCookieOptions(origin: string) {
-  return {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    maxAge: STATE_TTL_SECONDS,
-    path: "/",
-    domain: cookieDomain(origin),
-  };
 }
 
 function withStateCookie(res: NextResponse, state: string, origin: string) {

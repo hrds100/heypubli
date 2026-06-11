@@ -317,12 +317,14 @@ export interface PostingSettings {
   active_provider: PostingProvider;
   outstand_api_key: string | null;
   outstand_social_network_id: string | null;
+  default_timezone: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface OutstandConnection {
   id: string;
+  ig_user_id?: string | null;
   profile_id: string;
   outstand_social_account_id: string;
   ig_username: string | null;

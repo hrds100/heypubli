@@ -18,6 +18,8 @@ export function syntheticIgEmail(socialAccountId: string): string {
 export interface IgAccount {
   socialAccountId: string;
   username: string;
+  // Stable Instagram user id (Outstand's network_unique_id) — survives renames.
+  igUserId?: string | null;
 }
 
 // Collected on /cadastro before the influencer is sent to Instagram.
@@ -60,24 +62,42 @@ export async function findOrCreateInfluencerByOutstand(
 ): Promise<IgUserResult> {
   const admin = createAdminClient();
 
-  // 1. Returning influencer — matched by their STABLE Instagram username. Outstand
-  //    mints a new social-account id on every reconnect, so keying on that id would
-  //    create a duplicate account on each login.
-  const { data: existingRow, error: lookupErr } = await admin
-    .from("outstand_connections")
-    .select("profile_id")
-    .eq("ig_username", account.username)
-    .maybeSingle();
-  if (lookupErr) {
-    throw new Error(`Falha ao buscar conexão do Instagram: ${lookupErr.message}`);
+  // 1. Returning influencer. Match by the STABLE Instagram user id first —
+  //    usernames are user-changeable, so matching only on the handle created a
+  //    duplicate empty account after a rename. The username match remains as a
+  //    fallback for legacy rows that predate ig_user_id. (Outstand mints a new
+  //    social-account id on every reconnect, so that id can never be the key.)
+  let existing: { profile_id: string } | null = null;
+  if (account.igUserId) {
+    const { data, error: idLookupErr } = await admin
+      .from("outstand_connections")
+      .select("profile_id")
+      .eq("ig_user_id", account.igUserId)
+      .maybeSingle();
+    if (idLookupErr) {
+      throw new Error(`Falha ao buscar conexão do Instagram: ${idLookupErr.message}`);
+    }
+    existing = data as { profile_id: string } | null;
   }
-  const existing = existingRow as { profile_id: string } | null;
+  if (!existing) {
+    const { data, error: lookupErr } = await admin
+      .from("outstand_connections")
+      .select("profile_id")
+      .eq("ig_username", account.username)
+      .maybeSingle();
+    if (lookupErr) {
+      throw new Error(`Falha ao buscar conexão do Instagram: ${lookupErr.message}`);
+    }
+    existing = data as { profile_id: string } | null;
+  }
   if (existing) {
-    // Refresh the latest Outstand social-account id (used for posting).
+    // Refresh the latest Outstand social-account id (used for posting), the
+    // current handle, and backfill the stable id on legacy rows.
     await saveOutstandConnection(
       existing.profile_id,
       account.socialAccountId,
       account.username,
+      account.igUserId,
     );
     return {
       userId: existing.profile_id,
@@ -108,7 +128,12 @@ export async function findOrCreateInfluencerByOutstand(
   //    the just-created auth user — otherwise it is an orphan with no connection and
   //    the influencer can never log in again (the synthetic email is already taken).
   try {
-    await saveOutstandConnection(userId, account.socialAccountId, account.username);
+    await saveOutstandConnection(
+      userId,
+      account.socialAccountId,
+      account.username,
+      account.igUserId,
+    );
   } catch (err) {
     await admin.auth.admin.deleteUser(userId).catch(() => {});
     throw err instanceof Error

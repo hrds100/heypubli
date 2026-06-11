@@ -11,6 +11,7 @@ export default async function AdminConfiguracoesPage() {
         active_provider: settings.active_provider,
         outstand_social_network_id: settings.outstand_social_network_id,
         hasApiKey: Boolean(settings.outstand_api_key),
+        default_timezone: settings.default_timezone ?? "America/Sao_Paulo",
       }
     : null;
 

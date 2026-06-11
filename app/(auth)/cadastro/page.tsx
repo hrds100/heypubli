@@ -1,5 +1,24 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { IgSignupForm } from "@/features/ig-login";
+import { SIGNUP_COOKIE } from "@/lib/ig-auth-cookies";
+
+// If a previous signup attempt failed mid-Instagram, the typed form data is
+// still in the (httpOnly) signup cookie — prefill it so nothing is retyped.
+function readSignupDefaults(raw: string | undefined) {
+  if (!raw) return undefined;
+  try {
+    const d = JSON.parse(raw);
+    return {
+      first_name: typeof d?.first_name === "string" ? d.first_name : undefined,
+      last_name: typeof d?.last_name === "string" ? d.last_name : undefined,
+      email: typeof d?.email === "string" ? d.email : undefined,
+      whatsapp: typeof d?.whatsapp === "string" ? d.whatsapp : undefined,
+    };
+  } catch {
+    return undefined;
+  }
+}
 
 export default async function CadastroPage({
   searchParams,
@@ -7,6 +26,8 @@ export default async function CadastroPage({
   searchParams: Promise<{ erro?: string }>;
 }) {
   const { erro } = await searchParams;
+  const cookieStore = await cookies();
+  const defaults = readSignupDefaults(cookieStore.get(SIGNUP_COOKIE)?.value);
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -33,7 +54,7 @@ export default async function CadastroPage({
         <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{erro}</div>
       )}
 
-      <IgSignupForm />
+      <IgSignupForm defaults={defaults} />
 
       <p className="text-xs text-foreground-secondary">
         Use uma conta Profissional do Instagram (Criador ou Empresa).{" "}

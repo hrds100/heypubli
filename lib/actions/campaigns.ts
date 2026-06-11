@@ -14,7 +14,7 @@ import {
   getCampaignMembers,
 } from "@/lib/data/campaigns";
 import { readInstagramOptions } from "@/lib/instagram-options";
-import { spLocalToUtcIso } from "@/lib/timezone";
+import { DEFAULT_TIMEZONE, isSchedulingTimezone, localToUtcIso } from "@/lib/timezone";
 import type { CampaignItem, InstagramPostOptions, PostMediaType } from "@/types/database";
 
 type ActionResult = { error: string } | { success: true; postsCreated?: number };
@@ -64,11 +64,15 @@ function readItemFields(formData: FormData): ItemFields | { error: string } {
   if (!mediaUrl) return { error: "Envie a mídia ou informe a URL." };
   if (!scheduledLocal) return { error: "Informe data e hora." };
 
+  // Wall time in the timezone picked in the modal (defaults to the app default).
+  const tzRaw = ((formData.get("timezone") as string) || "").trim();
+  const timezone = isSchedulingTimezone(tzRaw) ? tzRaw : DEFAULT_TIMEZONE;
+
   return {
     mediaType,
     mediaUrl,
     caption,
-    scheduledAtUtc: spLocalToUtcIso(scheduledLocal),
+    scheduledAtUtc: localToUtcIso(scheduledLocal, timezone),
     brandId,
     instagramOptions: readInstagramOptions(formData),
   };

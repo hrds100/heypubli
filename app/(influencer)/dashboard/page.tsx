@@ -37,7 +37,7 @@ async function getInstagramData(
       mediaCount: ig.postsCount,
       accountType: ig.accountType,
       isConnected: true,
-      statsAvailable: true,
+      statsAvailable: ig.statsAvailable,
     };
   }
 

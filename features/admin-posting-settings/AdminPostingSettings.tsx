@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Settings } from "lucide-react";
+import { SCHEDULING_TIMEZONES, DEFAULT_TIMEZONE } from "@/lib/timezone";
 
 // The Outstand API key is a server-side secret — it is NEVER sent to the browser.
 // We only receive whether one is configured (hasApiKey) so the UI can hint it.
@@ -10,6 +11,7 @@ interface AdminPostingSettingsProps {
     active_provider: string;
     outstand_social_network_id: string | null;
     hasApiKey: boolean;
+    default_timezone: string;
   } | null;
 }
 
@@ -17,6 +19,9 @@ export function AdminPostingSettings({ settings }: AdminPostingSettingsProps) {
   const [provider, setProvider] = useState(settings?.active_provider ?? "heypubli");
   const [apiKey, setApiKey] = useState("");
   const [networkId, setNetworkId] = useState(settings?.outstand_social_network_id ?? "");
+  const [timezone, setTimezone] = useState(
+    settings?.default_timezone ?? DEFAULT_TIMEZONE,
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +38,7 @@ export function AdminPostingSettings({ settings }: AdminPostingSettingsProps) {
         body: JSON.stringify({
           active_provider: provider,
           outstand_social_network_id: provider === "outstand" ? networkId : null,
+          default_timezone: timezone,
           // Only send the key when the admin actually typed a new one; an empty
           // field keeps the existing key (it's never round-tripped to the client).
           ...(provider === "outstand" && apiKey.trim()
@@ -151,6 +157,26 @@ export function AdminPostingSettings({ settings }: AdminPostingSettingsProps) {
           </div>
         </section>
       )}
+
+      <section className="rounded-xl border border-border p-6">
+        <h2 className="mb-4 text-lg font-semibold">Fuso horário padrão</h2>
+        <p className="mb-4 text-sm text-foreground-secondary">
+          O agendador e a campanha usam este fuso por padrão — dá para trocar na hora de
+          agendar cada post.
+        </p>
+        <select
+          aria-label="Fuso horário padrão"
+          value={timezone}
+          onChange={(e) => setTimezone(e.target.value)}
+          className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
+        >
+          {SCHEDULING_TIMEZONES.map((tz) => (
+            <option key={tz.value} value={tz.value}>
+              {tz.label}
+            </option>
+          ))}
+        </select>
+      </section>
 
       {error && (
         <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{error}</div>

@@ -22,6 +22,7 @@ export async function savePostingSettings(params: {
   active_provider: string;
   outstand_api_key?: string | null;
   outstand_social_network_id?: string | null;
+  default_timezone?: string;
 }): Promise<void> {
   const admin = createAdminClient();
   const { data: existing } = await admin
@@ -57,11 +58,12 @@ export async function getOutstandConnection(
 }
 
 // Full Instagram profile + engagement metrics for a connected influencer.
-// Returns null only when there is no connection; otherwise returns the metrics
-// (or a connected-but-no-data fallback if the metrics call fails).
+// Returns null only when there is no connection; otherwise returns the metrics.
+// statsAvailable=false marks the degraded fallback (metrics API unreachable /
+// key missing) so callers never render its zeros as real numbers.
 export async function getOutstandInstagramData(
   profileId: string,
-): Promise<OutstandIgMetrics | null> {
+): Promise<(OutstandIgMetrics & { statsAvailable: boolean }) | null> {
   const conn = await getOutstandConnection(profileId);
   if (!conn) return null;
 
@@ -71,10 +73,11 @@ export async function getOutstandInstagramData(
       settings.outstand_api_key,
       conn.outstand_social_account_id,
     );
-    if (metrics) return metrics;
+    if (metrics) return { ...metrics, statsAvailable: true };
   }
 
   return {
+    statsAvailable: false,
     username: conn.ig_username ?? "",
     name: null,
     biography: null,
@@ -149,6 +152,7 @@ export async function saveOutstandConnection(
   profileId: string,
   socialAccountId: string,
   igUsername: string | null,
+  igUserId?: string | null,
 ): Promise<{ isNew: boolean }> {
   const admin = createAdminClient();
 
@@ -162,6 +166,8 @@ export async function saveOutstandConnection(
     profile_id: profileId,
     outstand_social_account_id: socialAccountId,
     ig_username: igUsername,
+    // The stable Instagram id — only overwrite with a real value, never null out.
+    ...(igUserId ? { ig_user_id: igUserId } : {}),
     is_connected: true,
   };
 

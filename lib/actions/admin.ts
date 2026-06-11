@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { InstagramPostOptions, PostMediaType } from "@/types/database";
 import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 import { readInstagramOptions } from "@/lib/instagram-options";
-import { spLocalToUtcIso } from "@/lib/timezone";
+import { DEFAULT_TIMEZONE, isSchedulingTimezone, localToUtcIso } from "@/lib/timezone";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -211,14 +211,19 @@ export async function schedulePost(formData: FormData) {
   const settings = await getPostingSettingsAdmin();
   const provider = settings?.active_provider ?? "heypubli";
 
+  // Wall time in the timezone the scheduler picked (falls back to the app default).
+  const tzRaw = (formData.get("timezone") as string) || "";
+  const timezone = isSchedulingTimezone(tzRaw)
+    ? tzRaw
+    : (settings?.default_timezone ?? DEFAULT_TIMEZONE);
+
   const rows = influencerIds.map((profileId) => ({
     profile_id: profileId.trim(),
     brand_id: brandId,
     media_type: mediaType,
     media_url: mediaUrl,
     caption,
-    // The datetime-local input is admin (São Paulo) wall time — NOT server time.
-    scheduled_at: spLocalToUtcIso(scheduledAt),
+    scheduled_at: localToUtcIso(scheduledAt, timezone),
     status: "pending" as const,
     provider,
     instagram_options: instagramOptions,

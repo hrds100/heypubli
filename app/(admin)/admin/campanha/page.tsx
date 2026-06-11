@@ -6,6 +6,7 @@ import {
   getDefaultCampaign,
 } from "@/lib/data/campaigns";
 import { getAllBrands } from "@/lib/data";
+import { getPostingSettingsAdmin } from "@/lib/data/outstand";
 
 export default async function CampanhaPage() {
   const campaign = await getDefaultCampaign();
@@ -21,11 +22,12 @@ export default async function CampanhaPage() {
     );
   }
 
-  const [items, members, candidates, brands] = await Promise.all([
+  const [items, members, candidates, brands, settings] = await Promise.all([
     getCampaignItems(campaign.id),
     getCampaignMembersWithProfiles(campaign.id),
     getAccountsNotInCampaign(campaign.id),
     getAllBrands(),
+    getPostingSettingsAdmin(),
   ]);
 
   return (
@@ -35,6 +37,7 @@ export default async function CampanhaPage() {
       members={members}
       candidates={candidates}
       brands={brands.map((b) => ({ id: b.id, name: b.name }))}
+      defaultTimezone={settings?.default_timezone}
     />
   );
 }

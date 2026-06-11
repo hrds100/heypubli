@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Send, CheckCircle, Info } from "lucide-react";
 import { schedulePost } from "@/lib/actions/admin";
 import { MediaUpload } from "@/components/media-upload";
+import { SCHEDULING_TIMEZONES, DEFAULT_TIMEZONE } from "@/lib/timezone";
 import type { PostingProvider } from "@/types/database";
 
 interface BrandOption {
@@ -23,6 +24,7 @@ interface AdminSchedulerProps {
   influencers: SchedulerInfluencer[];
   brands: BrandOption[];
   activeProvider?: PostingProvider;
+  defaultTimezone?: string;
 }
 
 const POST_TYPES = [
@@ -40,12 +42,14 @@ export function AdminScheduler({
   influencers,
   brands,
   activeProvider,
+  defaultTimezone = DEFAULT_TIMEZONE,
 }: AdminSchedulerProps) {
   const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([]);
   const [postType, setPostType] = useState("feed");
   const [brandId, setBrandId] = useState(brands[0]?.id ?? "");
   const [caption, setCaption] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [timezone, setTimezone] = useState(defaultTimezone);
   const [mediaUrl, setMediaUrl] = useState("");
   const [collaborators, setCollaborators] = useState("");
   const [firstComment, setFirstComment] = useState("");
@@ -103,6 +107,7 @@ export function AdminScheduler({
     formData.set("media_url", mediaUrl);
     formData.set("caption", caption);
     formData.set("scheduled_at", scheduledAt);
+    formData.set("timezone", timezone);
     if (allowsCollabs && collaborators.trim()) {
       formData.set("collaborators", collaborators);
     }
@@ -310,16 +315,35 @@ export function AdminScheduler({
               </div>
             )}
 
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-foreground-secondary">
-                Data e hora
-              </label>
-              <input
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground-secondary">
+                  Data e hora
+                </label>
+                <input
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground-secondary">
+                  Fuso horário
+                </label>
+                <select
+                  aria-label="Fuso horário"
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  className="rounded-lg border border-border px-4 py-2.5 focus:border-accent focus:outline-none"
+                >
+                  {SCHEDULING_TIMEZONES.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>
