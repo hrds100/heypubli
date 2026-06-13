@@ -279,6 +279,42 @@ describe("getSocialAccountByTenant", () => {
     expect(result).toEqual({ id: "acc_t", username: "joe", igUserId: null });
   });
 
+  it("picks the account carrying OUR tenant_id, not just the newest (Outstand ignores the filter)", async () => {
+    // Outstand returns the whole org. A newer, unrelated signup must NOT be picked.
+    mockFetch({
+      success: true,
+      data: [
+        {
+          id: "acc_other",
+          username: "someone_else",
+          tenant_id: "OTHER",
+          createdAt: "2026-06-10",
+        },
+        {
+          id: "acc_mine",
+          username: "me",
+          tenant_id: "T1",
+          network_unique_id: "ig9",
+          createdAt: "2026-06-03",
+        },
+      ],
+      count: 2,
+    });
+
+    const result = await getSocialAccountByTenant(API_KEY, "T1");
+    expect(result).toEqual({ id: "acc_mine", username: "me", igUserId: "ig9" });
+  });
+
+  it("falls back to the most recent account when none carries our tenant_id", async () => {
+    mockFetch({
+      success: true,
+      data: [{ id: "acc_x", username: "x", createdAt: "2026-01-01" }], // no tenant_id field
+      count: 1,
+    });
+    const result = await getSocialAccountByTenant(API_KEY, "T1", 1);
+    expect(result).toEqual({ id: "acc_x", username: "x", igUserId: null });
+  });
+
   it("returns null when no account is connected for the tenant", async () => {
     mockFetch({ success: true, data: [], count: 0 });
     const result = await getSocialAccountByTenant(API_KEY, "T1", 1);

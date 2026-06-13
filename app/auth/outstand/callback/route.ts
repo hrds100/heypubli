@@ -44,19 +44,25 @@ export async function GET(request: Request) {
   const clearSignupCookie = () =>
     cookieStore.delete({ name: SIGNUP_COOKIE, ...clearAttrs });
 
-  const hadSignupData = Boolean(cookieStore.get(SIGNUP_COOKIE)?.value);
+  // A filled-in /cadastro form (signup data present) is an explicit "create a new
+  // influencer" intent and ALWAYS wins — even when someone is already logged in (e.g. an
+  // admin testing, or a returning visitor with a stale session). Only treat the round-trip
+  // as "connect Instagram to my existing account" when there is a session AND no signup
+  // form data. Without this, a logged-in person who signs up gets silently re-connected to
+  // their current account and the new account is never created.
+  const signup = readSignupData(cookieStore.get(SIGNUP_COOKIE)?.value);
+  const isConnect = Boolean(user) && !signup;
 
-  // Already signed in → connecting from inside the app (errors → onboarding).
-  // Mid-SIGNUP (form data present) → back to /cadastro so they can retry there.
-  // Otherwise → login page.
-  const errBase = user
+  // Connect errors → onboarding. A signup (form data) → back to /cadastro to retry.
+  // A bare "Sign in with Instagram" (no data) → login page.
+  const errBase = isConnect
     ? `${origin}/onboarding`
-    : hadSignupData
+    : signup
       ? `${origin}/cadastro`
       : `${origin}/login`;
-  const errKey = user ? "ig_error" : "erro";
+  const errKey = isConnect ? "ig_error" : "erro";
   const fail = (msg: string) => {
-    if (!user) {
+    if (!isConnect) {
       // Keep the signup-data cookie so /cadastro can prefill the form on retry.
       clearStateCookie();
     }
@@ -68,10 +74,10 @@ export async function GET(request: Request) {
   }
 
   // The tenant_id we passed to Outstand when starting the OAuth:
-  //  - connect (logged in):     the user's id
-  //  - sign-up (not logged in): the random state nonce stored in the cookie
+  //  - connect (logged in, no form data): the user's id
+  //  - sign-up (form data, logged in or not): the random state nonce in the cookie
   const expectedState = cookieStore.get(STATE_COOKIE)?.value;
-  if (!user) {
+  if (!isConnect) {
     // NOTE: only tenant_id can echo our nonce — Outstand uses `state` for its
     // own org id, so comparing against it would reject every signup.
     const returnedState = searchParams.get("tenant_id");
@@ -79,7 +85,7 @@ export async function GET(request: Request) {
       return fail("Sua sessão de login expirou. Tente novamente.");
     }
   }
-  const tenantId = user ? user.id : expectedState;
+  const tenantId = isConnect ? user?.id : expectedState;
   if (!tenantId) {
     return fail("Sua sessão de login expirou. Tente novamente.");
   }
@@ -99,8 +105,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // --- Connect flow (user already authenticated) ---
-    if (user) {
+    // --- Connect flow (logged in, connecting from inside the app) ---
+    if (isConnect && user) {
       const { isNew } = await saveOutstandConnection(
         user.id,
         account.id,
@@ -123,8 +129,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/onboarding?ig_connected=true`);
     }
 
-    // --- Sign-up flow ---
-    const signup = readSignupData(cookieStore.get(SIGNUP_COOKIE)?.value);
+    // --- Sign-up / login-with-Instagram flow ---
     const { email, isNew } = await findOrCreateInfluencerByOutstand(
       {
         socialAccountId: account.id,
