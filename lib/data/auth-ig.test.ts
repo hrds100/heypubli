@@ -2,8 +2,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Controllable fakes shared between the mock factory and the tests.
 const mocks = vi.hoisted(() => ({
+  // Result of the "find an existing connection by Instagram" lookup
+  // (.order().limit()) — an array, since a handle can now map to several profiles.
+  lookupResult: {
+    data: [] as Array<{ profile_id: string }>,
+    error: null as null | { message: string },
+  },
+  // Result of saveOutstandConnection's per-profile lookup (.maybeSingle()).
   maybeSingleResult: {
-    data: null as null | { profile_id: string },
+    data: null as null | { id: string },
     error: null as null | { message: string },
   },
   createUserResult: {
@@ -28,6 +35,9 @@ vi.mock("@/lib/supabase/admin", () => {
     const b: Record<string, unknown> = {};
     b.select = vi.fn(() => b);
     b.eq = vi.fn(() => b);
+    b.order = vi.fn(() => b);
+    // Terminal of the find-by-Instagram lookup: returns an array of rows.
+    b.limit = vi.fn(() => Promise.resolve(mocks.lookupResult));
     b.maybeSingle = vi.fn(() => Promise.resolve(mocks.maybeSingleResult));
     b.upsert = mocks.upsertSpy;
     b.update = (arg: unknown) => {
@@ -73,6 +83,7 @@ vi.mock("./notifications", () => ({
 import { findOrCreateInfluencerByOutstand, syntheticIgEmail } from "./auth-ig";
 
 beforeEach(() => {
+  mocks.lookupResult = { data: [], error: null };
   mocks.maybeSingleResult = { data: null, error: null };
   mocks.createUserResult = { data: { user: { id: "new-user-id" } }, error: null };
   mocks.getUserByIdResult = { data: { user: { email: "real@person.com" } }, error: null };
@@ -96,8 +107,8 @@ describe("syntheticIgEmail", () => {
 });
 
 describe("findOrCreateInfluencerByOutstand", () => {
-  it("returns the existing influencer with their CURRENT auth email, no user created", async () => {
-    mocks.maybeSingleResult = { data: { profile_id: "existing-id" }, error: null };
+  it("LOGIN (no form data): returns the existing influencer with their CURRENT auth email, no user created", async () => {
+    mocks.lookupResult = { data: [{ profile_id: "existing-id" }], error: null };
     mocks.getUserByIdResult = {
       data: { user: { email: "changed@later.com" } },
       error: null,
@@ -124,7 +135,7 @@ describe("findOrCreateInfluencerByOutstand", () => {
     );
   });
 
-  it("creates a new auth user and maps the Outstand account when none exists", async () => {
+  it("LOGIN (no form data): creates a new auth user and maps the Outstand account when none exists", async () => {
     mocks.createUserResult = { data: { user: { id: "new-1" } }, error: null };
 
     const result = await findOrCreateInfluencerByOutstand({
@@ -163,7 +174,7 @@ describe("findOrCreateInfluencerByOutstand", () => {
     );
   });
 
-  it("passes the pre-collected name to createUser and saves email + WhatsApp", async () => {
+  it("SIGNUP: creates the auth user with the REAL email and saves WhatsApp", async () => {
     mocks.createUserResult = { data: { user: { id: "new-3" } }, error: null };
 
     const result = await findOrCreateInfluencerByOutstand(
@@ -176,16 +187,21 @@ describe("findOrCreateInfluencerByOutstand", () => {
       },
     );
 
+    // The auth user is created with the real email straight away (so they can also
+    // log in by email magic link later) — no synthetic-email round trip.
     expect(mocks.createUserSpy).toHaveBeenCalledWith(
       expect.objectContaining({
+        email: "maria@gmail.com",
+        email_confirm: true,
         user_metadata: expect.objectContaining({
           first_name: "Maria",
           last_name: "Silva",
           auth_provider: "instagram",
+          ig_username: "maria",
         }),
       }),
     );
-    // profile updated with real contact info + needs_contact cleared
+    // profile updated with contact info + needs_contact cleared
     expect(mocks.updateSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         email: "maria@gmail.com",
@@ -193,13 +209,42 @@ describe("findOrCreateInfluencerByOutstand", () => {
         needs_contact: false,
       }),
     );
-    // auth email set to the real email so they can use an email magic link later
-    expect(mocks.updateUserByIdSpy).toHaveBeenCalledWith(
-      "new-3",
-      expect.objectContaining({ email: "maria@gmail.com", email_confirm: true }),
-    );
     expect(result.email).toBe("maria@gmail.com");
     expect(result.isNew).toBe(true);
+  });
+
+  it("SIGNUP: creates a NEW account even when the same Instagram is already connected to another profile", async () => {
+    // An existing connection already owns this Instagram handle...
+    mocks.lookupResult = { data: [{ profile_id: "existing-id" }], error: null };
+    mocks.createUserResult = { data: { user: { id: "fresh-id" } }, error: null };
+
+    const result = await findOrCreateInfluencerByOutstand(
+      { socialAccountId: "acc_reused", username: "joe", igUserId: "ig-123" },
+      {
+        firstName: "Other",
+        lastName: "Person",
+        email: "other@gmail.com",
+        whatsapp: "+5511888887777",
+      },
+    );
+
+    // ...but a form signup is an explicit "new influencer" intent, so we DON'T
+    // merge into the existing account — we create a brand-new one.
+    expect(result.userId).toBe("fresh-id");
+    expect(result.isNew).toBe(true);
+    expect(result.email).toBe("other@gmail.com");
+    expect(mocks.createUserSpy).toHaveBeenCalled();
+    // the returning-user path (getUserById on the existing profile) is NOT taken
+    expect(mocks.getUserByIdSpy).not.toHaveBeenCalled();
+    // the new profile gets its own connection row pointing at the reused account
+    expect(mocks.upsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ profile_id: "fresh-id", ig_username: "joe" }),
+      { onConflict: "profile_id" },
+    );
+    // admin is notified about the new signup
+    expect(notifySpy).toHaveBeenCalledWith(
+      expect.objectContaining({ profileId: "fresh-id" }),
+    );
   });
 
   it("throws when auth user creation fails (no orphan, no mapping)", async () => {
